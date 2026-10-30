@@ -1,0 +1,40 @@
+---
+// "Na tle okolicy": ten obszar na tle gminy, powiatu, województwa i kraju.
+// Zdanie i słupki liczone z median; nazwy w zdaniu bez odmiany ("w całym powiecie").
+import Change from './Change.astro';
+import { M, type AreaRef } from '../lib/data';
+import { zl, pctAbs } from '../lib/format';
+
+interface Props { chain: AreaRef[] }
+const { chain } = Astro.props;
+const rows = [...chain].reverse().map((a) => ({ a, s: M.snapshot(a.skey, a.units) }));
+const here = rows[0];
+const max = Math.max(...rows.map((r) => r.s.medianM2 ?? 0), 1);
+const WHERE: Record<string, string> = { gmina: 'w całej gminie', powiat: 'w całym powiecie', voiv: 'w całym województwie', pl: 'w całym kraju' };
+const parts = rows.slice(1).filter((r) => r.s.medianM2 && here.s.medianM2).map((r) => {
+  const d = here.s.medianM2! / r.s.medianM2! - 1;
+  const how = Math.abs(d) < 0.01 ? 'praktycznie taka sama jak' : `o ${pctAbs(d, 0)} ${d < 0 ? 'niższa' : 'wyższa'} niż`;
+  return `${how} ${WHERE[r.a.level]}`;
+});
+const sentence = parts.length
+  ? `Mediana ceny za m² jest tu ${parts.length > 1 ? `${parts.slice(0, -1).join(', ')} i ${parts.at(-1)}` : parts[0]}.`
+  : '';
+---
+{rows.length > 1 && (
+  <section class="section" id="okolica" aria-labelledby="okolica-h">
+    <div class="section-head">
+      <h2 id="okolica-h">Na tle okolicy</h2>
+      {sentence && <p>{sentence}</p>}
+    </div>
+    <ol class="context">
+      {rows.map(({ a, s }, i) => (
+        <li class={i === 0 ? 'here' : undefined}>
+          <span class="c-name">{i === 0 || !a.href ? a.label : <a href={a.href}>{a.label}</a>}</span>
+          <span class="c-bar" aria-hidden="true"><i style={`inline-size:${(((s.medianM2 ?? 0) / max) * 100).toFixed(1)}%`}></i></span>
+          <span class="c-val">{zl(s.medianM2)}<span class="unit">/m²</span></span>
+          <span class="c-idx"><Change value={s.change.index13w} /><span class="c-idx-l"> w 13 tyg.</span></span>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}

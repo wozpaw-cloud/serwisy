@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config';
+---
+<Base title="Jak powstaje ten serwis" description="Kto prowadzi serwis Cena od dewelopera, skąd są dane i jaką rolę pełni w nim sztuczna inteligencja." crumbs={[{ label: 'O serwisie' }]}>
+  <article class="prose">
+    <h1>Jak powstaje ten serwis</h1>
+    <p>Serwis porządkuje jawne cenniki deweloperów z dane.gov.pl w jednym miejscu i pokazuje, jak zmieniają się ceny mieszkań i domów w ofertach. Wydaje go {SITE.publisher}.</p>
+
+    <h2>Rola sztucznej inteligencji</h2>
+    <ul>
+      <li>Kod serwisu, importu danych i analiz napisała AI (Claude).</li>
+      <li>Liczby wylicza program prosto z cenników. AI nie wpisuje żadnej wartości.</li>
+      <li>Zdania opisowe na stronach miast i inwestycji składa program z gotowych sformułowań i liczb. Są oznaczone znakiem AI.</li>
+      <li>Komentarze w raportach miesięcznych pisze AI. Każdy przechodzi akceptację redaktora, a przy tekście widać, kto i kiedy go zatwierdził.</li>
+    </ul>
+
+    <h2>Aktualizacja</h2>
+    <p>Cenniki pobieramy codziennie rano. Gdy kontrola jakości wykryje problem, na przykład nagły spadek liczby lokali albo zmianę formatu pliku, publikacja czeka na sprawdzenie.</p>
+
+    <h2>Reklamy</h2>
+    <p>Serwis utrzymują reklamy Google. Reklamodawcy nie mają wpływu na dane ani na teksty.</p>
+
+    <h2>Kontakt</h2>
+    <p>Napisz na adres <span class="select-text">{SITE.contactEmail}</span>. Serwis nie ma formularzy ani kont użytkowników i nie zbiera danych odwiedzających.</p>
+  </article>
+</Base>

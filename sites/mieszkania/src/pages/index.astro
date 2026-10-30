@@ -1,0 +1,141 @@
+---
+import Base from '../layouts/Base.astro';
+import LineChart from '../components/LineChart.astro';
+import Sparkline from '../components/Sparkline.astro';
+import Change from '../components/Change.astro';
+import AdSlot from '../components/AdSlot.astro';
+import AiNote from '../components/AiNote.astro';
+import Search from '../components/Search.astro';
+import { SITE } from '../config';
+import { M, national, nationalSeries, citiesWithPage, citySnap, citySeries, href, unitLabel, voivodeships, livePowiaty, liveGminas, powiatLink, gminaLink } from '../lib/data';
+import { dateLong, investmentsLoc, unitsGen, num, pct, pctAbs, share, trendWord, units, zl, zlM2, monthName } from '../lib/format';
+
+const s = national();
+const ser = nationalSeries();
+const first = ser.index.find((p) => p.value !== null)?.date ?? M.firstDate;
+const cuts = M.topCuts(M.units, 8);
+const lastMonth = M.months().at(-1)!;
+const idxWord = trendWord(s.change.index4w, 'wzrosły', 'spadły', 'prawie się nie zmieniły');
+const description = `Mediana ceny za m² w ofertach deweloperów: ${zlM2(s.medianM2)}. Indeks cen tych samych lokali, obniżki i podaż w miastach, z jawnych cenników w dane.gov.pl.`;
+const jsonld = [{
+  '@context': 'https://schema.org', '@type': 'Dataset',
+  name: 'Ceny ofertowe mieszkań i domów od deweloperów: agregaty tygodniowe',
+  description: 'Mediany cen za m², indeks cen tych samych lokali i liczba lokali w ofercie, liczone z cenników deweloperów publikowanych w dane.gov.pl.',
+  temporalCoverage: `${M.firstDate}/${M.asOf}`, spatialCoverage: 'Polska', inLanguage: 'pl',
+  creator: { '@type': 'Organization', name: SITE.publisher, url: SITE.publisherUrl },
+  isBasedOn: SITE.source.url,
+  distribution: [{ '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: new URL('/dane/miasta-tygodniowo.csv', Astro.site).toString() }],
+}];
+---
+<Base title="Ceny mieszkań od deweloperów" description={description} jsonld={jsonld} search={false}>
+  <section class="hero">
+    <h1>Metr kwadratowy w ofertach deweloperów kosztuje dziś {zlM2(s.medianM2)}</h1>
+    <p class="lead">
+      To mediana z {unitsGen(s.units)} w {investmentsLoc(s.investments)}, stan na {dateLong(M.asOf)}.
+      Ceny tych samych lokali w ciągu 4 tygodni {idxWord}{s.change.index4w !== null && Math.abs(s.change.index4w) >= 0.0005 ? ` o ${pctAbs(s.change.index4w)}` : ''}.
+    </p>
+    <div class="finder">
+      <Search id="q-home" size="hero" label="Sprawdź ceny w swojej okolicy: wpisz miejscowość, gminę, powiat albo nazwę osiedla" />
+      <p class="quick">
+        <span class="muted">Najwięcej ofert:</span>
+        {citiesWithPage.slice(0, 6).map((c) => <a href={href.city(c)}>{c.name}</a>)}
+      </p>
+    </div>
+    <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
+  </section>
+
+  <dl class="figures">
+    <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych i {num(s.goneUnits)} poza ofertą w 4 tygodnie</span></div>
+    <div><dt>Potaniało w 4 tygodnie</dt><dd>{share(s.cuts.share)}</dd><span class="delta">{units(s.cuts.count)}, średnio o {pctAbs(s.cuts.avgDepth)}</span></div>
+    <div><dt>Podrożało w 4 tygodnie</dt><dd>{share(s.raises.share)}</dd><span class="delta">{units(s.raises.count)}</span></div>
+    <div><dt>Mediana ceny lokalu</dt><dd>{zl(s.medianTotal)}</dd><span class="delta">przy medianie metrażu {s.medianArea?.toFixed(1).replace('.', ',')} m²</span></div>
+  </dl>
+
+  <LineChart
+    id="indeks"
+    title="Indeks cen tych samych lokali"
+    sub={`100 = ceny z ${dateLong(first)}. Porównuje co tydzień ceny lokali obecnych w ofercie w obu tygodniach, więc nie zmienia się, gdy do oferty wchodzą droższe lub tańsze inwestycje.`}
+    series={[{ label: 'Polska', points: ser.index }]}
+    format="index"
+    ref={100}
+  />
+
+  <div class="two-up">
+    <LineChart title="Mediana ceny za m²" sub="Wszystkie lokale w ofercie w danym tygodniu. Reaguje też na zmianę składu oferty." series={[{ label: 'Polska', points: ser.median }]} format="zl" area={false} />
+    <LineChart title="Lokale w ofercie" sub="Lokale obecne w cennikach w danym tygodniu." series={[{ label: 'Polska', points: ser.count }]} format="count" zero />
+  </div>
+
+  <AdSlot slot="home-1" />
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Ceny w miastach</h2>
+      <p>Miasta z co najmniej {SITE.minCityUnits} lokalami w ofercie. Indeks pokazuje zmianę cen tych samych lokali w ostatnich 13 tygodniach.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data sortable">
+        <thead><tr><th scope="col">Miasto</th><th scope="col" class="r">Mediana za m²</th><th scope="col" class="r">Indeks, 13 tyg.</th><th scope="col">Trend od początku</th><th scope="col" class="r">Lokale</th><th scope="col" class="r">Potaniało, 4 tyg.</th></tr></thead>
+        <tbody>
+          {citiesWithPage.map((c) => {
+            const cs = citySnap(c);
+            const se = citySeries(c);
+            return (
+              <tr>
+                <td data-v={c.name}><a href={href.city(c)}>{c.name}</a></td>
+                <td class="r" data-v={cs.medianM2 ?? ''}>{zl(cs.medianM2)}</td>
+                <td class="r" data-v={cs.change.index13w ?? ''}><Change value={cs.change.index13w} /></td>
+                <td data-v={cs.change.indexAll ?? ''}><Sparkline values={se.index.map((p) => p.value)} label={`Indeks ${c.name}: ${pct(cs.change.indexAll)} od początku pomiarów`} ref={100} /></td>
+                <td class="r" data-v={cs.units}>{num(cs.units)}</td>
+                <td class="r" data-v={cs.cuts.share ?? ''}>{share(cs.cuts.share)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <nav class="browse" aria-label="Ceny według podziału administracyjnego">
+      <a href="/wojewodztwa/"><b>Województwa</b><span>{num(voivodeships.length)}</span></a>
+      <a href="/powiaty/"><b>Powiaty</b><span>{num(livePowiaty.filter((p) => powiatLink(p)).length)}</span></a>
+      <a href="/gminy/"><b>Gminy</b><span>{num(liveGminas.filter((g) => gminaLink(g)).length)}</span></a>
+      <a href="/miasta/"><b>Miasta</b><span>{num(citiesWithPage.length)}</span></a>
+    </nav>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Największe obniżki w ostatnich 4 tygodniach</h2>
+      <p>Cena za m² teraz w porównaniu z ceną tego samego lokalu 4 tygodnie wcześniej.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Inwestycja</th><th>Lokal</th><th class="r">Było za m²</th><th class="r">Jest za m²</th><th class="r">Zmiana</th></tr></thead>
+        <tbody>
+          {cuts.map((c) => (
+            <tr>
+              <td><a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a><span class="muted">, {c.unit.inv.city.name}</span></td>
+              <td class="num">{unitLabel(c.unit)}</td>
+              <td class="r">{zl(Math.round(c.before))}</td>
+              <td class="r">{zl(Math.round(c.after))}</td>
+              <td class="r"><Change value={c.change} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p><a href="/obnizki/">Wszystkie obniżki i udział obniżek w miastach</a></p>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Raport i dane</h2>
+      <p>Co miesiąc podsumowujemy rynek w liczbach. Wszystkie zestawienia z serwisu można pobrać jako pliki CSV.</p>
+    </div>
+    <ul class="list-plain">
+      <li><a href={href.report(lastMonth)}>Raport: {monthName(lastMonth)}</a></li>
+      <li><a href="/domy/">Domy jednorodzinne od deweloperów</a></li>
+      <li><a href="/dane/">Dane do pobrania</a></li>
+    </ul>
+  </section>
+
+  <p class="source">Źródło: cenniki deweloperów z <a href={SITE.source.url} rel="noopener">dane.gov.pl</a>, obliczenia własne. Ceny ofertowe, nie transakcyjne. <a href="/metodologia/">Jak liczymy</a>.</p>
+</Base>

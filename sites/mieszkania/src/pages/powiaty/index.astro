@@ -1,0 +1,48 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bars from '../../components/Bars.astro';
+import GroupedTable from '../../components/GroupedTable.astro';
+import LevelTabs from '../../components/LevelTabs.astro';
+import { SITE } from '../../config';
+import { M, livePowiaty, powiatyWithPage, powiatSnap, powiatLink, powiatLabel, liveGminasOf, voivodeships } from '../../lib/data';
+import { dateLong, num, plural, zl } from '../../lib/format';
+
+const rows = livePowiaty.map((p) => ({ p, s: powiatSnap(p), link: powiatLink(p) }));
+const charted = rows.filter((r) => r.link).slice(0, 30).sort((a, b) => (b.s.medianM2 ?? 0) - (a.s.medianM2 ?? 0));
+const groups = [...voivodeships.map((v) => ({ title: `województwo ${v.name}`, voiv: v.name })), { title: 'województwo nieznane', voiv: null }]
+  .map((g) => ({ ...g, rows: rows.filter((r) => r.p.voivodeship === g.voiv) }))
+  .filter((g) => g.rows.length > 0)
+  .map((g) => ({
+    title: g.title,
+    rows: g.rows.map(({ p, s, link }) => ({
+      name: p.urban ? `${p.name} (miasto na prawach powiatu)` : p.name,
+      href: link,
+      extra: liveGminasOf(p).map((x) => x.name).join(', '),
+      s,
+    })),
+  }));
+---
+<Base title="Ceny mieszkań od deweloperów w powiatach" description="Mediana ceny za m², indeks cen tych samych lokali i liczba lokali w ofercie deweloperów w powiatach, z cenników w dane.gov.pl." crumbs={[{ label: 'Powiaty' }]} current="/regiony/">
+  <section class="hero">
+    <h1>Ceny mieszkań od deweloperów w powiatach</h1>
+    <p class="lead">Lokale deweloperów są w ofercie w {num(rows.length)} {rows.length === 1 ? 'powiecie' : 'powiatach'}. Powiat pokazuje rynek wokół miasta: na przykład powiat poznański to gminy pod Poznaniem, bez samego Poznania. Stan na {dateLong(M.asOf)}.</p>
+  </section>
+  <LevelTabs current="powiaty" />
+  {charted.length > 1 && (
+    <Bars
+      title="Mediana ceny za m² w powiatach"
+      sub={`Powiaty z co najmniej ${SITE.minCityUnits} lokalami w ofercie, od najdroższego. Miasta na prawach powiatu są jednocześnie powiatami.`}
+      items={charted.map(({ p, s, link }) => ({ label: powiatLabel(p), value: s.medianM2, display: zl(s.medianM2), href: link ?? undefined }))}
+    />
+  )}
+  <GroupedTable
+    id="lista"
+    title="Wszystkie powiaty według województw"
+    sub={`${num(powiatyWithPage.length)} ${plural(powiatyWithPage.length, 'powiat ma', 'powiaty mają', 'powiatów ma')} własną stronę: co najmniej ${SITE.minCityUnits} lokali w ofercie w więcej niż jednej gminie. Pozostałe prowadzą do strony gminy albo miasta.`}
+    first="Powiat"
+    extraHead="Gminy z ofertą"
+    groups={groups}
+    filterLabel="Filtruj powiaty i gminy"
+  />
+  <p class="source">Źródło: cenniki deweloperów z dane.gov.pl, obliczenia własne. Powiat według pól adresowych cenników, w ujednoliconym zapisie. <a href="/metodologia/#gminy">Jak przypisujemy powiaty</a>.</p>
+</Base>

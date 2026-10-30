@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bars from '../../components/Bars.astro';
+import ChildTable from '../../components/ChildTable.astro';
+import LevelTabs from '../../components/LevelTabs.astro';
+import { M, voivodeships, voivSnap, href } from '../../lib/data';
+import { dateLong, num, zl } from '../../lib/format';
+
+const rows = voivodeships.map((v) => ({ v, s: voivSnap(v) }));
+const byPrice = [...rows].sort((a, b) => (b.s.medianM2 ?? 0) - (a.s.medianM2 ?? 0));
+---
+<Base title="Ceny mieszkań od deweloperów w województwach" description="Mediana ceny za m², indeks cen tych samych lokali i liczba lokali w ofercie deweloperów w każdym województwie." crumbs={[{ label: 'Województwa' }]} current="/regiony/">
+  <section class="hero">
+    <h1>Ceny mieszkań od deweloperów w województwach</h1>
+    <p class="lead">Oferty deweloperów są w {num(rows.length)} województwach. Wybierz województwo, żeby zobaczyć jego powiaty, gminy i inwestycje. Stan na {dateLong(M.asOf)}.</p>
+  </section>
+  <LevelTabs current="wojewodztwa" />
+  <Bars title="Mediana ceny za m² w województwach" sub="Lokale w ofercie deweloperów, od najdroższego województwa." items={byPrice.map(({ v, s }) => ({ label: v.name, value: s.medianM2, display: zl(s.medianM2), href: href.voiv(v) }))} />
+  <ChildTable id="lista" title="Wszystkie województwa" sub="Kliknij nagłówek kolumny, żeby posortować." first="Województwo" rows={rows.map(({ v, s }) => ({ name: v.name, href: href.voiv(v), s }))} />
+</Base>

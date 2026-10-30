@@ -1,0 +1,164 @@
+---
+// Wykres liniowy szeregów tygodniowych. Rysowany przy budowie strony jako SVG,
+// w dwóch wersjach (szeroki ekran i telefon), żeby podpisy miały zawsze ten sam
+// rozmiar. Podpowiedź po najechaniu dodaje skrypt w Base.astro. Pod wykresem
+// tabela z tymi samymi liczbami, więc żadna wartość nie jest tylko w podpowiedzi.
+import { dateShort, idx, monthShort, num, zl } from '../lib/format';
+
+interface P { date: string; value: number | null }
+interface S { label: string; color?: 'series-1' | 'series-2'; points: P[] }
+interface Props {
+  title: string;
+  sub?: string;
+  series: S[];
+  format?: 'zl' | 'index' | 'count' | 'pct';
+  ref?: number;
+  zero?: boolean;
+  area?: boolean;
+  id?: string;
+}
+const { title, sub, series, format = 'zl', ref, zero = false, area = series.length === 1, id } = Astro.props;
+const fmt = (v: number | null) => (v === null ? '—' : format === 'zl' ? zl(Math.round(v)) : format === 'index' ? idx(v) : format === 'pct' ? `${idx(v)}%` : num(v));
+const tickFmt = (v: number) => (format === 'index' ? idx(v).replace(',0', '') : format === 'pct' ? `${String(v).replace('.', ',')}%` : num(v));
+const dates = series[0]?.points.map((p) => p.date) ?? [];
+const all = series.flatMap((s) => s.points.map((p) => p.value)).filter((v): v is number => v !== null);
+const hasData = all.length > 1;
+
+function niceStep(range: number, target: number) {
+  const raw = range / target;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const r = raw / mag;
+  return (r <= 1 ? 1 : r <= 2 ? 2 : r <= 2.5 ? 2.5 : r <= 5 ? 5 : 10) * mag;
+}
+
+function build(w: number, h: number, narrow: boolean) {
+  const padL = narrow ? 46 : 56;
+  const padR = narrow ? 10 : series.length > 1 ? 110 : 76;
+  const padT = 14;
+  const padB = 28;
+  let lo = Math.min(...all, ...(ref !== undefined ? [ref] : []), ...(zero ? [0] : []));
+  let hi = Math.max(...all, ...(ref !== undefined ? [ref] : []));
+  if (hi === lo) { hi += 1; lo -= 1; }
+  const step = niceStep(hi - lo, narrow ? 3 : 4);
+  lo = zero ? 0 : Math.floor((lo - (hi - lo) * 0.06) / step) * step;
+  hi = Math.ceil((hi + (hi - lo) * 0.04) / step) * step;
+  const ticks: number[] = [];
+  for (let t = lo; t <= hi + step / 2; t += step) ticks.push(Math.round(t * 1000) / 1000);
+  const X = (i: number) => padL + (dates.length <= 1 ? 0 : (i / (dates.length - 1)) * (w - padL - padR));
+  const Y = (v: number) => padT + (1 - (v - lo) / (hi - lo)) * (h - padT - padB);
+
+  const xt: { x: number; label: string }[] = [];
+  let lastMonth = '';
+  const every = narrow ? 3 : w < 800 && dates.length > 40 ? 2 : 1;
+  let mcount = 0;
+  dates.forEach((d, i) => {
+    const m = d.slice(0, 7);
+    if (m === lastMonth) return;
+    lastMonth = m;
+    if (i === 0 && Number(d.slice(8, 10)) > 20) return;
+    if (mcount++ % every !== 0) return;
+    const year = d.slice(5, 7) === '01' || xt.length === 0;
+    const label = `${monthShort(d)}${year ? ` ${d.slice(0, 4)}` : ''}`;
+    // Podpis za blisko poprzedniego pomijamy, żeby się nie nakładały.
+    const prev = xt.at(-1);
+    if (prev && X(i) - prev.x < (prev.label.length + label.length) * 3.6 + 14) return;
+    xt.push({ x: X(i), label });
+  });
+
+  const paths = series.map((s) => {
+    let dPath = '';
+    let pen = false;
+    s.points.forEach((p, i) => {
+      if (p.value === null) { pen = false; return; }
+      dPath += `${pen ? 'L' : 'M'}${X(i).toFixed(1)},${Y(p.value).toFixed(1)}`;
+      pen = true;
+    });
+    const valid = s.points.map((p, i) => [i, p.value] as const).filter((x): x is readonly [number, number] => x[1] !== null);
+    const first = valid[0];
+    const last = valid.at(-1);
+    const areaPath = area && first && last ? `${dPath}L${X(last[0]).toFixed(1)},${Y(lo).toFixed(1)}L${X(first[0]).toFixed(1)},${Y(lo).toFixed(1)}Z` : '';
+    return { s, dPath, areaPath, last, ys: s.points.map((p, i) => (p.value === null ? null : Number(Y(p.value).toFixed(1)))) };
+  });
+
+  // Podpisy na końcu linii; gdy dwa są za blisko, rozsuwamy je.
+  const ends = paths.filter((p) => p.last).map((p) => ({ p, y: Y(p.last![1]) }));
+  ends.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 30) ends[i].y = ends[i - 1].y + 30;
+
+  const spec = {
+    w,
+    xs: dates.map((_, i) => Number(X(i).toFixed(1))),
+    dates: dates.map(dateShort),
+    series: paths.map((p) => ({ label: p.s.label, color: `var(--${p.s.color ?? 'series-1'})`, values: p.s.points.map((x) => fmt(x.value)), ys: p.ys })),
+  };
+  return { w, h, padL, padR, padT, padB, ticks, xt, paths, ends, X, Y, lo, spec };
+}
+
+// Trzy wersje dobierane do szerokości miejsca na wykres (container queries w CSS).
+const SIZES = [['v-l', 1000, 360, false], ['v-m', 600, 300, false], ['v-s', 380, 250, true]] as const;
+const variants = hasData ? SIZES.map(([c, w, h, n]) => ({ ...build(w, h, n), cls: c })) : [];
+const aria = `${title}. ${series.map((s) => { const v = s.points.filter((p) => p.value !== null); return `${s.label}: od ${fmt(v[0]?.value ?? null)} do ${fmt(v.at(-1)?.value ?? null)}`; }).join('; ')}.`;
+---
+<figure class="chart" id={id}>
+  <figcaption>
+    <span class="title">{title}</span>
+    {sub && <span class="sub">{sub}</span>}
+  </figcaption>
+  {series.length > 1 && (
+    <ul class="legend">
+      {series.map((s) => <li style={`color: var(--${s.color ?? 'series-1'})`}><span class="key"></span><span style="color: var(--ink-2)">{s.label}</span></li>)}
+    </ul>
+  )}
+  {hasData ? (
+    <div class="plot">
+      {variants.map((v) => (
+        <svg class={v.cls} viewBox={`0 0 ${v.w} ${v.h}`} role="img" aria-label={aria} tabindex="0" data-chart={JSON.stringify(v.spec)}>
+          <g class="grid axis">
+            {v.ticks.map((t) => (
+              <g>
+                <line x1={v.padL} x2={v.w - v.padR} y1={v.Y(t)} y2={v.Y(t)} />
+                <text x={v.padL - 8} y={v.Y(t) + 4} text-anchor="end">{tickFmt(t)}</text>
+              </g>
+            ))}
+          </g>
+          {ref !== undefined && <line class="ref-line" x1={v.padL} x2={v.w - v.padR} y1={v.Y(ref)} y2={v.Y(ref)} />}
+          <line class="baseline" x1={v.padL} x2={v.w - v.padR} y1={v.h - v.padB} y2={v.h - v.padB} />
+          <g class="axis">
+            {v.xt.map((t) => <text x={t.x} y={v.h - v.padB + 18} text-anchor="middle">{t.label}</text>)}
+          </g>
+          {v.paths.map((p) => p.areaPath && <path d={p.areaPath} fill={`var(--${p.s.color ?? 'series-1'})`} fill-opacity="0.1" />)}
+          {v.paths.map((p) => <path d={p.dPath} fill="none" stroke={`var(--${p.s.color ?? 'series-1'})`} stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />)}
+          {v.paths.map((p) => p.last && <circle cx={v.X(p.last[0])} cy={v.Y(p.last[1])} r="4" fill={`var(--${p.s.color ?? 'series-1'})`} stroke="var(--paper)" stroke-width="2" />)}
+          {v.padR > 20 && v.ends.map((e) => (
+            <g>
+              <text class="lbl-strong" x={v.X(e.p.last![0]) + 10} y={e.y + 4}>{fmt(e.p.last![1])}</text>
+              {series.length > 1 && <text class="lbl" x={v.X(e.p.last![0]) + 10} y={e.y + 18}>{e.p.s.label}</text>}
+            </g>
+          ))}
+          <line class="xhair" x1="0" x2="0" y1={v.padT} y2={v.h - v.padB} style="display:none" />
+          {v.paths.map((p) => <circle class="hover-dot" r="4.5" fill={`var(--${p.s.color ?? 'series-1'})`} stroke="var(--paper)" stroke-width="2" style="display:none" />)}
+          <rect x={v.padL} y={0} width={v.w - v.padL - v.padR + 4} height={v.h} fill="transparent" />
+        </svg>
+      ))}
+      <div class="tip" hidden></div>
+    </div>
+  ) : (
+    <p class="muted small">Za mało pomiarów, żeby narysować wykres.</p>
+  )}
+  {hasData && (
+    <details class="data-view">
+      <summary>Tabela danych</summary>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Tydzień</th>{series.map((s) => <th class="r">{s.label}</th>)}</tr></thead>
+          <tbody>
+            {[...dates].reverse().map((d) => {
+              const i = dates.indexOf(d);
+              return <tr><td class="num">{dateShort(d)}</td>{series.map((s) => <td class="r">{fmt(s.points[i]?.value ?? null)}</td>)}</tr>;
+            })}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  )}
+</figure>

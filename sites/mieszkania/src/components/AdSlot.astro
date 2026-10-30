@@ -1,0 +1,16 @@
+---
+// Miejsce na reklamę z zarezerwowaną wysokością, żeby treść nie skakała.
+import { SITE } from '../config';
+import { isSample } from '../lib/data';
+interface Props { slot?: string }
+const { slot = '' } = Astro.props;
+const live = SITE.ads && SITE.adsClient && !isSample;
+---
+{live ? (
+  <aside class="ad" aria-label="Reklama">
+    <ins class="adsbygoogle" style="display:block;width:100%" data-ad-client={SITE.adsClient} data-ad-slot={slot} data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script is:inline>(window.adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </aside>
+) : isSample ? (
+  <aside class="ad" aria-label="Miejsce na reklamę">Miejsce na reklamę. W podglądzie reklamy są wyłączone.</aside>
+) : null}

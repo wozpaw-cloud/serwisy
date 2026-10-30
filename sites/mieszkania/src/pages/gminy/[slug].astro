@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import AreaReport from '../../components/AreaReport.astro';
+import ChildTable from '../../components/ChildTable.astro';
+import AiNote from '../../components/AiNote.astro';
+import { M, gminasWithPage, gminaSnap, gminaKey, liveCities, citySnap, hasPage, href, voivodeships, voivKey, nationalSeries, listPl, powiatHasPage, chainGmina, crumbsOf, voivLink } from '../../lib/data';
+import { num, zlM2, investmentsLoc } from '../../lib/format';
+import { areaLead } from '../../lib/text';
+import type { Gmina } from '@serwisy/mieszkania-dane/query';
+
+export function getStaticPaths() {
+  return gminasWithPage.map((g) => ({ params: { slug: g.slug }, props: { g } }));
+}
+const { g } = Astro.props as { g: Gmina };
+const s = gminaSnap(g);
+const p = g.powiat;
+const chain = chainGmina(g);
+const voiv = voivodeships.find((v) => v.name === g.voivodeship);
+const compare = voiv
+  ? { label: `woj. ${voiv.name}`, title: `województwo ${voiv.name}`, points: M.series(voivKey(voiv), voiv.units).index }
+  : { label: 'Polska', title: 'cała Polska', points: nationalSeries().index };
+const places = liveCities(g);
+const vHref = voivLink(g.voivodeship);
+const title = `Ceny mieszkań od deweloperów: gmina ${g.name}`;
+const description = `Gmina ${g.name}${p ? ` (powiat ${p.name})` : ''}: mediana ${zlM2(s.medianM2)} w ofertach deweloperów, ${num(s.units)} lokali w miejscowościach ${listPl(places.map((c) => c.name))}. Indeks cen, obniżki i inwestycje.`;
+---
+<Base title={title} description={description} crumbs={[...crumbsOf(chain), { label: `gmina ${g.name}` }]} current="/regiony/">
+  <section class="hero">
+    <h1>{title}</h1>
+    <p class="lead">{areaLead(s)}</p>
+    <p class="place-note">
+      {p ? (powiatHasPage(p) ? <a href={href.powiat(p)}>Powiat {p.name}</a> : `Powiat ${p.name}`) : 'Powiat nieznany'}{g.voivodeship && <>, {vHref ? <a href={vHref}>województwo {g.voivodeship}</a> : `województwo ${g.voivodeship}`}</>}.
+      {' '}Lokale w ofercie są w {num(places.length)} miejscowościach: {listPl(places.map((c) => c.name))}.
+    </p>
+    <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
+  </section>
+
+  <AreaReport name={`gmina ${g.name}`} skey={gminaKey(g)} units={g.units} investments={g.investments} chain={chain} compare={compare} ad="gmina-1" showPlace child={{ id: 'miejscowosci', label: 'Miejscowości' }}>
+    <ChildTable
+      id="miejscowosci"
+      title="Miejscowości w gminie"
+      sub="Miejscowość według adresu inwestycji w cenniku. Indeks wymaga co najmniej 10 lokali obecnych w ofercie w kolejnych tygodniach, dlatego w małych miejscowościach może go brakować."
+      first="Miejscowość"
+      rows={places.map((c) => ({ name: c.name, href: hasPage(c) ? href.city(c) : null, s: citySnap(c) }))}
+      filterLabel="Filtruj miejscowości"
+    />
+  </AreaReport>
+
+  <p class="source">
+    Źródło: cenniki deweloperów z dane.gov.pl, obliczenia własne. Ceny ofertowe, nie transakcyjne. Gmina według pól adresowych cenników, w ujednoliconym zapisie.
+    {g.guessed > 0 && ` W ${investmentsLoc(g.guessed)} cennik nie podawał gminy, więc przypisaliśmy ją według miejscowości.`}{' '}
+    <a href="/metodologia/#gminy">Jak liczymy</a>.
+  </p>
+</Base>

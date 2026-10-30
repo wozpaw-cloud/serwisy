@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import LineChart from '../../components/LineChart.astro';
+import Change from '../../components/Change.astro';
+import AiNote from '../../components/AiNote.astro';
+import { M, brands, brandSnap, brandKey, href, invStats, hasPage } from '../../lib/data';
+import { num, share, zl, zlM2, units, investmentsLoc } from '../../lib/format';
+import type { Brand } from '@serwisy/mieszkania-dane/query';
+
+export function getStaticPaths() {
+  return brands.map((b) => ({ params: { slug: b.slug }, props: { b } }));
+}
+const { b } = Astro.props as { b: Brand };
+const s = brandSnap(b);
+const ser = M.series(brandKey(b), b.units, 5);
+const invs = b.investments.map(invStats).sort((x, y) => y.inOffer.length - x.inOffer.length);
+const cities = [...new Map(b.investments.map((i) => [i.city.key, i.city])).values()];
+---
+<Base title={`${b.name}: oferta i ceny mieszkań`} description={`${b.name}: ${num(s.units)} lokali w ofercie, mediana ${zlM2(s.medianM2)}. Inwestycje i historia cen z cenników w dane.gov.pl.`} crumbs={[{ label: 'Deweloperzy', href: '/deweloperzy/' }, { label: b.name }]} current="/deweloperzy/">
+  <section class="hero">
+    <h1>{b.name}</h1>
+    <p class="lead">W cennikach jest {units(s.units)} w {investmentsLoc(s.investments)}, w {num(cities.length)} {cities.length === 1 ? 'miejscowości' : 'miejscowościach'}. Mediana ceny to {zlM2(s.medianM2)}.</p>
+    <AiNote source="cenniki dewelopera z dane.gov.pl" date={M.asOf} />
+  </section>
+  <dl class="figures">
+    <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych w 4 tygodnie</span></div>
+    <div><dt>Mediana ceny za m²</dt><dd>{zl(s.medianM2)}</dd></div>
+    <div><dt>Indeks tych samych lokali</dt><dd><Change value={s.change.index13w} /></dd><span class="delta">w 13 tygodni</span></div>
+    <div><dt>Potaniało w 4 tygodnie</dt><dd>{share(s.cuts.share)}</dd></div>
+  </dl>
+  <LineChart title="Lokale w ofercie" series={[{ label: b.name, points: ser.count }]} format="count" zero />
+  <section class="section">
+    <div class="section-head"><h2>Inwestycje</h2></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Inwestycja</th><th>Miejscowość</th><th class="r">Lokale w ofercie</th><th class="r">Mediana za m²</th><th class="r">Zmiana od wejścia</th></tr></thead>
+        <tbody>{invs.map((x) => <tr><td><a href={href.inv(x.inv)}>{x.inv.name}</a></td><td>{hasPage(x.inv.city) ? <a href={href.city(x.inv.city)}>{x.inv.city.name}</a> : x.inv.city.name}</td><td class="r">{num(x.inOffer.length)}</td><td class="r">{zl(x.medianM2)}</td><td class="r"><Change value={x.changeSinceFirst} /></td></tr>)}</tbody>
+      </table>
+    </div>
+  </section>
+  <section class="section">
+    <div class="section-head"><h2>Spółki w cennikach</h2><p>Podmioty, które przekazują cenniki do dane.gov.pl{b.host ? `, ze stroną ${b.host}` : ''}.</p></div>
+    <ul class="list-plain">{b.legalNames.map((n) => <li>{n}</li>)}</ul>
+  </section>
+  <p class="source">Źródło: cenniki z dane.gov.pl. Nie oceniamy kondycji finansowej ani wiarygodności dewelopera.</p>
+</Base>

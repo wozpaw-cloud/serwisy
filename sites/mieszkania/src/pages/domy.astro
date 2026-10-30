@@ -1,0 +1,42 @@
+---
+import Base from '../layouts/Base.astro';
+import LineChart from '../components/LineChart.astro';
+import Bars from '../components/Bars.astro';
+import { M, houses, flats, hasPage, href } from '../lib/data';
+import { dateLong, m2, num, share, zl } from '../lib/format';
+
+const H = houses();
+const F = flats();
+const hs = M.snapshot('typ:dom', H);
+const fs = M.snapshot('typ:mieszkanie', F);
+const hser = M.series('typ:dom', H, 5);
+const fser = M.series('typ:mieszkanie', F, 5);
+const byCity = M.cities.map((c) => {
+  const u = c.units.filter((x) => x.type === 'dom');
+  const s = M.snapshot(`c:${c.key}:dom`, u);
+  return { c, s };
+}).filter((x) => x.s.units >= 3).sort((a, b) => b.s.units - a.s.units);
+---
+<Base title="Domy jednorodzinne od deweloperów" description={`Domy jednorodzinne w ofertach deweloperów: ${num(hs.units)} w ofercie, mediana ceny ${zl(hs.medianTotal)}. Porównanie z mieszkaniami.`} crumbs={[{ label: 'Domy' }]} current="/domy/">
+  <section class="hero">
+    <h1>Domy jednorodzinne od deweloperów</h1>
+    <p class="lead">W cennikach z {dateLong(M.asOf)} jest {num(hs.units)} domów jednorodzinnych i {num(fs.units)} mieszkań. Mediana ceny domu to {zl(hs.medianTotal)} przy medianie powierzchni {m2(hs.medianArea)}.</p>
+  </section>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Rodzaj</th><th class="r">W ofercie</th><th class="r">Mediana za m²</th><th class="r">Mediana ceny</th><th class="r">Mediana metrażu</th><th class="r">Potaniało, 4 tyg.</th></tr></thead>
+      <tbody>
+        <tr><td>Domy jednorodzinne</td><td class="r">{num(hs.units)}</td><td class="r">{zl(hs.medianM2)}</td><td class="r">{zl(hs.medianTotal)}</td><td class="r">{m2(hs.medianArea)}</td><td class="r">{share(hs.cuts.share)}</td></tr>
+        <tr><td>Mieszkania</td><td class="r">{num(fs.units)}</td><td class="r">{zl(fs.medianM2)}</td><td class="r">{zl(fs.medianTotal)}</td><td class="r">{m2(fs.medianArea)}</td><td class="r">{share(fs.cuts.share)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <LineChart title="Indeks cen tych samych lokali: domy i mieszkania" sub="100 = ceny z pierwszego tygodnia pomiarów." series={[{ label: 'Domy', points: hser.index, color: 'series-2' }, { label: 'Mieszkania', points: fser.index }]} format="index" ref={100} />
+
+  {byCity.length > 0 && (
+    <Bars title="Mediana ceny domu w miejscowościach" sub="Miejscowości z co najmniej 3 domami w ofercie." color="series-2" items={byCity.map(({ c, s }) => ({ label: `${c.name} (${s.units})`, value: s.medianTotal, display: zl(s.medianTotal), href: hasPage(c) ? href.city(c) : undefined }))} />
+  )}
+  <p class="source">Rodzaj nieruchomości według kolumny „Rodzaj nieruchomości” w cenniku dewelopera. Źródło: dane.gov.pl, obliczenia własne.</p>
+</Base>

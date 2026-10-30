@@ -1,0 +1,33 @@
+---
+// Ranking jako poziome słupki w HTML: nazwy zawsze czytelne, wartość przy końcu słupka.
+// Wariant "diverging": spadki w lewo (niebieskie), wzrosty w prawo (czerwone), od wspólnego zera.
+interface Item { label: string; value: number | null; display: string; href?: string }
+interface Props { title: string; sub?: string; items: Item[]; color?: 'series-1' | 'series-2'; diverging?: boolean }
+const { title, sub, items, color = 'series-1', diverging = false } = Astro.props;
+const max = Math.max(...items.map((i) => Math.abs(i.value ?? 0)), diverging ? 1e-9 : 1);
+---
+<figure class="chart">
+  <figcaption><span class="title">{title}</span>{sub && <span class="sub">{sub}</span>}</figcaption>
+  <ul class={diverging ? 'bars div' : 'bars'}>
+    {items.map((i) => {
+      const v = i.value ?? 0;
+      const w = ((Math.abs(v) / max) * (diverging ? 70 : 78)).toFixed(1);
+      return (
+        <li>
+          <span class="name">{i.href ? <a href={i.href}>{i.label}</a> : i.label}</span>
+          {diverging ? (
+            <span class="track2">
+              <span class="half neg">{v < 0 && (<><span class="val">{i.display}</span><span class="bar" style={`inline-size:${w}%;background:var(--down)`}></span></>)}</span>
+              <span class="half pos">{v >= 0 && (<><span class="bar" style={`inline-size:${w}%;background:var(--up)`}></span><span class="val">{i.display}</span></>)}</span>
+            </span>
+          ) : (
+            <span class="track">
+              {i.value !== null && <span class="bar" style={`inline-size: ${w}%; background: var(--${color})`}></span>}
+              <span class="val">{i.display}</span>
+            </span>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</figure>

@@ -1,0 +1,55 @@
+---
+// Długa lista obszarów pogrupowana według województw: jedna tabela (równe kolumny),
+// wiersz-nagłówek na każde województwo, filtr tekstowy (skrypt w Base.astro).
+import Change from './Change.astro';
+import type { Snapshot } from '@serwisy/mieszkania-dane/query';
+import { num, share, zl } from '../lib/format';
+
+interface Row { name: string; href: string | null; extra?: string; s: Snapshot }
+interface Props { id: string; title: string; sub?: string; first: string; extraHead?: string; groups: { title: string; rows: Row[] }[]; filterLabel: string }
+const { id, title, sub, first, extraHead, groups, filterLabel } = Astro.props;
+const max = Math.max(...groups.flatMap((g) => g.rows.map((r) => r.s.medianM2 ?? 0)), 1);
+const cols = 5 + (extraHead ? 1 : 0);
+---
+<section class="section" id={id} aria-labelledby={`${id}-h`}>
+  <div class="section-head">
+    <h2 id={`${id}-h`}>{title}</h2>
+    {sub && <p>{sub}</p>}
+  </div>
+  <div class="table-tools" hidden>
+    <label class="filter">
+      <span class="sr-only">{filterLabel}</span>
+      <input type="search" data-filter={`${id}-t`} placeholder={filterLabel} autocomplete="off" />
+    </label>
+    <span class="filter-count small muted" aria-live="polite"></span>
+  </div>
+  <div class="table-wrap">
+    <table class="data grouped" id={`${id}-t`}>
+      <thead>
+        <tr>
+          <th scope="col">{first}</th>
+          {extraHead && <th scope="col">{extraHead}</th>}
+          <th scope="col" class="r">Mediana za m²</th>
+          <th scope="col" class="r">Indeks, 13 tyg.</th>
+          <th scope="col" class="r">Potaniało, 4 tyg.</th>
+          <th scope="col" class="r">Lokale</th>
+        </tr>
+      </thead>
+      {groups.map((g) => (
+        <tbody>
+          <tr class="group-row"><th colspan={cols} scope="colgroup">{g.title}</th></tr>
+          {g.rows.map((r) => (
+            <tr>
+              <td>{r.href ? <a href={r.href}>{r.name}</a> : r.name}</td>
+              {extraHead && <td class="small">{r.extra ?? ''}</td>}
+              <td class="r"><span class="cellbar" aria-hidden="true"><i style={`inline-size:${(((r.s.medianM2 ?? 0) / max) * 100).toFixed(1)}%`}></i></span>{zl(r.s.medianM2)}</td>
+              <td class="r"><Change value={r.s.change.index13w} /></td>
+              <td class="r">{share(r.s.cuts.share)}</td>
+              <td class="r">{num(r.s.units)}</td>
+            </tr>
+          ))}
+        </tbody>
+      ))}
+    </table>
+  </div>
+</section>

@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import LineChart from '../components/LineChart.astro';
+import Bars from '../components/Bars.astro';
+import Change from '../components/Change.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { M, national, citiesWithPage, citySnap, href, unitLabel } from '../lib/data';
+import { dateLong, num, pctAbs, share, units, zl } from '../lib/format';
+
+const s = national();
+const cutSer = M.cutsSeries(M.units);
+const top = M.topCuts(M.units, 50);
+const byCity = citiesWithPage.map((c) => ({ c, s: citySnap(c) })).filter((x) => x.s.cuts.base >= 10).sort((a, b) => (b.s.cuts.share ?? 0) - (a.s.cuts.share ?? 0));
+---
+<Base title="Obniżki cen mieszkań od deweloperów" description={`W ciągu 4 tygodni potaniało ${share(s.cuts.share)} lokali w ofercie deweloperów. Największe obniżki i udział obniżek w miastach.`} crumbs={[{ label: 'Obniżki' }]} current="/obnizki/">
+  <section class="hero">
+    <h1>Obniżki cen w ofertach deweloperów</h1>
+    <p class="lead">Od {dateLong(M.dates[Math.max(0, M.dates.length - 5)])} do {dateLong(M.asOf)} potaniało {units(s.cuts.count)} z {num(s.cuts.base)} obecnych w ofercie przez cały ten czas, czyli {share(s.cuts.share)}. Średnio ceny tych lokali spadły o {pctAbs(s.cuts.avgDepth)}.</p>
+  </section>
+
+  <LineChart title="Udział lokali, które potaniały w ciągu 4 tygodni" sub="Procent lokali tańszych niż 4 tygodnie wcześniej, wśród lokali obecnych w ofercie w obu tygodniach." series={[{ label: 'Polska', points: cutSer }]} format="pct" zero />
+
+  <Bars title="Udział obniżek w miastach" sub="Lokale, które potaniały w ostatnich 4 tygodniach." items={byCity.map(({ c, s }) => ({ label: c.name, value: s.cuts.share, display: share(s.cuts.share), href: href.city(c) }))} />
+
+  <AdSlot slot="cuts-1" />
+
+  <section class="section">
+    <div class="section-head"><h2>Największe obniżki</h2><p>{num(top.length)} lokali z największym spadkiem ceny za m² w 4 tygodnie.</p></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Inwestycja</th><th>Miasto</th><th>Lokal</th><th class="r">Było</th><th class="r">Jest</th><th class="r">Było za m²</th><th class="r">Jest za m²</th><th class="r">Zmiana</th></tr></thead>
+        <tbody>
+          {top.map((c) => (
+            <tr><td><a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a></td><td>{c.unit.inv.city.name}</td><td class="num">{unitLabel(c.unit)}</td><td class="r">{zl(c.totalBefore)}</td><td class="r">{zl(c.totalAfter)}</td><td class="r">{zl(Math.round(c.before))}</td><td class="r">{zl(Math.round(c.after))}</td><td class="r"><Change value={c.change} /></td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <p class="source">Obniżka to spadek ceny za m² o co najmniej 0,5% względem tego samego lokalu 4 tygodnie wcześniej. Źródło: cenniki deweloperów z dane.gov.pl.</p>
+</Base>

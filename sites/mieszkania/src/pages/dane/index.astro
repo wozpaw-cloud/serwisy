@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import { M, citiesWithPage } from '../../lib/data';
+import { csvGminas } from './gminy-tygodniowo.csv';
+import { csvPowiaty } from './powiaty-tygodniowo.csv';
+import { dateLong, num } from '../../lib/format';
+const files = [
+  { href: '/dane/polska-tygodniowo.csv', name: 'Polska tydzień po tygodniu', cols: 'data, mediana ceny za m², indeks cen tych samych lokali, liczba lokali w ofercie', rows: M.dates.length },
+  { href: '/dane/miasta-tygodniowo.csv', name: 'Miasta tydzień po tygodniu', cols: 'data, miasto, województwo, mediana ceny za m², indeks, liczba lokali', rows: M.dates.length * citiesWithPage.length },
+  { href: '/dane/powiaty-tygodniowo.csv', name: 'Powiaty tydzień po tygodniu', cols: 'data, powiat, województwo, mediana ceny za m², indeks, liczba lokali', rows: M.dates.length * csvPowiaty().length },
+  { href: '/dane/gminy-tygodniowo.csv', name: 'Gminy tydzień po tygodniu', cols: 'data, gmina, powiat, województwo, mediana ceny za m², indeks, liczba lokali', rows: M.dates.length * csvGminas().length },
+  { href: '/dane/inwestycje.csv', name: 'Inwestycje w ofercie', cols: 'inwestycja, deweloper, miejscowość, gmina, powiat, lokale, mediana za m², ceny od–do, metraż, zmiana od wejścia', rows: M.investments.length },
+];
+---
+<Base title="Dane do pobrania" description="Agregaty cen ofertowych mieszkań i domów od deweloperów w plikach CSV: Polska, powiaty, gminy, miasta i inwestycje, tydzień po tygodniu." crumbs={[{ label: 'Dane do pobrania' }]} current="/dane/">
+  <section class="hero">
+    <h1>Dane do pobrania</h1>
+    <p class="lead">Wszystkie zestawienia z serwisu w plikach CSV, aktualizowane razem z serwisem. Stan na {dateLong(M.asOf)}.</p>
+  </section>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Plik</th><th>Kolumny</th><th class="r">Wiersze</th></tr></thead>
+      <tbody>{files.map((f) => <tr><td><a href={f.href}>{f.name}</a></td><td>{f.cols}</td><td class="r">{num(f.rows)}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <section class="prose">
+    <h2>Format i warunki</h2>
+    <p>Pliki mają średnik jako separator i przecinek dziesiętny, więc otwierają się poprawnie w polskim Excelu. Kodowanie UTF-8.</p>
+    <p>Możesz korzystać z danych, także komercyjnie, z podaniem źródła: „Cena od dewelopera na podstawie cenników deweloperów z dane.gov.pl”. Surowe cenniki pobierzesz bezpośrednio z <a href="https://dane.gov.pl/" rel="noopener">dane.gov.pl</a>.</p>
+  </section>
+</Base>

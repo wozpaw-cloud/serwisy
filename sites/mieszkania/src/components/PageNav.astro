@@ -1,0 +1,9 @@
+---
+// Spis treści długiej strony: przewijany rząd odnośników do sekcji.
+interface Props { items: { id: string; label: string }[] }
+const { items } = Astro.props;
+---
+<nav class="page-nav" aria-label="Na tej stronie">
+  <span class="page-nav-l">Na tej stronie:</span>
+  {items.map((i) => <a href={`#${i.id}`}>{i.label}</a>)}
+</nav>

@@ -1,0 +1,50 @@
+---
+import Base from '../../layouts/Base.astro';
+import AreaReport from '../../components/AreaReport.astro';
+import ChildTable from '../../components/ChildTable.astro';
+import AiNote from '../../components/AiNote.astro';
+import { M, voivodeships, voivSnap, voivKey, nationalSeries, powiatSnap, powiatLink, liveGminasOf, gminaSnap, gminaLink, liveCities, chainVoiv } from '../../lib/data';
+import { num, zlM2 } from '../../lib/format';
+import { areaLead } from '../../lib/text';
+import type { Voivodeship } from '@serwisy/mieszkania-dane/query';
+
+export function getStaticPaths() {
+  return voivodeships.map((v) => ({ params: { slug: v.slug }, props: { v } }));
+}
+const { v } = Astro.props as { v: Voivodeship };
+const s = voivSnap(v);
+const chain = chainVoiv(v);
+const powiaty = v.powiaty.map((p) => ({ p, s: powiatSnap(p) })).filter((x) => x.s.units > 0).sort((a, b) => b.s.units - a.s.units);
+const gminas = v.gminas.map((g) => ({ g, s: gminaSnap(g) })).filter((x) => x.s.units > 0).sort((a, b) => b.s.units - a.s.units);
+const title = `Ceny mieszkań od deweloperów: województwo ${v.name}`;
+---
+<Base title={title} description={`Województwo ${v.name}: mediana ${zlM2(s.medianM2)} w ofertach deweloperów, ${num(s.units)} lokali w ofercie. Indeks cen, powiaty, gminy i inwestycje.`} crumbs={[{ label: 'Województwa', href: '/wojewodztwa/' }, { label: `woj. ${v.name}` }]} current="/regiony/">
+  <section class="hero">
+    <h1>{title}</h1>
+    <p class="lead">{areaLead(s)}</p>
+    <p class="place-note">Lokale w ofercie są w {num(powiaty.length)} {powiaty.length === 1 ? 'powiecie' : 'powiatach'} i {num(gminas.length)} {gminas.length === 1 ? 'gminie' : 'gminach'}.</p>
+    <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
+  </section>
+
+  <AreaReport name={`woj. ${v.name}`} skey={voivKey(v)} units={v.units} investments={v.cities.flatMap((c) => c.investments)} chain={chain} compare={{ label: 'Polska', title: 'cała Polska', points: nationalSeries().index }} ad="voiv-1" showPlace invLimit={30} child={{ id: 'powiaty', label: 'Powiaty i gminy' }}>
+    <ChildTable
+      id="powiaty"
+      title="Powiaty"
+      sub="Miasta na prawach powiatu są jednocześnie powiatem i gminą, więc prowadzą do strony miasta."
+      first="Powiat"
+      extraHead="Gminy z ofertą"
+      rows={powiaty.map(({ p, s: ps }) => ({ name: p.urban ? `${p.name} (miasto)` : p.name, href: powiatLink(p), extra: liveGminasOf(p).map((g) => g.name).join(', '), s: ps }))}
+      filterLabel="Filtruj powiaty"
+    />
+    <ChildTable
+      id="gminy"
+      title="Gminy"
+      first="Gmina"
+      extraHead="Miejscowości z ofertą"
+      rows={gminas.map(({ g, s: gs }) => ({ name: g.name, href: gminaLink(g), extra: liveCities(g).map((c) => c.name).join(', '), s: gs }))}
+      filterLabel="Filtruj gminy"
+    />
+  </AreaReport>
+
+  <p class="source">Źródło: cenniki deweloperów z dane.gov.pl, obliczenia własne. Ceny ofertowe, nie transakcyjne.</p>
+</Base>

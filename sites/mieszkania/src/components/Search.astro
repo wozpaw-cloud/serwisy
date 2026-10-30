@@ -1,0 +1,18 @@
+---
+// Wyszukiwarka z podpowiedziami (wzorzec ARIA combobox). Indeks /szukaj.json
+// pobiera się dopiero przy pierwszym użyciu. Bez JavaScriptu formularz prowadzi
+// do strony /szukaj/ z pełną listą miejsc A–Z.
+interface Props { id: string; size?: 'hero' | 'compact'; autofocus?: boolean; label?: string }
+const { id, size = 'compact', autofocus = false, label = 'Szukaj miejscowości, gminy, powiatu, inwestycji lub dewelopera' } = Astro.props;
+const placeholder = size === 'hero' ? 'Miejscowość, gmina, powiat lub osiedle' : 'Szukaj miejsca lub osiedla';
+---
+<form class={`search search-${size}`} role="search" action="/szukaj/" method="get" data-src="/szukaj.json">
+  <label class="sr-only" for={id}>{label}</label>
+  <svg class="search-ico" viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75" fill="none" stroke="currentColor" stroke-width="2" /><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+  <input
+    id={id} name="q" type="search" autocomplete="off" spellcheck="false" placeholder={placeholder}
+    role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls={`${id}-list`} autofocus={autofocus}
+  />
+  <ul class="search-list" id={`${id}-list`} role="listbox" aria-label="Podpowiedzi" hidden></ul>
+  <p class="search-status sr-only" aria-live="polite"></p>
+</form>

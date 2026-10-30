@@ -1,0 +1,13 @@
+---
+// Oznaczenie tekstu przygotowanego przez AI (art. 50 AI Act i zasada serwisu).
+import { dateLong } from '../lib/format';
+interface Props { source: string; date: string; approvedBy?: string | null; approvedAt?: string | null; kind?: 'komentarz' | 'opis' }
+const { source, date, approvedBy, approvedAt, kind = 'opis' } = Astro.props;
+---
+<p class="ai-note">
+  <span class="ai-badge" aria-hidden="true">AI</span>
+  <span>
+    {kind === 'komentarz' ? 'Komentarz przygotowała AI (Claude)' : 'Tekst złożony automatycznie z danych przez program napisany przez AI (Claude)'}. Źródło: {source}, stan na {dateLong(date)}.
+    {approvedBy ? ` Zatwierdził: ${approvedBy}${approvedAt ? `, ${dateLong(approvedAt)}` : ''}.` : kind === 'komentarz' ? ' Czeka na akceptację redaktora.' : ''}
+  </span>
+</p>

@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import Search from '../../components/Search.astro';
+import { M, citySnap, placeLink } from '../../lib/data';
+import { num } from '../../lib/format';
+
+// Lista A–Z działa też bez JavaScriptu: każda miejscowość z ofertą prowadzi do
+// najbliższej strony z analizą (własnej, gminy, powiatu albo województwa).
+const places = M.cities
+  .filter((c) => citySnap(c).units > 0)
+  .map((c) => ({ c, link: placeLink(c) }))
+  .filter((x) => x.link)
+  .sort((a, b) => a.c.name.localeCompare(b.c.name, 'pl'));
+const byLetter = [...Map.groupBy(places, (x) => x.c.name[0].toLocaleUpperCase('pl'))];
+---
+<Base title="Szukaj" description="Wyszukaj miejscowość, gminę, powiat, inwestycję albo dewelopera i sprawdź ceny mieszkań z cenników deweloperów." crumbs={[{ label: 'Szukaj' }]} search={false}>
+  <section class="hero">
+    <h1>Szukaj</h1>
+    <p class="lead">Wpisz nazwę miejscowości, gminy, powiatu, osiedla albo dewelopera. Podpowiedzi pojawią się podczas pisania.</p>
+    <Search id="q-page" size="hero" autofocus />
+  </section>
+
+  <section class="section" aria-labelledby="az-h">
+    <div class="section-head">
+      <h2 id="az-h">Miejscowości z ofertą deweloperów od A do Z</h2>
+      <p>{num(places.length)} miejscowości. Miejscowość bez własnej strony prowadzi do strony swojej gminy, powiatu albo województwa.</p>
+    </div>
+    <nav class="az-index" aria-label="Litery">{byLetter.map(([l]) => <a href={`#litera-${l}`}>{l}</a>)}</nav>
+    <div class="az">
+      {byLetter.map(([l, xs]) => (
+        <section class="az-group" id={`litera-${l}`} aria-label={`Litera ${l}`}>
+          <h3>{l}</h3>
+          <ul class="list-plain">{xs.map(({ c, link }) => <li><a href={link!}>{c.name}</a> <span class="muted small">{c.gmina.urban || c.gmina.name === c.name ? c.voivodeship : `gmina ${c.gmina.name}`}</span></li>)}</ul>
+        </section>
+      ))}
+    </div>
+  </section>
+</Base>

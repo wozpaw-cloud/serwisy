@@ -1,0 +1,159 @@
+---
+// Wspólna analiza obszaru (miasta, gminy, powiatu, województwa): liczby, tło okolicy,
+// wykresy, podział na mniejsze obszary (slot), inwestycje, domy i mieszkania, obniżki.
+import LineChart from './LineChart.astro';
+import Histogram from './Histogram.astro';
+import Bars from './Bars.astro';
+import Change from './Change.astro';
+import AdSlot from './AdSlot.astro';
+import Context from './Context.astro';
+import PageNav from './PageNav.astro';
+import { M, invStats, href, unitLabel, type AreaRef } from '../lib/data';
+import { num, pct, share, zl, m2 } from '../lib/format';
+import type { Investment, Point, Unit } from '@serwisy/mieszkania-dane/query';
+
+interface Props {
+  /** Podpis serii na wykresach, np. "Komorniki" albo "gmina Dopiewo". */
+  name: string;
+  /** Klucz pamięci podręcznej szeregów czasowych. */
+  skey: string;
+  units: Unit[];
+  investments: Investment[];
+  /** Tło dla indeksu: legenda, nazwa w tytule wykresu i punkty. */
+  compare: { label: string; title: string; points: Point[] };
+  ad: string;
+  /** Łańcuch Polska › … › ten obszar, do sekcji "Na tle okolicy". */
+  chain: AreaRef[];
+  /** Sekcja podziału w slocie: kotwica i nazwa w spisie treści. */
+  child?: { id: string; label: string };
+  /** Kolumna z miejscowością w tabelach (obszar z kilkoma miejscowościami). */
+  showPlace?: boolean;
+  /** Ile inwestycji pokazać (duże obszary: największe oferty). */
+  invLimit?: number;
+}
+const { name, skey, units, investments, compare, ad, chain, child, showPlace = false, invLimit = Infinity } = Astro.props;
+const s = M.snapshot(skey, units);
+const ser = M.series(skey, units);
+const allInvs = investments.map(invStats).filter((x) => x.inOffer.length > 0).sort((a, b) => b.inOffer.length - a.inOffer.length);
+const invs = allInvs.slice(0, invLimit);
+const buckets = M.areaBuckets(units).filter((b) => b.n > 0);
+const cuts = M.topCuts(units, 10);
+const hs = M.snapshot(`${skey}:dom`, units.filter((u) => u.type === 'dom'));
+const fs = M.snapshot(`${skey}:mieszkanie`, units.filter((u) => u.type === 'mieszkanie'));
+const showTypes = hs.units >= 5 && fs.units >= 5;
+const width = (s.p75M2 ?? 0) - (s.p25M2 ?? 0) > 6000 ? 1000 : 500;
+const nav = [
+  ...(chain.length > 1 ? [{ id: 'okolica', label: 'Na tle okolicy' }] : []),
+  { id: 'wykresy', label: 'Wykresy' },
+  ...(child ? [child] : []),
+  { id: 'inwestycje', label: 'Inwestycje' },
+  ...(showTypes ? [{ id: 'rodzaje', label: 'Domy i mieszkania' }] : []),
+  ...(cuts.length ? [{ id: 'obnizki', label: 'Obniżki' }] : []),
+];
+---
+<PageNav items={nav} />
+
+<dl class="figures" id="liczby">
+  <div><dt>Mediana ceny za m²</dt><dd>{zl(s.medianM2)}</dd><span class="delta">{pct(s.change.median13w)} w 13 tygodni</span></div>
+  <div><dt>Indeks tych samych lokali</dt><dd><Change value={s.change.index13w} /></dd><span class="delta">w 13 tygodni, {pct(s.change.indexAll)} od początku</span></div>
+  <div><dt>Potaniało w 4 tygodnie</dt><dd>{share(s.cuts.share)}</dd><span class="delta">{num(s.cuts.count)} z {num(s.cuts.base)} lokali</span></div>
+  <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych, {num(s.goneUnits)} poza ofertą w 4 tygodnie</span></div>
+</dl>
+
+<Context chain={chain} />
+
+<section class="section" id="wykresy" aria-label="Wykresy">
+  <LineChart
+    title={`Indeks cen tych samych lokali: ${name} i ${compare.title}`}
+    sub="100 = ceny z pierwszego tygodnia pomiarów. Linie rosną tylko wtedy, gdy deweloperzy podnoszą ceny lokali już obecnych w ofercie."
+    series={[{ label: name, points: ser.index }, { label: compare.label, points: compare.points, color: 'series-2' }]}
+    format="index"
+    ref={100}
+  />
+
+  <div class="two-up">
+    <LineChart title="Mediana ceny za m²" sub="Wszystkie lokale w ofercie w danym tygodniu." series={[{ label: name, points: ser.median }]} format="zl" area={false} />
+    <Histogram title="Rozkład cen za m²" sub={`Lokale w ofercie, przedziały co ${num(width)} zł.`} bins={M.histogram(units, width)} />
+  </div>
+
+  {buckets.length > 1 && (
+    <Bars
+      title="Cena za m² a metraż"
+      sub="Mediana ceny za m² w przedziałach powierzchni. Mniejsze lokale są zwykle droższe w przeliczeniu na metr."
+      items={buckets.map((b) => ({ label: `${b.label} (${b.n})`, value: b.medianM2, display: zl(b.medianM2) }))}
+    />
+  )}
+</section>
+
+<AdSlot slot={ad} />
+
+<slot />
+
+<section class="section" id="inwestycje" aria-labelledby="inwestycje-h">
+  <div class="section-head">
+    <h2 id="inwestycje-h">{invs.length < allInvs.length ? `Największe inwestycje w ofercie` : 'Inwestycje w ofercie'}</h2>
+    <p>
+      {invs.length < allInvs.length
+        ? `${num(invs.length)} z ${num(allInvs.length)} inwestycji z największą liczbą lokali w ofercie. Pozostałe znajdziesz na stronach gmin i miast.`
+        : `${num(invs.length)} inwestycji z lokalami w aktualnych cennikach.`}
+      {' '}Zmiana od wejścia to mediana zmian cen lokali od ich pierwszej ceny w cenniku. Kliknij nagłówek kolumny, żeby posortować.
+    </p>
+  </div>
+  <div class="table-wrap">
+    <table class="data sortable">
+      <thead><tr><th scope="col">Inwestycja</th>{showPlace && <th scope="col">Miejscowość</th>}<th scope="col">Deweloper</th><th scope="col" class="r">Lokale</th><th scope="col" class="r">Mediana za m²</th><th scope="col" class="r">Cena lokalu</th><th scope="col" class="r">Zmiana od wejścia</th><th scope="col" class="r">Potaniało, 4 tyg.</th></tr></thead>
+      <tbody>
+        {invs.map((x) => (
+          <tr>
+            <td data-v={x.inv.name}><a href={href.inv(x.inv)}>{x.inv.name}</a></td>
+            {showPlace && <td>{x.inv.city.name}</td>}
+            <td data-v={x.inv.brand.name}><a href={href.brand(x.inv.brand)}>{x.inv.brand.name}</a></td>
+            <td class="r" data-v={x.inOffer.length}>{num(x.inOffer.length)}</td>
+            <td class="r" data-v={x.medianM2 ?? ''}>{zl(x.medianM2)}</td>
+            <td class="r" data-v={x.minTotal ?? ''}>{x.minTotal === x.maxTotal ? zl(x.minTotal) : `${num(x.minTotal)}–${zl(x.maxTotal)}`}</td>
+            <td class="r" data-v={x.changeSinceFirst ?? ''}><Change value={x.changeSinceFirst} /></td>
+            <td class="r" data-v={x.cuts4w}>{num(x.cuts4w)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{showTypes && (
+  <section class="section" id="rodzaje" aria-labelledby="rodzaje-h">
+    <div class="section-head"><h2 id="rodzaje-h">Domy i mieszkania</h2></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th scope="col">Rodzaj</th><th scope="col" class="r">W ofercie</th><th scope="col" class="r">Mediana za m²</th><th scope="col" class="r">Mediana ceny</th><th scope="col" class="r">Mediana metrażu</th></tr></thead>
+        <tbody>
+          <tr><td>Mieszkania</td><td class="r">{num(fs.units)}</td><td class="r">{zl(fs.medianM2)}</td><td class="r">{zl(fs.medianTotal)}</td><td class="r">{m2(fs.medianArea)}</td></tr>
+          <tr><td>Domy jednorodzinne</td><td class="r">{num(hs.units)}</td><td class="r">{zl(hs.medianM2)}</td><td class="r">{zl(hs.medianTotal)}</td><td class="r">{m2(hs.medianArea)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}
+
+{cuts.length > 0 && (
+  <section class="section" id="obnizki" aria-labelledby="obnizki-h">
+    <div class="section-head"><h2 id="obnizki-h">Największe obniżki w 4 tygodnie</h2></div>
+    <div class="table-wrap">
+      <table class="data sortable">
+        <thead><tr><th scope="col">Inwestycja</th>{showPlace && <th scope="col">Miejscowość</th>}<th scope="col">Lokal</th><th scope="col" class="r">Było za m²</th><th scope="col" class="r">Jest za m²</th><th scope="col" class="r">Zmiana</th></tr></thead>
+        <tbody>
+          {cuts.map((c) => (
+            <tr>
+              <td data-v={c.unit.inv.name}><a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a></td>
+              {showPlace && <td>{c.unit.inv.city.name}</td>}
+              <td class="num">{unitLabel(c.unit)}</td>
+              <td class="r" data-v={c.before}>{zl(Math.round(c.before))}</td>
+              <td class="r" data-v={c.after}>{zl(Math.round(c.after))}</td>
+              <td class="r" data-v={c.change}><Change value={c.change} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}

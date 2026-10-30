@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bars from '../../components/Bars.astro';
+import ChildTable from '../../components/ChildTable.astro';
+import LevelTabs from '../../components/LevelTabs.astro';
+import { SITE } from '../../config';
+import { M, citiesWithPage, citySnap, href, placeLink } from '../../lib/data';
+import { num, zl, dateLong } from '../../lib/format';
+
+const rows = citiesWithPage.map((c) => ({ c, s: citySnap(c) }));
+const byPrice = [...rows].sort((a, b) => (b.s.medianM2 ?? 0) - (a.s.medianM2 ?? 0));
+const others = M.cities.filter((c) => !citiesWithPage.includes(c) && citySnap(c).units > 0).sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+---
+<Base title="Ceny mieszkań od deweloperów w miastach" description="Mediana ceny za m², indeks cen tych samych lokali i liczba lokali w ofercie deweloperów w każdym mieście." crumbs={[{ label: 'Miasta' }]} current="/regiony/">
+  <section class="hero">
+    <h1>Ceny mieszkań od deweloperów w miastach</h1>
+    <p class="lead">{num(citiesWithPage.length)} miejscowości ma co najmniej {SITE.minCityUnits} lokali w ofercie i własną stronę z analizą. Mniejsze miejscowości są opisane na stronach swoich gmin i powiatów. Stan na {dateLong(M.asOf)}.</p>
+  </section>
+  <LevelTabs current="miasta" />
+
+  <Bars title="Mediana ceny za m² w miastach" sub="Lokale w ofercie deweloperów, od najdroższego miasta." items={byPrice.map(({ c, s }) => ({ label: c.name, value: s.medianM2, display: zl(s.medianM2), href: href.city(c) }))} />
+
+  <ChildTable
+    id="lista"
+    title="Wszystkie miasta"
+    sub="Kliknij nagłówek kolumny, żeby posortować."
+    first="Miasto"
+    extraHead="Województwo"
+    rows={rows.map(({ c, s }) => ({ name: c.name, href: href.city(c), extra: c.voivodeship ?? '', s }))}
+    filterLabel="Filtruj miasta"
+  />
+
+  {others.length > 0 && (
+    <section class="section" id="mniejsze">
+      <div class="section-head"><h2>Mniejsze miejscowości</h2><p>Mniej niż {SITE.minCityUnits} lokali w ofercie. Odnośnik prowadzi do strony gminy, powiatu albo województwa, w której są ich inwestycje.</p></div>
+      <ul class="list-plain cols">
+        {others.map((c) => {
+          const link = placeLink(c);
+          return <li>{link ? <a href={link}>{c.name}</a> : c.name} <span class="muted small">({c.gmina.urban || c.gmina.name === c.name ? c.voivodeship : `gmina ${c.gmina.name}`})</span></li>;
+        })}
+      </ul>
+    </section>
+  )}
+</Base>

@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import Change from '../../components/Change.astro';
+import { href } from '../../lib/data';
+import { reportMonths, nationalMonth } from '../../lib/report';
+import { monthName, zl } from '../../lib/format';
+const rows = reportMonths.map((m) => ({ m, s: nationalMonth(m)! }));
+---
+<Base title="Raporty miesięczne" description="Miesięczne podsumowania cen ofertowych mieszkań i domów od deweloperów: mediana ceny za m², indeks tych samych lokali, obniżki i podaż." crumbs={[{ label: 'Raporty' }]} current="/raporty/">
+  <section class="hero">
+    <h1>Raporty miesięczne</h1>
+    <p class="lead">Każdy raport porównuje ostatni tydzień miesiąca z ostatnim tygodniem poprzedniego miesiąca.</p>
+  </section>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Miesiąc</th><th class="r">Mediana za m²</th><th class="r">Indeks, zmiana</th><th class="r">Lokale w ofercie</th></tr></thead>
+      <tbody>{rows.map(({ m, s }) => <tr><td><a href={href.report(m)}>{monthName(m)}</a></td><td class="r">{zl(s.medianEnd)}</td><td class="r"><Change value={s.indexChange} /></td><td class="r">{s.units}</td></tr>)}</tbody>
+    </table>
+  </div>
+</Base>

@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config';
+---
+<Base title="Polityka prywatności" description="Jakie dane przetwarza serwis Cena od dewelopera: brak kont i formularzy, statystyki bez cookies, reklamy Google po zgodzie." crumbs={[{ label: 'Prywatność' }]}>
+  <article class="prose">
+    <h1>Polityka prywatności</h1>
+    <p class="draft">Projekt do sprawdzenia przez prawnika przed uruchomieniem reklam. Uzupełnij dane administratora.</p>
+    <h2>Administrator</h2>
+    <p>Administratorem danych jest [imię i nazwisko lub nazwa firmy wydawcy, adres]. Kontakt: <span class="select-text">{SITE.contactEmail}</span>.</p>
+    <h2>Czego nie zbieramy</h2>
+    <p>Serwis nie ma kont, formularzy, komentarzy ani newslettera. Nie prosimy o żadne dane.</p>
+    <h2>Statystyki odwiedzin</h2>
+    <p>Liczymy odwiedziny narzędziem Cloudflare Web Analytics, które nie zapisuje plików cookies i nie śledzi użytkowników między stronami.</p>
+    <h2>Reklamy</h2>
+    <p>Reklamy wyświetla Google AdSense. Przed pokazaniem reklam spersonalizowanych prosimy o zgodę w okienku zgód. Google może wtedy zapisywać pliki cookies i przetwarzać identyfikatory urządzenia. Zgodę możesz w każdej chwili zmienić lub wycofać w ustawieniach prywatności dostępnych w okienku.</p>
+    <h2>Twoje prawa</h2>
+    <p>Masz prawo do dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, sprzeciwu oraz skargi do Prezesa Urzędu Ochrony Danych Osobowych.</p>
+  </article>
+</Base>

@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import { M } from '../lib/data';
+import { SITE } from '../config';
+import { dateLong } from '../lib/format';
+---
+<Base title="Metodologia" description="Jak liczymy medianę ceny za m², indeks cen tych samych lokali, obniżki i podaż z cenników deweloperów w dane.gov.pl." crumbs={[{ label: 'Metodologia' }]} current="/metodologia/">
+  <article class="prose">
+    <h1>Metodologia</h1>
+    <p>Wszystkie liczby w serwisie wylicza program bezpośrednio z cenników. Żadnej wartości nie wpisuje ręcznie ani człowiek, ani AI. Stan danych: {dateLong(M.asOf)}.</p>
+
+    <h2>Źródło</h2>
+    <p>Od 11 września 2025 r. deweloperzy muszą publikować ceny wszystkich oferowanych lokali i codziennie przekazywać je do portalu dane.gov.pl, razem z historią zmian. Pobieramy te cenniki codziennie rano, przez publiczny interfejs API portalu.</p>
+    <p>To ceny ofertowe. Cena, za którą lokal zostaje sprzedany, może być inna.</p>
+
+    <h2>Co uznajemy za lokal w ofercie</h2>
+    <p>Lokal jest w ofercie w danym dniu, jeśli występuje w cenniku z tego dnia. Krótkie przerwy w publikacji, do 21 dni, nie przerywają obecności, gdy lokal później wraca. Wiersze oznaczone jako sprzedane pomijamy. Cenniki, których deweloper nie aktualizował przez ponad 7 dni, nie liczą się do lokali, które zniknęły z oferty.</p>
+
+    <h2>Mediana ceny za m²</h2>
+    <p>Mediana cen za m² wszystkich lokali w ofercie, każdy lokal liczony raz. Mediana zmienia się także wtedy, gdy zmienia się skład oferty, na przykład gdy do sprzedaży wchodzi droższa inwestycja.</p>
+
+    <h2>Indeks cen tych samych lokali</h2>
+    <p>Co tydzień bierzemy lokale obecne w ofercie w obu sąsiednich tygodniach i liczymy średnią geometryczną zmian ich cen za m². Kolejne tygodnie łączymy w ciąg, zaczynając od 100. Gdy wspólnych lokali jest mniej niż 10, indeks w tym tygodniu się nie zmienia.</p>
+    <p>Indeks pokazuje więc, czy deweloperzy zmieniają ceny lokali, które już sprzedają. Nie mierzy cen nowych inwestycji w chwili wejścia do oferty.</p>
+
+    <h2>Obniżki i podwyżki</h2>
+    <p>Obniżka to spadek ceny za m² o co najmniej 0,5% w porównaniu z tym samym lokalem 4 tygodnie wcześniej, podwyżka to wzrost o co najmniej 0,5%. Liczymy je tylko wśród lokali obecnych w ofercie w obu tygodniach.</p>
+
+    <h2>Nowe i znikające lokale</h2>
+    <p>Nowy lokal pojawił się w ofercie w ostatnich 4 tygodniach. Lokal poza ofertą był w niej 4 tygodnie temu, a teraz go nie ma. To zwykle sprzedaż lub rezerwacja, ale deweloper mógł też wycofać lokal, więc nie nazywamy tego sprzedażą.</p>
+
+    <h2>Kontrola jakości</h2>
+    <ul>
+      <li>Kolumny rozpoznajemy po treści nagłówka, nie po kolejności. Nowe, nieznane kolumny trafiają do przeglądu.</li>
+      <li>Odrzucamy wiersze z ceną za m² poza zakresem 2 500–100 000 zł, ceną lokalu poza zakresem 50 tys.–60 mln zł albo powierzchnią poza zakresem 10–800 m².</li>
+      <li>Jeśli liczba lokali w ofercie w całym kraju spadnie z dnia na dzień o ponad 25%, wstrzymujemy publikację do czasu sprawdzenia.</li>
+    </ul>
+
+    <h2>Miasta</h2>
+    <p>Miasto to miejscowość lokalizacji inwestycji z cennika. Własną stronę mają miasta z co najmniej {SITE.minCityUnits} lokalami w ofercie.</p>
+
+    <h2 id="gminy">Gminy i powiaty</h2>
+    <p>Gminę bierzemy z pola „gmina” w cenniku. Deweloperzy zapisują ją różnie, więc ujednolicamy zapis: usuwamy dopiski w rodzaju „gm.”, „Gmina” czy „obszar wiejski” i poprawiamy wielkość liter.</p>
+    <ul>
+      <li>W 66 miastach na prawach powiatu gminą jest całe miasto. Dzielnica wpisana w polu gminy, na przykład Białołęka w Warszawie, nie tworzy osobnej gminy.</li>
+      <li>Gdy cennik nie podaje gminy, bierzemy ją z innych cenników z tej samej miejscowości. Jeśli żaden jej nie podaje, przyjmujemy nazwę miejscowości i zaznaczamy to na stronie gminy.</li>
+      <li>Gmina miejska i gmina wiejska o tej samej nazwie w jednym powiecie (na przykład miasto Lubartów i gmina Lubartów) trafiają do jednej grupy, bo cenniki zwykle ich nie rozróżniają. Wyjątkiem są gminy wiejskie wokół miast na prawach powiatu, na przykład gmina Chełm: te liczymy osobno.</li>
+      <li>Własną stronę ma gmina z co najmniej {SITE.minCityUnits} lokalami w ofercie w więcej niż jednej miejscowości. Gmina, w której oferta jest tylko w jednym mieście, prowadzi do strony tego miasta, żeby nie powielać tych samych liczb.</li>
+      <li>Powiat bierzemy z pola „powiat” w cenniku, w tym samym ujednoliconym zapisie. Gmina należy do powiatu, który najczęściej pojawia się w jej cennikach. Gmina bez powiatu w żadnym cenniku nie trafia do zestawienia powiatów, ale jest w zestawieniu gmin i województw.</li>
+      <li>Miasto na prawach powiatu jest jednocześnie gminą i powiatem, dlatego prowadzi do strony miasta. Własną stronę ma powiat ziemski z co najmniej {SITE.minCityUnits} lokalami w ofercie w więcej niż jednej gminie. Nazwy powiatów powtarzają się w różnych województwach (na przykład powiat średzki), więc wtedy adres strony zawiera też województwo.</li>
+    </ul>
+
+    <h2>Deweloperzy</h2>
+    <p>Deweloperzy często działają przez spółki celowe. Spółki z tą samą stroną internetową łączymy pod jedną marką.</p>
+
+    <h2>Błędy</h2>
+    <p>Jeśli widzisz błąd, napisz na adres <span class="select-text">{SITE.contactEmail}</span>. Poprawiamy dane w ciągu kilku dni i opisujemy poprawkę na tej stronie.</p>
+  </article>
+</Base>

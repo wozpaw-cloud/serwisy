@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import LineChart from '../components/LineChart.astro';
+import Sparkline from '../components/Sparkline.astro';
+import Change from '../components/Change.astro';
+import { M, national, nationalSeries, citiesWithPage, citySnap, citySeries, href } from '../lib/data';
+import { dateLong, idx, pct } from '../lib/format';
+import { moved } from '../lib/text';
+
+const s = national();
+const ser = nationalSeries();
+const first = ser.index.find((p) => p.value !== null)?.date ?? M.firstDate;
+const rows = citiesWithPage.map((c) => ({ c, s: citySnap(c), se: citySeries(c) }));
+const vals = rows.flatMap((r) => r.se.index.map((p) => p.value)).filter((v): v is number => v !== null);
+const lo = Math.min(...vals, 100);
+const hi = Math.max(...vals, 100);
+const sorted = [...rows].sort((a, b) => (b.s.change.indexAll ?? -9) - (a.s.change.indexAll ?? -9));
+---
+<Base title="Indeks cen tych samych lokali" description="Indeks cen ofertowych tych samych lokali od deweloperów: Polska i miasta, tydzień po tygodniu. Nie zmienia się, gdy zmienia się skład oferty." crumbs={[{ label: 'Indeks cen' }]} current="/indeks/">
+  <section class="hero">
+    <h1>Indeks cen tych samych lokali</h1>
+    <p class="lead">{moved(s.change.indexAll, `okresie od ${dateLong(first)}`)} {moved(s.change.index4w, 'ostatnich 4 tygodniach')}</p>
+  </section>
+
+  <LineChart title="Polska" sub={`100 = ceny z ${dateLong(first)}.`} series={[{ label: 'Polska', points: ser.index }]} format="index" ref={100} />
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Miasta na jednej skali</h2>
+      <p>Każdy wykres ma tę samą skalę od {idx(lo)} do {idx(hi)}, więc nachylenia linii można porównywać. Pozioma linia to 100.</p>
+    </div>
+    <ul class="multiples">
+      {sorted.map(({ c, s, se }) => (
+        <li>
+          <span class="mname"><a href={href.city(c)}>{c.name}</a><Change value={s.change.indexAll} /></span>
+          <Sparkline values={se.index.map((p) => p.value)} label={`${c.name}: ${pct(s.change.indexAll)} od początku pomiarów`} w={240} h={64} lo={lo} hi={hi} ref={100} />
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Zmiana indeksu w miastach</h2></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Miasto</th><th class="r">Indeks dziś</th><th class="r">4 tygodnie</th><th class="r">13 tygodni</th><th class="r">Od początku</th></tr></thead>
+        <tbody>{sorted.map(({ c, s, se }) => <tr><td><a href={href.city(c)}>{c.name}</a></td><td class="r">{idx(se.index.at(-1)?.value ?? null)}</td><td class="r"><Change value={s.change.index4w} /></td><td class="r"><Change value={s.change.index13w} /></td><td class="r"><Change value={s.change.indexAll} /></td></tr>)}</tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>Dlaczego indeks, a nie średnia cena</h2>
+    <p>Średnia lub mediana ceny ofertowej zmienia się także wtedy, gdy deweloper wprowadza do sprzedaży nową, droższą inwestycję albo gdy szybko sprzedają się tanie kawalerki. Wtedy rośnie, choć nikt nie podniósł ceny.</p>
+    <p>Indeks porównuje co tydzień ceny tych samych lokali, obecnych w ofercie w obu tygodniach, i łączy te zmiany w ciąg. Pokazuje więc, czy deweloperzy podnoszą lub obniżają ceny. Szczegóły są w <a href="/metodologia/">metodologii</a>.</p>
+  </section>
+</Base>

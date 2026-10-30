@@ -1,0 +1,376 @@
+---
+import '@fontsource-variable/schibsted-grotesk';
+import '../styles/global.css';
+import { SITE } from '../config';
+import { M, isSample } from '../lib/data';
+import { dateLong } from '../lib/format';
+import Search from '../components/Search.astro';
+
+interface Crumb { label: string; href?: string }
+interface Props {
+  title: string;
+  description: string;
+  crumbs?: Crumb[];
+  noindex?: boolean;
+  jsonld?: Record<string, unknown>[];
+  current?: string;
+  /** Wyszukiwarka w nagłówku (wyłączona tam, gdzie strona ma własną, dużą). */
+  search?: boolean;
+}
+const { title, description, crumbs = [], noindex = false, jsonld = [], current, search = true } = Astro.props;
+const fullTitle = Astro.url.pathname === '/' ? `${SITE.name}: ceny mieszkań i domów z cenników deweloperów` : `${title} | ${SITE.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const robots = noindex || isSample ? 'noindex, nofollow' : 'index, follow';
+// [adres, etykieta, klucz podświetlenia]
+const nav = [
+  ['/miasta/', 'Miasta i regiony', '/regiony/'],
+  ['/indeks/', 'Indeks cen', '/indeks/'],
+  ['/obnizki/', 'Obniżki', '/obnizki/'],
+  ['/domy/', 'Domy', '/domy/'],
+  ['/deweloperzy/', 'Deweloperzy', '/deweloperzy/'],
+  ['/raporty/', 'Raporty', '/raporty/'],
+];
+const breadcrumbLd = crumbs.length
+  ? [{
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [{ label: 'Start', href: '/' }, ...crumbs].map((c, i) => ({
+        '@type': 'ListItem', position: i + 1, name: c.label, ...(c.href ? { item: new URL(c.href, Astro.site).toString() } : {}),
+      })),
+    }]
+  : [];
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141b1a" media="(prefers-color-scheme: dark)" />
+    <meta name="generator-ai" content="Teksty opisowe generowane automatycznie z danych; komentarze AI oznaczone na stronie." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' fill='none' stroke='%23142320' stroke-width='3'/%3E%3Ctext x='7' y='25' font-size='12' font-family='Arial' font-weight='700' fill='%23142320'%3Em%C2%B2%3C/text%3E%3C/svg%3E" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    {[...breadcrumbLd, ...jsonld].map((ld) => <script type="application/ld+json" set:html={JSON.stringify(ld)} />)}
+    {SITE.ads && SITE.adsClient && !isSample && (
+      <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsClient}`} crossorigin="anonymous"></script>
+    )}
+  </head>
+  <body>
+    <a class="skip" href="#tresc">Przejdź do treści</a>
+    <header class="site-head">
+      <div class="wrap head-row">
+        <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">m²</span>{SITE.name}</a>
+        <nav class="site-nav" id="site-nav" aria-label="Główne">
+          {nav.map(([h, l, key]) => <a href={h} aria-current={current === key ? 'page' : undefined}>{l}</a>)}
+        </nav>
+        <div class="head-tools">
+          {search && <div class="head-search"><Search id="hs" /></div>}
+          <a class="icon-btn narrow-only" href="/szukaj/" aria-label="Szukaj">
+            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.75" fill="none" stroke="currentColor" stroke-width="2" /><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+          </a>
+          <button class="icon-btn menu-btn narrow-only" type="button" aria-expanded="false" aria-controls="site-nav">
+            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path class="m-open" d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" /><path class="m-close" d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            <span>Menu</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    {isSample && (
+      <div class="sample-note" role="note">
+        <div class="wrap"><strong>Podgląd na danych przykładowych.</strong> Deweloperzy, inwestycje i ceny są zmyślone. Pokazują tylko, jak działa serwis. Prawdziwe ceny pojawią się po pierwszym imporcie z dane.gov.pl.</div>
+      </div>
+    )}
+    <main id="tresc" tabindex="-1">
+      <div class="wrap stack-l">
+        {crumbs.length > 0 && (
+          <nav class="crumbs" aria-label="Okruszki">
+            <ol>
+              <li><a href="/">Start</a></li>
+              {crumbs.map((c, i) => <li>{c.href ? <a href={c.href}>{c.label}</a> : <span aria-current={i === crumbs.length - 1 ? 'page' : undefined}>{c.label}</span>}</li>)}
+            </ol>
+          </nav>
+        )}
+        <slot />
+      </div>
+    </main>
+    <footer class="site-foot">
+      <div class="wrap">
+        <div>
+          <h2>Skąd są dane</h2>
+          <p>Ceny ofertowe z cenników, które deweloperzy codziennie przekazują do <a href={SITE.source.url} rel="noopener">dane.gov.pl</a> na podstawie ustawy o jawności cen mieszkań. To ceny z ofert, nie ceny transakcyjne.</p>
+          <p>Stan danych: {dateLong(M.asOf)}.</p>
+        </div>
+        <div>
+          <h2>Rola AI</h2>
+          <p>Serwis zbudowała i aktualizuje sztuczna inteligencja (Claude). Liczby wylicza program prosto z danych. Teksty opisowe powstają automatycznie, a komentarze AI są oznaczone i przechodzą akceptację człowieka.</p>
+          <p><a href="/o-serwisie/">Jak powstaje ten serwis</a></p>
+        </div>
+        <div>
+          <h2>Wydawca</h2>
+          <p>{SITE.publisher}. Błąd w danych? Napisz na adres <span class="select-text">{SITE.contactEmail}</span>.</p>
+          <ul class="foot-links">
+            <li><a href="/metodologia/">Metodologia</a></li>
+            <li><a href="/dane/">Dane do pobrania</a></li>
+            <li><a href="/szukaj/">Wszystkie miejscowości A–Z</a></li>
+            <li><a href="/prywatnosc/">Prywatność</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    <script is:inline>
+      // Podpowiedź na wykresach liniowych: pionowa linia trafia w najbliższy tydzień.
+      document.querySelectorAll('svg[data-chart]').forEach(function (svg) {
+        var spec = JSON.parse(svg.getAttribute('data-chart'));
+        var plot = svg.closest('.plot');
+        var tip = plot.querySelector('.tip');
+        var x = svg.querySelector('.xhair');
+        var dots = svg.querySelectorAll('.hover-dot');
+        var k = -1;
+        function show(i) {
+          k = Math.max(0, Math.min(spec.xs.length - 1, i));
+          var xs = spec.xs[k];
+          x.setAttribute('x1', xs); x.setAttribute('x2', xs); x.style.display = '';
+          dots.forEach(function (d, s) {
+            var y = spec.series[s].ys[k];
+            if (y === null) { d.style.display = 'none'; return; }
+            d.setAttribute('cx', xs); d.setAttribute('cy', y); d.style.display = '';
+          });
+          tip.replaceChildren();
+          var dd = document.createElement('div'); dd.className = 't-date'; dd.textContent = spec.dates[k]; tip.appendChild(dd);
+          spec.series.forEach(function (s) {
+            var row = document.createElement('div'); row.className = 't-row';
+            var key = document.createElement('span'); key.className = 't-key'; key.style.color = s.color;
+            var b = document.createElement('b'); b.textContent = s.values[k];
+            var l = document.createElement('span'); l.textContent = s.label;
+            row.append(key, b, l); tip.appendChild(row);
+          });
+          tip.hidden = false;
+          var box = svg.getBoundingClientRect(), pb = plot.getBoundingClientRect();
+          var px = box.left - pb.left + xs / spec.w * box.width;
+          var left = px + 12;
+          if (left + tip.offsetWidth > pb.width) left = px - tip.offsetWidth - 12;
+          tip.style.left = Math.max(0, left) + 'px';
+          tip.style.top = '8px';
+        }
+        function hide() { tip.hidden = true; x.style.display = 'none'; dots.forEach(function (d) { d.style.display = 'none'; }); }
+        function nearest(evt) {
+          var box = svg.getBoundingClientRect();
+          var sx = (evt.clientX - box.left) / box.width * spec.w;
+          var best = 0, bd = Infinity;
+          spec.xs.forEach(function (v, i) { var d = Math.abs(v - sx); if (d < bd) { bd = d; best = i; } });
+          return best;
+        }
+        svg.addEventListener('pointermove', function (e) { show(nearest(e)); });
+        svg.addEventListener('pointerleave', hide);
+        svg.addEventListener('focus', function () { show(k < 0 ? spec.xs.length - 1 : k); });
+        svg.addEventListener('blur', hide);
+        svg.addEventListener('keydown', function (e) {
+          if (e.key === 'ArrowLeft') { show(k - 1); e.preventDefault(); }
+          if (e.key === 'ArrowRight') { show(k + 1); e.preventDefault(); }
+        });
+      });
+    </script>
+    <script is:inline>
+      (function () {
+        // Porównywanie bez polskich znaków i wielkości liter: "Ząbki" = "zabki".
+        function fold(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l'); }
+        var each = function (sel, fn, root) { Array.prototype.forEach.call((root || document).querySelectorAll(sel), fn); };
+
+        // ---------- menu na telefonie ----------
+        var head = document.querySelector('.site-head');
+        var menuBtn = document.querySelector('.menu-btn');
+        if (menuBtn) {
+          menuBtn.addEventListener('click', function () {
+            var open = menuBtn.getAttribute('aria-expanded') !== 'true';
+            menuBtn.setAttribute('aria-expanded', String(open));
+            head.classList.toggle('open', open);
+          });
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && head.classList.contains('open')) { menuBtn.click(); menuBtn.focus(); }
+          });
+        }
+
+        // ---------- sortowanie tabel ----------
+        function cellKey(cell) {
+          var v = cell.getAttribute('data-v');
+          if (v === null) v = cell.textContent.trim();
+          if (v === '' || v === '—') return null;
+          if (!isNaN(Number(v))) return Number(v);
+          var t = v.replace(/\u2212/g, '-').replace(/zł|m²|%|\s/g, '').replace(',', '.');
+          return /^[+-]?\d+(\.\d+)?$/.test(t) ? Number(t) : v;
+        }
+        each('table.sortable', function (t) {
+          var ths = t.tHead.rows[0].cells;
+          Array.prototype.forEach.call(ths, function (th, col) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = 'sort-btn';
+            while (th.firstChild) b.appendChild(th.firstChild);
+            var ic = document.createElement('span'); ic.className = 'sort-ico'; ic.setAttribute('aria-hidden', 'true');
+            b.appendChild(ic); th.appendChild(b);
+            b.addEventListener('click', function () {
+              var cur = th.getAttribute('aria-sort');
+              var dir = cur === 'descending' ? 'ascending' : cur === 'ascending' ? 'descending' : (th.classList.contains('r') ? 'descending' : 'ascending');
+              Array.prototype.forEach.call(ths, function (o) { o.removeAttribute('aria-sort'); });
+              th.setAttribute('aria-sort', dir);
+              var sign = dir === 'ascending' ? 1 : -1;
+              var body = t.tBodies[0];
+              var rows = Array.prototype.slice.call(body.rows).map(function (r, i) { return { r: r, k: cellKey(r.cells[col]), i: i }; });
+              rows.sort(function (a, b) {
+                if (a.k === null && b.k === null) return a.i - b.i;
+                if (a.k === null) return 1;
+                if (b.k === null) return -1;
+                var c = typeof a.k === 'number' && typeof b.k === 'number' ? a.k - b.k : String(a.k).localeCompare(String(b.k), 'pl', { numeric: true });
+                return c * sign || a.i - b.i;
+              });
+              rows.forEach(function (x) { body.appendChild(x.r); });
+            });
+          });
+        });
+
+        // ---------- filtr długich tabel ----------
+        each('input[data-filter]', function (inp) {
+          var tools = inp.closest('.table-tools');
+          var t = document.getElementById(inp.getAttribute('data-filter'));
+          var count = tools.querySelector('.filter-count');
+          tools.hidden = false;
+          inp.addEventListener('input', function () {
+            var q = fold(inp.value.trim()), shown = 0, total = 0;
+            Array.prototype.forEach.call(t.tBodies, function (tb) {
+              var g = tb.querySelector('.group-row');
+              var groupHit = g && q && fold(g.textContent).indexOf(q) >= 0;
+              var any = false;
+              Array.prototype.forEach.call(tb.rows, function (r) {
+                if (r === g) return;
+                total++;
+                var ok = !q || groupHit || fold(r.textContent).indexOf(q) >= 0;
+                r.hidden = !ok;
+                if (ok) { any = true; shown++; }
+              });
+              if (g) g.hidden = !any;
+            });
+            count.textContent = q ? (shown === 0 ? 'Brak pasujących wierszy' : 'Pasuje ' + shown + ' z ' + total) : '';
+          });
+        });
+
+        // ---------- wyszukiwarka z podpowiedziami ----------
+        var TYPE = { 'miasto': 14, 'województwo': 12, 'gmina': 11, 'powiat': 10, 'miejscowość': 9, 'inwestycja': 4, 'deweloper': 3 };
+        var index = null, loading = null;
+        function load(form) {
+          if (index) return Promise.resolve(index);
+          if (!loading) {
+            var url = new URL(form.getAttribute('data-src'), location.href);
+            var root = new URL('.', url);
+            loading = fetch(url).then(function (r) { return r.json(); }).then(function (rows) {
+              index = rows.map(function (x) {
+                return { n: x[0], t: x[1], u: new URL(x[2].replace(/^\//, ''), root).href, d: x[3], w: x[4], f: fold(x[0]), fd: fold(x[3]) };
+              });
+              return index;
+            });
+          }
+          return loading;
+        }
+        function wordStart(f, q) {
+          var i = f.indexOf(q);
+          while (i > 0 && /[a-z0-9]/.test(f[i - 1])) i = f.indexOf(q, i + 1);
+          return i;
+        }
+        function find(q) {
+          q = fold(q).trim().replace(/\s+/g, ' ');
+          if (!q || !index) return [];
+          var toks = q.split(' ');
+          var out = [];
+          index.forEach(function (r) {
+            var s = 0;
+            if (r.f.indexOf(q) === 0) s = 100;
+            else if (wordStart(r.f, q) >= 0) s = 80;
+            else if (toks.length > 1 && toks.every(function (t) { return wordStart(r.f, t) >= 0 || wordStart(r.fd, t) >= 0; })) s = 60;
+            else if (q.length > 2 && r.f.indexOf(q) >= 0) s = 30;
+            if (!s) return;
+            out.push({ r: r, s: s + (TYPE[r.t] || 0) + Math.log10(1 + r.w) * 2 });
+          });
+          out.sort(function (a, b) { return b.s - a.s; });
+          // Gmina z jednym miastem prowadzi do strony miasta: ten sam adres pokazujemy raz.
+          var seen = {};
+          return out.filter(function (x) { if (seen[x.r.u]) return false; seen[x.r.u] = 1; return true; }).slice(0, 8).map(function (x) { return x.r; });
+        }
+        function mark(el, name, q) {
+          var f = fold(name), qq = fold(q).trim(), i = wordStart(f, qq);
+          if (i < 0) i = f.indexOf(qq);
+          if (!qq || i < 0) { el.textContent = name; return; }
+          el.append(name.slice(0, i));
+          var m = document.createElement('mark'); m.textContent = name.slice(i, i + qq.length); el.append(m);
+          el.append(name.slice(i + qq.length));
+        }
+        each('form.search', function (form) {
+          var input = form.querySelector('input');
+          var list = form.querySelector('[role=listbox]');
+          var status = form.querySelector('.search-status');
+          var results = [], active = -1, seq = 0;
+          function close() { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; }
+          function setActive(i) {
+            var opts = list.querySelectorAll('[role=option]');
+            if (!opts.length) return;
+            active = (i + opts.length) % opts.length;
+            Array.prototype.forEach.call(opts, function (o, k) { o.setAttribute('aria-selected', String(k === active)); });
+            input.setAttribute('aria-activedescendant', opts[active].id);
+            opts[active].scrollIntoView({ block: 'nearest' });
+          }
+          function render() {
+            var q = input.value;
+            list.replaceChildren();
+            active = -1;
+            if (!q.trim()) { close(); status.textContent = ''; return; }
+            if (!results.length) {
+              var none = document.createElement('li'); none.className = 'search-none';
+              none.textContent = 'Nic nie znaleźliśmy. Sprawdź pisownię albo wpisz nazwę gminy lub powiatu.';
+              list.appendChild(none);
+            }
+            results.forEach(function (r, i) {
+              var li = document.createElement('li');
+              li.id = input.id + '-opt-' + i; li.setAttribute('role', 'option'); li.setAttribute('aria-selected', 'false');
+              var a = document.createElement('a'); a.href = r.u; a.tabIndex = -1;
+              var top = document.createElement('span'); top.className = 's-top';
+              var n = document.createElement('span'); n.className = 's-name'; mark(n, r.n, q);
+              var t = document.createElement('span'); t.className = 's-type'; t.textContent = r.t;
+              top.append(n, t);
+              var d = document.createElement('span'); d.className = 's-detail'; d.textContent = r.d;
+              a.append(top, d); li.appendChild(a); list.appendChild(li);
+              li.addEventListener('mousemove', function () { if (active !== i) setActive(i); });
+            });
+            list.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+            status.textContent = results.length ? results.length + ' podpowiedzi. Strzałki w górę i w dół wybierają, Enter otwiera.' : 'Brak podpowiedzi.';
+          }
+          function update() {
+            var my = ++seq;
+            load(form).then(function () { if (my !== seq) return; results = find(input.value); render(); }).catch(function () {});
+          }
+          input.addEventListener('focus', function () { load(form).catch(function () {}); if (input.value.trim()) update(); });
+          input.addEventListener('input', update);
+          input.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown') { e.preventDefault(); if (list.hidden) update(); else setActive(active + 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+            else if (e.key === 'Escape') { if (!list.hidden) { e.preventDefault(); close(); } else { input.value = ''; } }
+          });
+          form.addEventListener('submit', function (e) {
+            var pick = results[active >= 0 ? active : 0];
+            if (pick && input.value.trim()) { e.preventDefault(); location.href = pick.u; }
+          });
+          input.addEventListener('blur', function () { setTimeout(function () { if (!form.contains(document.activeElement)) close(); }, 150); });
+          document.addEventListener('click', function (e) { if (!form.contains(e.target)) close(); });
+          // Strona /szukaj/?q=…: wpisz zapytanie z adresu.
+          var q = new URLSearchParams(location.search).get('q');
+          if (q && input.id === 'q-page') { input.value = q; update(); }
+        });
+      })();
+    </script>
+  </body>
+</html>

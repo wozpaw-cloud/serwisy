@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import { M, brands, brandSnap, href } from '../../lib/data';
+import { num, share, zl, dateLong } from '../../lib/format';
+const rows = brands.map((b) => ({ b, s: brandSnap(b) })).filter((x) => x.s.units > 0);
+---
+<Base title="Deweloperzy: oferta i ceny" description="Deweloperzy z lokalami w jawnych cennikach: liczba lokali w ofercie, inwestycje, mediana ceny za m² i obniżki." crumbs={[{ label: 'Deweloperzy' }]} current="/deweloperzy/">
+  <section class="hero">
+    <h1>Deweloperzy z lokalami w ofercie</h1>
+    <p class="lead">{num(rows.length)} deweloperów ma lokale w cennikach z {dateLong(M.asOf)}. Spółki celowe z tą samą stroną internetową łączymy pod jedną marką. To zestawienie oferty, a nie sprzedaży.</p>
+  </section>
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Deweloper</th><th class="r">Lokale w ofercie</th><th class="r">Inwestycje</th><th class="r">Miasta</th><th class="r">Mediana za m²</th><th class="r">Potaniało, 4 tyg.</th></tr></thead>
+      <tbody>
+        {rows.map(({ b, s }) => (
+          <tr><td><a href={href.brand(b)}>{b.name}</a></td><td class="r">{num(s.units)}</td><td class="r">{num(s.investments)}</td><td class="r">{num(new Set(b.investments.map((i) => i.city.key)).size)}</td><td class="r">{zl(s.medianM2)}</td><td class="r">{share(s.cuts.share)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="source">Profil dewelopera pokazuje dane z jego cenników. Nie oceniamy wiarygodności firm.</p>
+</Base>

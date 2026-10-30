@@ -1,0 +1,66 @@
+---
+// Rozkład cen za m²: kolumny o stałej szerokości przedziału.
+import { num } from '../lib/format';
+
+interface Bin { from: number; to: number; n: number }
+interface Props { title: string; sub?: string; bins: Bin[]; unit?: string }
+const { title, sub, bins, unit = 'zł/m²' } = Astro.props;
+const tys = (v: number) => `${String(v / 1000).replace('.', ',')} tys.`;
+const max = Math.max(1, ...bins.map((b) => b.n));
+const total = bins.reduce((a, b) => a + b.n, 0);
+
+function build(w: number, h: number, narrow: boolean) {
+  const padL = narrow ? 30 : 40, padR = 8, padT = 22, padB = 30;
+  const slot = (w - padL - padR) / Math.max(1, bins.length);
+  const bw = Math.min(24, slot - 2);
+  const Y = (n: number) => padT + (1 - n / max) * (h - padT - padB);
+  const labelEvery = Math.ceil(bins.length / (narrow ? 4 : 8));
+  const ticks = [0, Math.round(max / 2), max].filter((v, i, a) => a.indexOf(v) === i);
+  return { w, h, padL, padR, padT, padB, slot, bw, Y, labelEvery, ticks };
+}
+const SIZES = [['v-l', 1000, 260, false], ['v-m', 600, 240, false], ['v-s', 380, 220, true]] as const;
+const variants = bins.length ? SIZES.map(([c, w, h, n]) => ({ ...build(w, h, n), cls: c })) : [];
+const peak = bins.reduce((a, b, i) => (b.n > bins[a].n ? i : a), 0);
+---
+<figure class="chart">
+  <figcaption><span class="title">{title}</span>{sub && <span class="sub">{sub}</span>}</figcaption>
+  {bins.length > 0 && (
+    <div class="plot">
+      {variants.map((v) => (
+        <svg class={v.cls} viewBox={`0 0 ${v.w} ${v.h}`} role="img" aria-label={`${title}. Najwięcej lokali (${bins[peak].n}) kosztuje od ${num(bins[peak].from)} do ${num(bins[peak].to)} ${unit}.`}>
+          <g class="grid axis">
+            {v.ticks.map((t) => <g><line x1={v.padL} x2={v.w - v.padR} y1={v.Y(t)} y2={v.Y(t)} /><text x={v.padL - 6} y={v.Y(t) + 4} text-anchor="end">{t}</text></g>)}
+          </g>
+          {bins.map((b, i) => {
+            const x = v.padL + i * v.slot + (v.slot - v.bw) / 2;
+            const y = v.Y(b.n);
+            const base = v.Y(0);
+            const r = Math.min(4, (base - y) / 2);
+            const d = b.n === 0 ? '' : `M${x},${base}V${y + r}Q${x},${y} ${x + r},${y}H${x + v.bw - r}Q${x + v.bw},${y} ${x + v.bw},${y + r}V${base}Z`;
+            return (
+              <g tabindex="0" role="img" aria-label={`${num(b.from)}–${num(b.to)} ${unit}: ${b.n}`}>
+                <title>{`${num(b.from)}–${num(b.to)} ${unit}: ${b.n} ${b.n === 1 ? 'lokal' : 'lokali'}`}</title>
+                <rect x={v.padL + i * v.slot} y={v.padT} width={v.slot} height={base - v.padT} fill="transparent" />
+                {d && <path d={d} fill="var(--series-1)" />}
+                {i === peak && <text class="lbl-strong" x={x + v.bw / 2} y={y - 6} text-anchor="middle">{b.n}</text>}
+              </g>
+            );
+          })}
+          <line class="baseline" x1={v.padL} x2={v.w - v.padR} y1={v.Y(0)} y2={v.Y(0)} />
+          <g class="axis">
+            {bins.map((b, i) => i % v.labelEvery === 0 && <text x={v.padL + i * v.slot} y={v.h - v.padB + 18} text-anchor="middle">{tys(b.from)}</text>)}
+          </g>
+        </svg>
+      ))}
+    </div>
+  )}
+  <details class="data-view">
+    <summary>Tabela danych</summary>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Cena za m²</th><th class="r">Lokale</th><th class="r">Udział</th></tr></thead>
+        <tbody>{bins.map((b) => <tr><td class="num">{num(b.from)}–{num(b.to)} zł</td><td class="r">{b.n}</td><td class="r">{total ? `${((b.n / total) * 100).toFixed(1).replace('.', ',')}%` : '—'}</td></tr>)}</tbody>
+      </table>
+    </div>
+  </details>
+</figure>

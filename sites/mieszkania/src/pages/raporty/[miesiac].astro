@@ -1,0 +1,61 @@
+---
+import Base from '../../layouts/Base.astro';
+import Change from '../../components/Change.astro';
+import Bars from '../../components/Bars.astro';
+import AiNote from '../../components/AiNote.astro';
+import { M, href, isSample } from '../../lib/data';
+import { reportMonths, nationalMonth, cityMonths } from '../../lib/report';
+import { dateLong, monthName, num, pct, share, zl } from '../../lib/format';
+
+export function getStaticPaths() {
+  return reportMonths.map((m) => ({ params: { miesiac: m } }));
+}
+const { miesiac } = Astro.params as { miesiac: string };
+const s = nationalMonth(miesiac)!;
+const cities = cityMonths(miesiac).sort((a, b) => (b.s.indexChange ?? -9) - (a.s.indexChange ?? -9));
+
+// Komentarz AI: plik content/mieszkania/raporty/RRRR-MM.md. Na serwisie
+// produkcyjnym pokazujemy tylko komentarze zatwierdzone w panelu.
+const comments = import.meta.glob('../../../../../content/mieszkania/raporty/*.md', { eager: true }) as Record<string, any>;
+const entry = Object.entries(comments).find(([path]) => path.endsWith(`/${miesiac}.md`))?.[1];
+const fm = entry?.frontmatter ?? {};
+const approved = fm.status === 'zatwierdzony';
+const showComment = entry && (approved || isSample);
+const Comment = entry?.Content;
+const median = s.medianEnd !== null && s.medianPrev !== null ? s.medianEnd / s.medianPrev - 1 : null;
+---
+<Base title={`Ceny mieszkań od deweloperów: ${monthName(miesiac)}`} description={`Raport za ${monthName(miesiac)}: indeks cen tych samych lokali ${pct(s.indexChange)}, mediana ${zl(s.medianEnd)} za m², obniżki i podaż w miastach.`} crumbs={[{ label: 'Raporty', href: '/raporty/' }, { label: monthName(miesiac) }]} current="/raporty/">
+  <section class="hero">
+    <h1>Raport: {monthName(miesiac)}</h1>
+    <p class="lead">Porównanie cenników z {dateLong(s.end)} i {dateLong(s.prevEnd)}. Ceny tych samych lokali zmieniły się o {pct(s.indexChange)}, a mediana ceny za m² o {pct(median)}.</p>
+  </section>
+
+  <dl class="figures">
+    <div><dt>Indeks tych samych lokali</dt><dd><Change value={s.indexChange} /></dd><span class="delta">w ciągu miesiąca</span></div>
+    <div><dt>Mediana ceny za m²</dt><dd>{zl(s.medianEnd)}</dd><span class="delta">{pct(median)} w miesiąc</span></div>
+    <div><dt>Potaniało</dt><dd>{share(s.cutShare)}</dd><span class="delta">podrożało {share(s.raiseShare)} z {num(s.base)} lokali</span></div>
+    <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych, {num(s.goneUnits)} poza ofertą</span></div>
+  </dl>
+
+  {showComment && (
+    <section class="section">
+      <div class="section-head"><h2>Komentarz</h2></div>
+      {!approved && <p class="draft">Szkic czeka na akceptację w panelu. Na serwisie produkcyjnym pojawi się dopiero po zatwierdzeniu.</p>}
+      <div class="prose"><Comment /></div>
+      <AiNote kind="komentarz" source="liczby z tego raportu" date={s.end} approvedBy={approved ? fm.zatwierdzil : null} approvedAt={approved ? fm.data_zatwierdzenia : null} />
+    </section>
+  )}
+
+  <Bars title="Zmiana indeksu w miastach w ciągu miesiąca" sub="Od największego wzrostu do największego spadku cen tych samych lokali." diverging items={cities.map(({ c, s }) => ({ label: c.name, value: s.indexChange, display: pct(s.indexChange), href: href.city(c) }))} />
+
+  <section class="section">
+    <div class="section-head"><h2>Miasta</h2></div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Miasto</th><th class="r">Indeks, zmiana</th><th class="r">Mediana za m²</th><th class="r">Potaniało</th><th class="r">Nowe w ofercie</th><th class="r">Poza ofertą</th><th class="r">W ofercie</th></tr></thead>
+        <tbody>{cities.map(({ c, s }) => <tr><td><a href={href.city(c)}>{c.name}</a></td><td class="r"><Change value={s.indexChange} /></td><td class="r">{zl(s.medianEnd)}</td><td class="r">{share(s.cutShare)}</td><td class="r">{num(s.newUnits)}</td><td class="r">{num(s.goneUnits)}</td><td class="r">{num(s.units)}</td></tr>)}</tbody>
+      </table>
+    </div>
+  </section>
+  <p class="source">Źródło: cenniki deweloperów z dane.gov.pl, obliczenia własne. „Poza ofertą” nie znaczy „sprzedane”.</p>
+</Base>

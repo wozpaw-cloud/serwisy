@@ -1,0 +1,22 @@
+---
+// Mały wykres trendu do tabel i siatek. Opisany słowami w aria-label.
+interface Props { values: (number | null)[]; label: string; w?: number; h?: number; lo?: number; hi?: number; ref?: number }
+const { values, label, w = 120, h = 30, lo: loIn, hi: hiIn, ref } = Astro.props;
+const vals = values.filter((v): v is number => v !== null);
+const lo = loIn ?? Math.min(...vals);
+const hi = hiIn ?? Math.max(...vals);
+const span = hi - lo || 1;
+const X = (i: number) => 2 + (i / Math.max(1, values.length - 1)) * (w - 6);
+const Y = (v: number) => 3 + (1 - (v - lo) / span) * (h - 6);
+let d = '';
+let pen = false;
+values.forEach((v, i) => { if (v === null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true; });
+const lastI = values.map((v, i) => (v === null ? -1 : i)).filter((i) => i >= 0).at(-1);
+---
+{vals.length > 1 ? (
+  <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={label} style="display:block;max-width:100%;height:auto">
+    {ref !== undefined && ref >= lo && ref <= hi && <line x1="2" x2={w - 2} y1={Y(ref)} y2={Y(ref)} stroke="var(--rule)" stroke-width="1" />}
+    <path d={d} fill="none" stroke="var(--series-1)" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" />
+    {lastI !== undefined && <circle cx={X(lastI)} cy={Y(values[lastI] as number)} r="2.5" fill="var(--series-1)" />}
+  </svg>
+) : <span class="muted small">—</span>}

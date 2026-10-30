@@ -1,0 +1,27 @@
+{
+  "name": "@serwisy/mieszkania-dane",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./query": "./src/query.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "sample": "tsx src/cli.ts sample && tsx src/cli.ts ingest-dir ../../data/sample-snapshots",
+    "harvest": "tsx src/cli.ts harvest",
+    "stats": "tsx src/cli.ts stats"
+  },
+  "dependencies": {
+    "csv-parse": "^7.0.3",
+    "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.11.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

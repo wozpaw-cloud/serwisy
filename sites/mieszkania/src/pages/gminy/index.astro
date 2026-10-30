@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import Bars from '../../components/Bars.astro';
+import GroupedTable from '../../components/GroupedTable.astro';
+import LevelTabs from '../../components/LevelTabs.astro';
+import { SITE } from '../../config';
+import { M, liveGminas, gminasWithPage, gminaSnap, gminaLink, gminaLabel, liveCities, voivodeships } from '../../lib/data';
+import { num, plural, zl, dateLong } from '../../lib/format';
+
+const rows = liveGminas.map((g) => ({ g, s: gminaSnap(g), link: gminaLink(g) }));
+// Na wykresie: gminy z własną stroną albo stroną miasta, najwyżej 30 z największą ofertą.
+const charted = rows.filter((r) => r.link).slice(0, 30).sort((a, b) => (b.s.medianM2 ?? 0) - (a.s.medianM2 ?? 0));
+const groups = [...voivodeships.map((v) => ({ title: `województwo ${v.name}`, voiv: v.name })), { title: 'województwo nieznane', voiv: null }]
+  .map((x) => ({ ...x, rows: rows.filter((r) => r.g.voivodeship === x.voiv) }))
+  .filter((x) => x.rows.length > 0)
+  .map((x) => ({
+    title: x.title,
+    rows: x.rows.map(({ g, s, link }) => ({
+      name: g.urban ? `${g.name} (miasto na prawach powiatu)` : g.powiat ? `${g.name}, pow. ${g.powiat.name}` : g.name,
+      href: link,
+      extra: liveCities(g).map((c) => c.name).join(', '),
+      s,
+    })),
+  }));
+---
+<Base title="Ceny mieszkań od deweloperów w gminach" description="Mediana ceny za m², indeks cen tych samych lokali i liczba lokali w ofercie deweloperów w gminach, także podmiejskich, z cenników w dane.gov.pl." crumbs={[{ label: 'Gminy' }]} current="/regiony/">
+  <section class="hero">
+    <h1>Ceny mieszkań od deweloperów w gminach</h1>
+    <p class="lead">
+      Lokale deweloperów są w ofercie w {num(rows.length)} {rows.length === 1 ? 'gminie' : 'gminach'}. Gmina łączy miasto i okoliczne wsie, więc widać tu też osiedla pod miastami, które w zestawieniu miast są rozproszone po małych miejscowościach. Stan na {dateLong(M.asOf)}.
+    </p>
+  </section>
+  <LevelTabs current="gminy" />
+
+  {charted.length > 1 && (
+    <Bars
+      title="Mediana ceny za m² w gminach"
+      sub={`Gminy z co najmniej ${SITE.minCityUnits} lokalami w ofercie, od najdroższej. Miasta na prawach powiatu są jednocześnie gminami.`}
+      items={charted.map(({ g, s, link }) => ({ label: gminaLabel(g), value: s.medianM2, display: zl(s.medianM2), href: link ?? undefined }))}
+    />
+  )}
+
+  <GroupedTable
+    id="lista"
+    title="Wszystkie gminy według województw"
+    sub={`${num(gminasWithPage.length)} ${plural(gminasWithPage.length, 'gmina ma', 'gminy mają', 'gmin ma')} własną stronę: co najmniej ${SITE.minCityUnits} lokali w ofercie w więcej niż jednej miejscowości. Gmina z ofertą w jednym mieście prowadzi do strony tego miasta. Gminy z mniejszą ofertą są w tabeli bez odnośnika.`}
+    first="Gmina"
+    extraHead="Miejscowości z ofertą"
+    groups={groups}
+    filterLabel="Filtruj gminy i miejscowości"
+  />
+
+  <p class="source">Źródło: cenniki deweloperów z dane.gov.pl, obliczenia własne. Gmina według pól adresowych cenników, w ujednoliconym zapisie. <a href="/metodologia/#gminy">Jak przypisujemy gminy</a>.</p>
+</Base>

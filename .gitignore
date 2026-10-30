@@ -1,0 +1,9 @@
+node_modules/
+dist/
+preview/
+.astro/
+data/*.sqlite*
+data/sample-snapshots/
+data/last-run.json
+data/alarms.json
+.wrangler/

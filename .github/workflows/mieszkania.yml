@@ -1,0 +1,87 @@
+# Codzienny import cenników z dane.gov.pl, budowa i publikacja serwisu cen mieszkań.
+# Sekrety repozytorium: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
+# Baza z historią cen leży w Cloudflare R2 (kubeł "serwisy-dane"), spakowana gzipem.
+#
+# Pierwsze uruchomienia: najpierw wczytuje historię cenników od września 2025 r.
+# (po 4 godziny dziennie, aż skończy). Dopiero z pełną historią importuje bieżące
+# cenniki i publikuje serwis. Potem codziennie: nowe cenniki, budowa, publikacja.
+name: Ceny mieszkań - import i publikacja
+
+on:
+  schedule:
+    - cron: '20 5 * * *'   # codziennie 5:20 UTC, po porannej publikacji cenników
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Tylko podgląd: wypisz surowe pola z API dla 3 zbiorów (bez importu i publikacji)'
+        type: boolean
+        default: false
+
+concurrency: { group: mieszkania, cancel-in-progress: false }
+
+jobs:
+  import-build-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      MIESZKANIA_DB: ${{ github.workspace }}/data/mieszkania.sqlite
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm test
+
+      - name: Pobierz bazę z R2
+        working-directory: sites/mieszkania
+        run: |
+          mkdir -p ../../data
+          npx wrangler r2 bucket create serwisy-dane 2>/dev/null || true
+          if npx wrangler r2 object get serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote; then
+            gunzip -f ../../data/mieszkania.sqlite.gz
+          else
+            echo "Brak bazy w R2: zaczynamy od zera (wczytanie historii)."
+          fi
+
+      - name: Podgląd surowych pól API
+        if: ${{ inputs.dry_run }}
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --dry-run --limit 3
+
+      - name: Uzupełnij historię cenników
+        id: backfill
+        if: ${{ !inputs.dry_run }}
+        continue-on-error: true   # kod 3 = historia jeszcze niepełna, ciąg dalszy jutro
+        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 240
+
+      - name: Import bieżących cenników
+        id: harvest
+        if: ${{ !inputs.dry_run && steps.backfill.outcome == 'success' }}
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest
+        # kod 2 = bramka jakości zatrzymała publikację; serwis się nie zbuduje
+
+      - name: Zapisz bazę i alarmy w R2
+        if: ${{ always() && !inputs.dry_run }}
+        working-directory: sites/mieszkania
+        run: |
+          [ -f ../../data/mieszkania.sqlite ] || { echo "Brak bazy do zapisania."; exit 0; }
+          STATUS=$(node -p "require('../../data/last-run.json').status" 2>/dev/null || echo brak)
+          echo "Stan importu: $STATUS"
+          gzip -kf ../../data/mieszkania.sqlite
+          DAY=$(date -u +%F)
+          npx wrangler r2 object put "serwisy-dane/kopie/mieszkania-$DAY.sqlite.gz" --file ../../data/mieszkania.sqlite.gz --remote
+          if [ "$STATUS" = "ok" ] || [ "$STATUS" = "historia-niepelna" ]; then
+            npx wrangler r2 object put serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote
+          fi
+          npx wrangler r2 object put serwisy-dane/mieszkania/alarms.json --file ../../data/alarms.json --remote || true
+          npx wrangler r2 object put serwisy-dane/mieszkania/last-run.json --file ../../data/last-run.json --remote || true
+
+      - name: Zbuduj serwis
+        if: ${{ !inputs.dry_run && steps.harvest.outcome == 'success' }}
+        run: npm run build -w @serwisy/mieszkania
+
+      - name: Opublikuj w Cloudflare Workers
+        if: ${{ !inputs.dry_run && steps.harvest.outcome == 'success' }}
+        run: npx wrangler deploy
+        working-directory: sites/mieszkania

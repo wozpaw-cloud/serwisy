@@ -1,0 +1,12 @@
+{
+  "name": "serwisy",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "sites/*"],
+  "scripts": {
+    "test": "npm run test -w @serwisy/mieszkania-dane",
+    "mieszkania:sample": "npm run sample -w @serwisy/mieszkania-dane",
+    "mieszkania:build": "npm run build -w @serwisy/mieszkania"
+  },
+  "engines": { "node": ">=22.13" }
+}

@@ -1,0 +1,19 @@
+---
+// Przełącznik poziomu na stronach list: województwa, powiaty, gminy, miasta.
+import { voivodeships, livePowiaty, liveGminas, citiesWithPage, powiatLink, gminaLink } from '../lib/data';
+import { num } from '../lib/format';
+
+interface Props { current: 'wojewodztwa' | 'powiaty' | 'gminy' | 'miasta' }
+const { current } = Astro.props;
+const tabs = [
+  { key: 'wojewodztwa', href: '/wojewodztwa/', label: 'Województwa', n: voivodeships.length },
+  { key: 'powiaty', href: '/powiaty/', label: 'Powiaty', n: livePowiaty.filter((p) => powiatLink(p)).length },
+  { key: 'gminy', href: '/gminy/', label: 'Gminy', n: liveGminas.filter((g) => gminaLink(g)).length },
+  { key: 'miasta', href: '/miasta/', label: 'Miasta', n: citiesWithPage.length },
+];
+---
+<nav class="level-tabs" aria-label="Poziom podziału">
+  {tabs.map((t) => (
+    <a href={t.href} aria-current={t.key === current ? 'page' : undefined}>{t.label}<span class="n">{num(t.n)}</span></a>
+  ))}
+</nav>

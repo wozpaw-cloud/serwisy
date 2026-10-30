@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import AreaReport from '../../components/AreaReport.astro';
+import AiNote from '../../components/AiNote.astro';
+import { M, citiesWithPage, citySnap, cityKey, nationalSeries, href, gminaHasPage, powiatHasPage, chainCity, crumbsOf, voivLink } from '../../lib/data';
+import { num, zlM2 } from '../../lib/format';
+import { areaLead } from '../../lib/text';
+import type { City } from '@serwisy/mieszkania-dane/query';
+
+export function getStaticPaths() {
+  return citiesWithPage.map((city) => ({ params: { slug: city.slug }, props: { city } }));
+}
+const { city } = Astro.props as { city: City };
+const s = citySnap(city);
+const g = city.gmina;
+const p = g.powiat;
+const chain = chainCity(city);
+const title = `Ceny mieszkań od deweloperów: ${city.name}`;
+const description = `${city.name}: mediana ${zlM2(s.medianM2)} w ofertach deweloperów, ${num(s.units)} lokali w ofercie. Indeks cen, obniżki i inwestycje z cenników w dane.gov.pl.`;
+const vHref = voivLink(city.voivodeship);
+---
+<Base title={title} description={description} crumbs={[...crumbsOf(chain), { label: city.name }]} current="/regiony/">
+  <section class="hero">
+    <h1>{title}</h1>
+    <p class="lead">{areaLead(s)}</p>
+    <p class="place-note">
+      {g.urban ? 'Miasto na prawach powiatu' : <>Gmina {gminaHasPage(g) ? <a href={href.gmina(g)}>{g.name}</a> : g.name}{p ? <>, {powiatHasPage(p) ? <a href={href.powiat(p)}>powiat {p.name}</a> : `powiat ${p.name}`}</> : ''}</>}
+      {city.voivodeship && <>, {vHref ? <a href={vHref}>województwo {city.voivodeship}</a> : `województwo ${city.voivodeship}`}</>}.
+    </p>
+    <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
+  </section>
+
+  <AreaReport name={city.name} skey={cityKey(city)} units={city.units} investments={city.investments} chain={chain} compare={{ label: 'Polska', title: 'cała Polska', points: nationalSeries().index }} ad="city-1" />
+
+  <p class="source">Źródło: cenniki deweloperów z dane.gov.pl, obliczenia własne. Ceny ofertowe, nie transakcyjne. Miasto według miejscowości lokalizacji inwestycji podanej w cenniku. <a href="/metodologia/">Jak liczymy</a>.</p>
+</Base>

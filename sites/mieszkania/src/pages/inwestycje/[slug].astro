@@ -1,0 +1,142 @@
+---
+import Base from '../../layouts/Base.astro';
+import LineChart from '../../components/LineChart.astro';
+import Change from '../../components/Change.astro';
+import AdSlot from '../../components/AdSlot.astro';
+import AiNote from '../../components/AiNote.astro';
+import { M, href, invStats, invIsCurrent, chainCity } from '../../lib/data';
+import { fold } from '@serwisy/mieszkania-dane';
+import { dateLong, dateShort, num, pct, units, zl, zlM2, m2 } from '../../lib/format';
+import type { Investment, Unit } from '@serwisy/mieszkania-dane/query';
+
+export function getStaticPaths() {
+  return M.investments.filter((inv) => inv.units.length > 0).map((inv) => ({ params: { slug: inv.slug }, props: { inv } }));
+}
+const { inv } = Astro.props as { inv: Investment };
+const st = invStats(inv);
+const ser = M.series(`i:${inv.id}`, inv.units, 3);
+const changes = M.priceChanges(inv.units, 2000);
+// Deweloperzy zwykle przeceniają wiele lokali naraz, więc zmiany grupujemy po dniu.
+const byDay = [...Map.groupBy(changes, (c) => c.date)].map(([date, cs]) => {
+  const ch = cs.map((c) => c.change).sort((a, b) => a - b);
+  return { date, n: cs.length, med: ch[Math.floor(ch.length / 2)], min: ch[0], max: ch.at(-1)!, refs: cs.map((c) => c.unit.ref) };
+}).sort((a, b) => b.date.localeCompare(a.date));
+const gone = inv.units.filter((u) => M.currentM2(u) === null).sort((a, b) => (M.lastSeen(b) ?? '').localeCompare(M.lastSeen(a) ?? ''));
+const byRef = (a: Unit, b: Unit) => a.ref.localeCompare(b.ref, 'pl', { numeric: true });
+const offer = [...st.inOffer].sort(byRef);
+const g = inv.city.gmina;
+const gminaPart = !g.urban && fold(g.name) !== fold(inv.city.name) ? `gmina ${g.name}` : null;
+const address = [inv.street ? `ul. ${inv.street}${inv.buildingNo ? ` ${inv.buildingNo}` : ''}` : null, inv.city.name, gminaPart].filter(Boolean).join(', ');
+// Okruszki: województwo › powiat › gmina › miejscowość (poziomy bez własnej strony bez odnośnika).
+const placeCrumbs = chainCity(inv.city).slice(1).map((a) => ({ label: a.label, href: a.href ?? undefined }));
+const kind = st.types.has('dom') && !st.types.has('mieszkanie') ? 'domy' : st.types.has('dom') ? 'mieszkania i domy' : 'mieszkania';
+const description = `${inv.name} (${inv.city.name}), ${inv.brand.name}: ${num(st.inOffer.length)} lokali w ofercie, mediana ${zlM2(st.medianM2)}. Historia cen każdego lokalu z cennika w dane.gov.pl.`;
+const typeLabel = (u: Unit) => (u.type === 'dom' ? 'dom' : 'mieszkanie');
+const firstPrice = (u: Unit) => u.prices[0];
+const lastChangeDate = (u: Unit) => (u.prices.length > 1 ? u.prices.at(-1)!.from : null);
+---
+<Base
+  title={`${inv.name}, ${inv.city.name}: ceny i historia cen`}
+  description={description}
+  noindex={!invIsCurrent(inv)}
+  crumbs={[...placeCrumbs, { label: inv.name }]}
+>
+  <section class="hero">
+    <h1>{inv.name}</h1>
+    <p class="lead">
+      {kind[0].toUpperCase() + kind.slice(1)} od dewelopera <a href={href.brand(inv.brand)}>{inv.brand.name}</a>, {address}.
+      {st.inOffer.length > 0
+        ? ` W cenniku jest ${units(st.inOffer.length)}, ${st.minTotal === st.maxTotal ? `za ${zl(st.minTotal)}` : `w cenach od ${zl(st.minTotal)} do ${zl(st.maxTotal)}`}.`
+        : ' Obecnie w cenniku nie ma lokali w ofercie.'}
+      {st.firstSeen && ` Inwestycja jest w cennikach od ${dateLong(st.firstSeen)}.`}
+    </p>
+    <AiNote source={`cennik dewelopera w dane.gov.pl`} date={M.asOf} />
+  </section>
+
+  <dl class="figures">
+    <div><dt>Lokale w ofercie</dt><dd>{num(st.inOffer.length)}</dd><span class="delta">{num(gone.length)} zniknęło z oferty</span></div>
+    <div><dt>Mediana ceny za m²</dt><dd>{zl(st.medianM2)}</dd><span class="delta">mediana metrażu {m2(st.medianArea)}</span></div>
+    <div><dt>Zmiana cen od wejścia</dt><dd><Change value={st.changeSinceFirst} /></dd><span class="delta">mediana dla lokali w ofercie</span></div>
+    <div><dt>Ostatnia zmiana ceny</dt><dd>{st.lastChange ? dateShort(st.lastChange) : 'brak'}</dd><span class="delta">{num(st.cuts4w)} obniżek w 4 tygodnie</span></div>
+  </dl>
+
+  <LineChart title="Mediana ceny za m² w inwestycji" sub="Lokale w cenniku w danym tygodniu. Spadek może też oznaczać, że sprzedały się droższe lokale." series={[{ label: inv.name, points: ser.median }]} format="zl" area={false} />
+
+  <AdSlot slot="inv-1" />
+
+  {offer.length > 0 && (
+    <section class="section">
+      <div class="section-head">
+        <h2>Lokale w ofercie</h2>
+        <p>Ceny z cennika z {dateLong(M.asOf)}. Zmiana liczona od pierwszej ceny lokalu w cennikach.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data sortable">
+          <thead><tr><th>Lokal</th><th>Rodzaj</th><th class="r">Powierzchnia</th><th class="r">Cena za m²</th><th class="r">Cena</th><th class="r">Zmiana od wejścia</th><th class="r">Ostatnia zmiana</th></tr></thead>
+          <tbody>
+            {offer.map((u) => {
+              const p = M.priceAt(u, M.asOf);
+              const f = firstPrice(u);
+              const lc = lastChangeDate(u);
+              return (
+                <tr>
+                  <td class="num" data-v={u.ref}>{u.ref}</td>
+                  <td data-v={`${typeLabel(u)} ${u.rooms ?? 0}`}>{typeLabel(u)}{u.rooms ? `, ${u.rooms} pok.` : ''}</td>
+                  <td class="r" data-v={u.area ?? ''}>{m2(u.area)}</td>
+                  <td class="r" data-v={p?.m2 ?? ''}>{zl(p?.m2 ?? null)}</td>
+                  <td class="r" data-v={p?.total ?? ''}>{zl(p?.total ?? null)}</td>
+                  <td class="r" data-v={p && f ? p.m2 / f.m2 - 1 : ''}><Change value={p && f ? p.m2 / f.m2 - 1 : null} /></td>
+                  <td class="r" data-v={lc ?? ''}>{lc ? dateShort(lc) : 'bez zmian'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  {byDay.length > 0 && (
+    <section class="section">
+      <div class="section-head"><h2>Zmiany cen</h2><p>{num(changes.length)} zmian ceny za m² w {num(byDay.length)} dniach, od najnowszych. Jedna zmiana to nowa cena jednego lokalu.</p></div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Dzień</th><th class="r">Lokale</th><th class="r">Mediana zmiany</th><th class="r">Najmniejsza</th><th class="r">Największa</th><th>Lokale</th></tr></thead>
+          <tbody>
+            {byDay.slice(0, 30).map((d) => (
+              <tr><td class="num">{dateShort(d.date)}</td><td class="r">{num(d.n)}</td><td class="r"><Change value={d.med} /></td><td class="r">{pct(d.min)}</td><td class="r">{pct(d.max)}</td><td class="small muted">{d.refs.slice(0, 8).join(', ')}{d.refs.length > 8 ? ` i ${d.refs.length - 8} innych` : ''}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
+
+  {gone.length > 0 && (
+    <details class="data-view">
+      <summary>Lokale, które zniknęły z oferty ({num(gone.length)})</summary>
+      <p class="small muted">Zniknięcie z cennika zwykle oznacza sprzedaż lub rezerwację, ale deweloper mógł też wycofać lokal.</p>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Lokal</th><th class="r">Powierzchnia</th><th class="r">Ostatnia cena za m²</th><th class="r">Ostatnia cena</th><th class="r">W ofercie do</th></tr></thead>
+          <tbody>
+            {gone.slice(0, 200).map((u) => {
+              const p = u.prices.at(-1);
+              return <tr><td class="num">{u.ref}</td><td class="r">{m2(u.area)}</td><td class="r">{zl(p?.m2 ?? null)}</td><td class="r">{zl(p?.total ?? null)}</td><td class="r">{dateShort(M.lastSeen(u) ?? M.asOf)}</td></tr>;
+            })}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  )}
+
+  <section class="section">
+    <div class="section-head"><h2>Dokumenty dewelopera</h2></div>
+    <ul class="list-plain">
+      {inv.prospectusUrl && <li><a href={inv.prospectusUrl} rel="nofollow noopener">Prospekt informacyjny inwestycji</a> (strona dewelopera)</li>}
+      <li>Podmiot w cenniku: {inv.brand.legalNames.join(', ')}</li>
+    </ul>
+  </section>
+
+  <p class="source">Źródło: cennik dewelopera opublikowany w dane.gov.pl ({inv.units[0]?.dataset}), obliczenia własne. Ceny ofertowe, nie transakcyjne. Pełna cena lokalu z miejscem postojowym i innymi składnikami jest w cenniku dewelopera. <a href="/metodologia/">Jak liczymy</a>.</p>
+</Base>
