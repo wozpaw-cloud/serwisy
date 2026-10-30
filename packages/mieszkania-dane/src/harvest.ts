@@ -14,7 +14,9 @@ import { guessFormat, parseFile } from './parse.ts';
 
 export const API = process.env.DANE_API ?? 'https://api.dane.gov.pl/1.4';
 const UA = 'prostedane.pl importer (kontakt@prostedane.pl)';
-const TITLE_RE = /ceny ofertowe (mieszka[nń]|lokali|dom[óo]w)/i;
+// Tytuły bywają różne: "Ceny ofertowe mieszkań/domów/lokali …", "Ceny ofertowe inwestycji …",
+// "Ceny ofertowe nieruchomości dewelopera …". Pliki bez kolumn cennika odrzuca import.
+const TITLE_RE = /ceny ofertowe/i;
 const TITLE_PHRASE = 'ceny ofertowe';
 const WINDOW = 10000;
 

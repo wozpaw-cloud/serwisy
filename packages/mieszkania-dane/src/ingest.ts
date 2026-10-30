@@ -78,7 +78,7 @@ export function ingestSnapshot(
     invUpd: db.prepare('UPDATE investments SET name = coalesce(?, name), prospectus_url = coalesce(?, prospectus_url) WHERE id = ?'),
     unitFind: db.prepare('SELECT id FROM units WHERE key = ?'),
     unitIns: db.prepare('INSERT INTO units(key, investment_id, dataset_id, ref, type, area, rooms) VALUES (?,?,?,?,?,?,?)'),
-    unitUpd: db.prepare('UPDATE units SET area = coalesce(?, area), rooms = coalesce(?, rooms), type = ? WHERE id = ?'),
+    unitUpd: db.prepare('UPDATE units SET area = coalesce(?, area), rooms = coalesce(?, rooms), type = ?, dataset_id = ? WHERE id = ?'),
     presLast: db.prepare('SELECT from_date, to_date FROM presence WHERE unit_id = ? ORDER BY from_date DESC LIMIT 1'),
     presExt: db.prepare('UPDATE presence SET to_date = ? WHERE unit_id = ? AND from_date = ?'),
     presIns: db.prepare('INSERT INTO presence(unit_id, from_date, to_date) VALUES (?,?,?)'),
@@ -118,12 +118,14 @@ export function ingestSnapshot(
         invCache.set(ik, invId);
       }
 
-      const uk = `${datasetId}|${ik}|${fold(r.unitRef)}`;
+      // Bez numeru zbioru: deweloperzy zakładają nowy zbiór co rok ("… w 2026 r."), a lokal
+      // ma zachować historię cen. Lokal rozpoznajemy po deweloperze, inwestycji i numerze.
+      const uk = `${ik}|${fold(r.unitRef)}`;
       const urow = q.unitFind.get(uk) as { id: number } | undefined;
       let unitId: number;
       if (urow) {
         unitId = urow.id;
-        q.unitUpd.run(r.area, r.rooms, r.unitType, unitId);
+        q.unitUpd.run(r.area, r.rooms, r.unitType, datasetId, unitId);
       } else {
         unitId = Number(q.unitIns.run(uk, invId, datasetId, r.unitRef, r.unitType, r.area, r.rooms).lastInsertRowid);
         newUnits++;

@@ -55,3 +55,16 @@ describe('indeks dla lokali, które weszły do oferty później', () => {
       .toEqual([null, 100, Math.round(100 * Math.exp(Math.log(0.95) / 2) * 1000) / 1000]);
   });
 });
+
+describe('nowy zbiór na nowy rok', () => {
+  const db = openDb(':memory:');
+  ingestSnapshot(db, { datasetId: 'D2025', date: '2025-12-30' }, file([row('1', 10000), row('2', 11000)]));
+  ingestSnapshot(db, { datasetId: 'D2026', date: '2026-01-02' }, file([row('1', 10500), row('2', 11000)]));
+  it('ten sam lokal w zbiorze z kolejnego roku zachowuje historię cen', () => {
+    const m = new Model(db);
+    expect(m.units).toHaveLength(2);
+    const u1 = m.units.find((u) => u.ref === '1')!;
+    expect(u1.prices.map((p) => p.m2)).toEqual([10000, 10500]);
+    expect(u1.dataset).toBe('D2026');
+  });
+});
