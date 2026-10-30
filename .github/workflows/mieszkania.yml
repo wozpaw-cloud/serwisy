@@ -49,6 +49,17 @@ jobs:
             echo "Brak bazy w R2: zaczynamy od zera (wczytanie historii)."
           fi
 
+      - name: Sprawdzenie kluczy Cloudflare
+        if: ${{ inputs.dry_run }}
+        continue-on-error: true
+        working-directory: sites/mieszkania
+        run: |
+          {
+            if [ -n "$CLOUDFLARE_API_TOKEN" ]; then echo "CLOUDFLARE_API_TOKEN: jest"; else echo "CLOUDFLARE_API_TOKEN: BRAK"; fi
+            if [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then echo "CLOUDFLARE_ACCOUNT_ID: jest (${#CLOUDFLARE_ACCOUNT_ID} znaków)"; else echo "CLOUDFLARE_ACCOUNT_ID: BRAK"; fi
+            if npx wrangler r2 bucket list > /tmp/r2.txt 2>&1; then echo "R2: dostęp działa"; else echo "R2: błąd"; grep -iE "error|enable|auth|permission|code" /tmp/r2.txt | head -6; fi
+          } 2>&1 | tee ../../data/cloudflare.txt
+
       - name: Sprawdzenie API dane.gov.pl
         if: ${{ inputs.dry_run }}
         timeout-minutes: 10
@@ -69,7 +80,7 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p /tmp/diag
-          cp data/probe.txt data/dry-run.txt /tmp/diag/ 2>/dev/null || true
+          cp data/probe.txt data/dry-run.txt data/cloudflare.txt /tmp/diag/ 2>/dev/null || true
           cd /tmp/diag
           date -u +%FT%TZ > czas.txt
           git init -q && git checkout -q -b diagnostyka

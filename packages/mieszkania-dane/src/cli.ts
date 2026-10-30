@@ -92,6 +92,8 @@ async function main(): Promise<number> {
       // Kod 0: historia kompletna. Kod 3: skończył się limit czasu, ciąg dalszy przy następnym uruchomieniu.
       const db = openDb();
       const lim = opt('limit') ? Number(opt('limit')) : undefined;
+      // Historia co 28 dni: obecność lokalu nie może się urywać między kolejnymi cennikami.
+      process.env.PRESENCE_GAP_DAYS ??= '35';
       const ids = (await listDeveloperDatasets({ stopAfter: lim })).map((d) => d.id).slice(0, lim);
       const res = await backfill(db, { datasetIds: ids, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       console.log(JSON.stringify({ historia: { zbiory: res.total, pozostalo: res.remaining, bledy: res.errors.length } }));

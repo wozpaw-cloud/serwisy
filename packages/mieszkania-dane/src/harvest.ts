@@ -1,9 +1,12 @@
 // Pobieranie cenników z dane.gov.pl (API 1.4, format JSON:API).
 //
-// UWAGA: tego modułu nie dało się uruchomić w środowisku, w którym powstał kod
-// (brak dostępu sieciowego do dane.gov.pl). Nazwy pól odpowiedzi czytamy
-// defensywnie z kilku wariantów. Pierwsze uruchomienie w GitHub Actions trzeba
-// obejrzeć w logu: komenda "harvest --dry-run" wypisuje surowe pola zasobu.
+// Sprawdzone na prawdziwym API (30.10.2026, komenda "probe" w GitHub Actions):
+//  - zbiory deweloperów mają tytuł "Ceny ofertowe mieszkań/domów …"; filtr
+//    title[phrase]=ceny ofertowe zwraca tylko je (ok. 18,6 tys. zbiorów),
+//    a wyszukiwanie pełnotekstowe (q=) zwraca dziesiątki tysięcy innych zbiorów;
+//  - paginacja kończy się na 10 000 wyników, więc listę pobieramy dwa razy:
+//    rosnąco i malejąco po id, i łączymy (wystarcza do 20 000 zbiorów);
+//  - zasób (dzienny cennik) ma pola data_date (RRRR-MM-DD), download_url, format.
 
 import type { DatabaseSync } from 'node:sqlite';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
@@ -12,6 +15,8 @@ import { guessFormat, parseFile } from './parse.ts';
 export const API = process.env.DANE_API ?? 'https://api.dane.gov.pl/1.4';
 const UA = 'prostedane.pl importer (kontakt@prostedane.pl)';
 const TITLE_RE = /ceny ofertowe (mieszka[nń]|lokali|dom[óo]w)/i;
+const TITLE_PHRASE = 'ceny ofertowe';
+const WINDOW = 10000;
 
 interface ApiItem { id: string | number; attributes?: Record<string, unknown>; links?: Record<string, unknown> }
 interface ApiList { data?: ApiItem[]; links?: { next?: string | null }; meta?: Record<string, unknown> }
@@ -42,21 +47,26 @@ async function getJson<T>(url: string, tries = 3): Promise<T> {
  */
 export async function listDeveloperDatasets(opts: { limitPages?: number; stopAfter?: number } = {}): Promise<DatasetRef[]> {
   const out = new Map<string, DatasetRef>();
-  const limitPages = opts.limitPages ?? 500;
+  const limitPages = opts.limitPages ?? 120;
   const started = Date.now();
-  for (const q of ['ceny ofertowe mieszkań dewelopera', 'ceny ofertowe deweloper']) {
+  let total = 0;
+  for (const sort of ['id', '-id']) {
     for (let page = 1; page <= limitPages; page++) {
-      const body = await getJson<ApiList>(`${API}/datasets?q=${encodeURIComponent(q)}&per_page=100&page=${page}`);
+      const body = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=${sort}&per_page=100&page=${page}`);
+      total = Number(body.meta?.count ?? total);
       const items = body.data ?? [];
       for (const it of items) {
         const title = String(it.attributes?.title ?? '');
         if (TITLE_RE.test(title)) out.set(String(it.id), { id: String(it.id), title });
       }
-      if (page % 10 === 0) console.error(`lista zbiorów: "${q}", strona ${page}, trafień ${out.size}, ${Math.round((Date.now() - started) / 1000)} s`);
+      if (page % 20 === 0) console.error(`lista zbiorów (${sort}): strona ${page}, zbiorów ${out.size} z ${total}, ${Math.round((Date.now() - started) / 1000)} s`);
       if (opts.stopAfter && out.size >= opts.stopAfter) return [...out.values()].slice(0, opts.stopAfter);
       if (!items.length || !body.links?.next) break;
     }
+    if (total <= WINDOW) break; // całość mieści się w jednym przebiegu
   }
+  console.error(`lista zbiorów: ${out.size} zbiorów z cenami (portal podaje ${total} dla frazy w tytule)`);
+  if (total > 2 * WINDOW) console.error(`UWAGA: zbiorów jest ponad ${2 * WINDOW}; część nie zmieściła się w dwóch przebiegach. Trzeba podzielić zapytanie.`);
   return [...out.values()];
 }
 
@@ -89,7 +99,8 @@ export async function probeApi(): Promise<void> {
     await show('fraza w cudzysłowie', `${API}/datasets?q=${enc('"ceny ofertowe mieszkań"')}&per_page=10`),
     await show('filtr tytułu (phrase)', `${API}/datasets?title[phrase]=${enc('ceny ofertowe')}&per_page=10`),
     await show('filtr tytułu (match)', `${API}/datasets?title[match]=${enc('ceny ofertowe mieszkań')}&per_page=10`),
-    await show('wyszukiwarka ogólna', `${API}/search?q=${enc('ceny ofertowe mieszkań dewelopera')}&per_page=10`),
+    await show('filtr tytułu, 100 na stronę, malejąco', `${API}/datasets?title[phrase]=${enc('ceny ofertowe')}&sort=-id&per_page=100`),
+    await show('filtr tytułu, strona 100', `${API}/datasets?title[phrase]=${enc('ceny ofertowe')}&sort=id&per_page=100&page=100`),
   ];
   const hit = bodies.flatMap((b) => b?.data ?? []).find((it) => TITLE_RE.test(String(it.attributes?.title ?? '')));
   if (!hit) { console.log('\nŻaden wariant nie zwrócił zbioru z tytułem pasującym do', TITLE_RE); return; }
@@ -180,7 +191,7 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
  * pierwsze wczytanie na kilka nocy; nowe zbiory (nowi deweloperzy) dostają historię
  * przy najbliższym uruchomieniu.
  */
-export async function backfill(db: DatabaseSync, opts: { datasetIds: string[]; perPage?: number; concurrency?: number; minutes?: number }) {
+export async function backfill(db: DatabaseSync, opts: { datasetIds: string[]; perPage?: number; concurrency?: number; minutes?: number; stepDays?: number }) {
   const summaries: IngestSummary[] = [];
   const errors: HarvestError[] = [];
   const done = new Set((db.prepare('SELECT dataset_id FROM backfill_done').all() as { dataset_id: string }[]).map((r) => r.dataset_id));
@@ -188,17 +199,23 @@ export async function backfill(db: DatabaseSync, opts: { datasetIds: string[]; p
   const markDone = db.prepare('INSERT OR REPLACE INTO backfill_done(dataset_id, finished) VALUES (?, ?)');
   const deadline = Date.now() + (opts.minutes ?? Infinity) * 60000;
   let finished = 0;
-  await pool(todo, opts.concurrency ?? 6, async (id) => {
+  let lastLog = Date.now();
+  await pool(todo, opts.concurrency ?? 10, async (id) => {
     if (Date.now() > deadline) return;
+    if (Date.now() - lastLog > 60000) { lastLog = Date.now(); console.error(`historia: ${finished} z ${todo.length} zbiorów, plików ${summaries.length}`); }
     try {
       const all = await listResources(id, opts.perPage ?? 500);
-      const weekly = new Map<string, ResourceRef>();
+      // Jeden cennik na okres (domyślnie 28 dni): niemal każdy deweloper publikuje codziennie,
+      // więc pełna historia dzień po dniu to ponad milion plików.
+      const step = opts.stepDays ?? 28;
+      const periodic = new Map<number, ResourceRef>();
       for (const r of all.sort((a, b) => a.date.localeCompare(b.date))) {
-        const d = new Date(r.date + 'T00:00:00Z');
-        const week = `${d.getUTCFullYear()}-${Math.floor((d.getTime() / 86400000 + 3) / 7)}`;
-        weekly.set(week, r); // zostaje ostatni cennik tygodnia
+        const day = Math.floor(new Date(r.date + 'T00:00:00Z').getTime() / 86400000);
+        periodic.set(Math.floor(day / step), r); // zostaje ostatni cennik okresu
       }
-      for (const r of weekly.values()) {
+      const latest = all.at(-1);
+      if (latest) periodic.set(Number.MAX_SAFE_INTEGER, latest); // i zawsze najnowszy
+      for (const r of [...periodic.values()].filter((r, i, xs) => xs.indexOf(r) === i)) {
         const parsed = await parseFile(await download(r.url), r.format);
         summaries.push(ingestSnapshot(db, { datasetId: id, date: r.date, sourceUrl: r.url }, parsed));
       }

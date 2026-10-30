@@ -6,7 +6,9 @@ import { fold, websiteHost } from './normalize.ts';
 import type { ParseResult, PriceRecord } from './parse.ts';
 
 /** Przerwa w publikacji cennika krótsza niż tyle dni nie przerywa obecności lokalu w ofercie. */
-export const PRESENCE_GAP_DAYS = Number(process.env.PRESENCE_GAP_DAYS ?? 4);
+/** Ile dni przerwy między cennikami nie przerywa obecności lokalu. Czytane przy każdym
+ *  wczytaniu (nie przy starcie), żeby komendy mogły je ustawić. */
+export const presenceGapDays = () => Number(process.env.PRESENCE_GAP_DAYS ?? 4);
 
 export interface IngestSummary {
   datasetId: string;
@@ -90,7 +92,7 @@ export function ingestSnapshot(
   const seen = new Set<number>();
   let newUnits = 0;
   let priceChanges = 0;
-  const gapLimit = addDays(date, -PRESENCE_GAP_DAYS);
+  const gapLimit = addDays(date, -presenceGapDays());
 
   tx(db, () => {
     for (const r of parsed.records) {
