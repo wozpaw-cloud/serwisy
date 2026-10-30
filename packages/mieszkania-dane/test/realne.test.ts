@@ -110,3 +110,28 @@ describe('kolejne szablony z prawdziwych plików', () => {
     expect(cityFromAddress('62-095 Murowana Goślina, ul. Długa 1')).toBe('Murowana Goślina');
   });
 });
+
+describe('pliki bez numerów lokali i bez adresu inwestycji', () => {
+  it('lokal rozpoznany po rodzaju i powierzchni, gdy plik nie ma numerów', () => {
+    const t = readCsv([
+      'Nazwa dewelopera;Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego;Nr lokalu lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego;Typ;Pow. użytkowa;Cena od pow. użytk. (brutto);Cena obowiązuje od;Cena/m2 pow. użytk. (brutto);Cena za m2 obowiązuje od',
+      'HG;Kobyłka;X;Mieszkanie;142.43;1150000;2025-09-08;8074.14;2025-09-08',
+      'HG;Kobyłka;X;Mieszkanie;142.43;1160000;2025-09-08;8144.34;2025-09-08',
+      'HG;Kobyłka;X;Dom;120;990000;2025-09-08;8250;2025-09-08',
+    ].join('\n'));
+    const p = toRecords(t);
+    expect(p.records.map((r) => r.unitRef)).toEqual(['lokal 142,43 m²', 'lokal 142,43 m² (2)', 'dom 120,00 m²']);
+    expect(p.records[0]).toMatchObject({ priceTotal: 1150000, priceM2: 8074.14, priceM2Date: '2025-09-08', city: 'Kobyłka' });
+  });
+  it('miejscowość z biura sprzedaży, gdy kolumny inwestycji mają "X"', () => {
+    const t = readCsv([
+      'Nazwa dewelopera;Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera;Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera;Województwo adresu lokalu, w którym prowadzona jest sprzedaż;Miejscowość adresu lokalu, w którym prowadzona jest sprzedaż;Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego;Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego;Nr lokalu lub domu jednorodzinnego nadany przez dewelopera;Cena m 2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł]',
+      'BUMA;małopolskie;Kraków;małopolskie;Wieliczka;X;X;7;12900',
+    ].join('\n'));
+    expect(toRecords(t).records[0]).toMatchObject({ city: 'Wieliczka', voivodeship: 'małopolskie', unitRef: '7' });
+  });
+  it('cena za m² równa zero liczona z ceny i powierzchni', () => {
+    const t = readCsv('Nazwa dewelopera;Miejscowość;Nr lokalu;Powierzchnia;Cena za m2 nieruchomości;Cena nieruchomości\nD;Łódź;1;50;0.00;450000');
+    expect(toRecords(t).records[0].priceM2).toBe(9000);
+  });
+});

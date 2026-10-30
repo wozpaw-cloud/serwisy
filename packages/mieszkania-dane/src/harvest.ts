@@ -149,6 +149,13 @@ export async function probeParse(sample = 60): Promise<void> {
       console.log(`\n### ${it.id} | ${title}\n   ${res.date} ${res.format} | wierszy ${p.rowsRead}, lokali ${p.records.length}, sprzedanych ${p.sold}` +
         `\n   odrzucone: ${JSON.stringify(p.rejected)} | brak kolumn: ${p.missingColumns.join(', ') || '-'}` +
         (r ? `\n   przykład: ${JSON.stringify({ dew: r.devName, woj: r.voivodeship, pow: r.county, gm: r.gmina, m: r.city, inw: r.investmentName, nr: r.unitRef, typ: r.unitType, pow_m2: r.area, zl_m2: r.priceM2, zl: r.priceTotal, data: r.priceM2Date })}` : ''));
+      for (const [why, row] of Object.entries(p.rejectedSample ?? {})) {
+        if (why === 'brak wymaganych kolumn') continue;
+        const t = await readTable(buf, sniffFormat(buf) ?? res.format);
+        const { map } = mapColumns(t.headers);
+        const pick = Object.fromEntries(Object.entries(map).filter(([f]) => /city|unitRef|unitType|price|area|status|address|devName/.test(f)).map(([f, i]) => [f, (row as unknown[])[i as number]]));
+        console.log(`   odrzucony („${why}”): ${JSON.stringify(pick).slice(0, 400)}`);
+      }
       if (!p.records.length) {
         const table = await readTable(buf, sniffFormat(buf) ?? res.format);
         const { map } = mapColumns(table.headers);

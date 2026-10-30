@@ -36,6 +36,8 @@ export interface PriceRecord {
 
 export interface ParseResult {
   records: PriceRecord[];
+  /** Pierwszy odrzucony wiersz dla każdego powodu (do diagnostyki). */
+  rejectedSample?: Record<string, unknown[]>;
   rowsRead: number;
   /** wiersze lokali oznaczonych jako sprzedane: pomijane, ale to nie błąd */
   sold: number;
@@ -159,7 +161,9 @@ const ALIAS_HEADERS: Record<Field, string> = {
   devName: 'Nazwa dewelopera', devKrs: 'Nr KRS', devNip: 'NIP',
   devWebsite: 'Adres strony internetowej dewelopera', prospectusUrl: 'Prospekt informacyjny',
   voivodeship: 'Województwo lokalizacji', county: 'Powiat lokalizacji', gmina: 'Gmina lokalizacji',
-  city: 'Miejscowość lokalizacji', address: 'Adres inwestycji', street: 'Ulica lokalizacji', buildingNo: 'Nr nieruchomości lokalizacji',
+  city: 'Miejscowość lokalizacji', address: 'Adres inwestycji', street: 'Ulica lokalizacji',
+  salesCity: 'Miejscowość adresu lokalu, w którym prowadzona jest sprzedaż', salesVoiv: 'Województwo adresu lokalu, w którym prowadzona jest sprzedaż',
+  seatCity: 'Miejscowość adresu siedziby dewelopera', seatVoiv: 'Województwo adresu siedziby dewelopera', buildingNo: 'Nr nieruchomości lokalizacji',
   postalCode: 'Kod pocztowy lokalizacji', investmentName: 'Nazwa inwestycji',
   unitType: 'Rodzaj nieruchomości', unitRef: 'Nr lokalu lub domu',
   priceM2: 'Cena m2 powierzchni użytkowej', priceM2Date: 'Data od której obowiązuje cena m2 powierzchni',
@@ -268,24 +272,49 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
   const { map, unknown } = mapColumns(table.headers);
   const missing = missingRequired(map);
   const rejected: Record<string, number> = {};
-  const reject = (why: string) => { rejected[why] = (rejected[why] ?? 0) + 1; };
+  const rejectedSample: Record<string, unknown[]> = {};
+  let current: unknown[] = [];
+  const reject = (why: string) => { rejected[why] = (rejected[why] ?? 0) + 1; rejectedSample[why] ??= current; };
   const records: PriceRecord[] = [];
   let sold = 0;
+  // Plik bez numerów lokali (brak kolumny albo prawie same puste wartości): lokal
+  // rozpoznajemy po rodzaju i powierzchni, z licznikiem dla powtórzeń w pliku.
+  const refFilled = map.unitRef === undefined ? 0
+    : table.rows.filter((r) => r && !isEmpty(r[map.unitRef!])).length / Math.max(1, table.rows.length);
+  const syntheticRefs = refFilled < 0.1;
+  const refCount = new Map<string, number>();
   if (missing.length) {
     return { records, rowsRead: table.rows.length, sold: 0, rejected: { 'brak wymaganych kolumn': table.rows.length }, unknownHeaders: unknown, missingColumns: missing, format };
   }
 
   for (const row of table.rows) {
     if (!row || row.every((v) => isEmpty(v))) continue;
+    current = row;
     const devName = text(cell(row, map, 'devName')) ?? opts.devFallback ?? null;
-    const cityRaw = text(cell(row, map, 'city')) ?? cityFromAddress(text(cell(row, map, 'address')));
-    const unitRef = text(cell(row, map, 'unitRef'));
+    // Miejsce: inwestycja, potem cały adres, potem biuro sprzedaży, na końcu siedziba dewelopera.
+    const invCity = text(cell(row, map, 'city')) ?? cityFromAddress(text(cell(row, map, 'address')));
+    const salesCity = invCity ? null : text(cell(row, map, 'salesCity'));
+    const seatCity = invCity || salesCity ? null : text(cell(row, map, 'seatCity'));
+    const cityRaw = invCity ?? salesCity ?? seatCity;
+    const voivRaw = invCity ? text(cell(row, map, 'voivodeship')) : salesCity ? text(cell(row, map, 'salesVoiv')) : text(cell(row, map, 'seatVoiv'));
+    let unitRef = text(cell(row, map, 'unitRef'));
+    if (!unitRef && syntheticRefs) {
+      const a = parseNumber(cell(row, map, 'area'));
+      if (a && a > 0) {
+        const base = `${unitTypeOf(cell(row, map, 'unitType')) === 'dom' ? 'dom' : 'lokal'} ${a.toFixed(2).replace('.', ',')} m²`;
+        const n = (refCount.get(base) ?? 0) + 1;
+        refCount.set(base, n);
+        unitRef = n > 1 ? `${base} (${n})` : base;
+      }
+    }
     if (!devName || !cityRaw || !unitRef) { reject('brak dewelopera, miejscowości lub numeru lokalu'); continue; }
 
-    let priceM2 = parseNumber(cell(row, map, 'priceM2'));
-    let priceTotal = parseNumber(cell(row, map, 'priceTotal'));
-    const priceFull = parseNumber(cell(row, map, 'priceFull'));
-    let area = parseNumber(cell(row, map, 'area'));
+    // Zero i liczby ujemne traktujemy jak brak wartości (np. "0.00" zamiast ceny za m²).
+    const positive = (v: number | null) => (v !== null && v > 0 ? v : null);
+    let priceM2 = positive(parseNumber(cell(row, map, 'priceM2')));
+    let priceTotal = positive(parseNumber(cell(row, map, 'priceTotal')));
+    const priceFull = positive(parseNumber(cell(row, map, 'priceFull')));
+    let area = positive(parseNumber(cell(row, map, 'area')));
     if (priceTotal === null && priceFull !== null && priceM2 !== null && area !== null) priceTotal = priceFull;
     if (area === null && priceM2 && priceTotal) area = Math.round((priceTotal / priceM2) * 100) / 100;
     if (priceM2 === null && priceTotal && area) priceM2 = Math.round((priceTotal / area) * 100) / 100;
@@ -305,9 +334,11 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
       devKrs: text(cell(row, map, 'devKrs')),
       devNip: text(cell(row, map, 'devNip'))?.replace(/\D/g, '') || null,
       devWebsite: text(cell(row, map, 'devWebsite')),
-      voivodeship: cleanVoivodeship(text(cell(row, map, 'voivodeship'))),
-      county: text(cell(row, map, 'county')),
-      gmina: text(cell(row, map, 'gmina')),
+      voivodeship: cleanVoivodeship(voivRaw),
+      // Powiat i gminę bierzemy tylko z adresu inwestycji; przy mieście z biura lub siedziby
+      // gminę uzupełnia model danych na podstawie innych cenników z tej miejscowości.
+      county: invCity ? text(cell(row, map, 'county')) : null,
+      gmina: invCity ? text(cell(row, map, 'gmina')) : null,
       city: titleCase(cityRaw),
       street: text(cell(row, map, 'street')),
       buildingNo: text(cell(row, map, 'buildingNo')),
@@ -325,7 +356,7 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
       prospectusUrl: text(cell(row, map, 'prospectusUrl')),
     });
   }
-  return { records, rowsRead: table.rows.length, sold, rejected, unknownHeaders: unknown, missingColumns: [], format };
+  return { records, rowsRead: table.rows.length, sold, rejected, rejectedSample, unknownHeaders: unknown, missingColumns: [], format };
 }
 
 export async function parseFile(buf: Buffer, format: string, opts: { devFallback?: string | null } = {}): Promise<ParseResult> {

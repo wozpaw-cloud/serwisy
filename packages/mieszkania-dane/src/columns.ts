@@ -8,6 +8,7 @@ import { fold } from './normalize.ts';
 export type Field =
   | 'devName' | 'devKrs' | 'devNip' | 'devWebsite'
   | 'voivodeship' | 'county' | 'gmina' | 'city' | 'street' | 'buildingNo' | 'postalCode' | 'address'
+  | 'salesCity' | 'salesVoiv' | 'seatCity' | 'seatVoiv'
   | 'investmentName' | 'unitType' | 'unitRef'
   | 'priceM2' | 'priceM2Date' | 'priceTotal' | 'priceTotalDate' | 'priceFull' | 'priceFullDate'
   | 'area' | 'rooms' | 'status' | 'prospectusUrl';
@@ -40,6 +41,11 @@ const RULES: [Field, Rule][] = [
   ['county', loc(/powiat/, ['powiat'])],
   ['gmina', loc(/\bgmin/, ['gmina'])],
   ['city', loc(/miejscowosc|miasto/, ['miejscowosc', 'miasto', 'miejscowosc inwestycji', 'lokalizacja miejscowosc', 'miasto inwestycji'])],
+  // Biuro sprzedaży i siedziba dewelopera: zapasowe miejsce, gdy kolumny inwestycji są puste ("x").
+  ['salesCity', (h) => h.includes('sprzedaz') && /miejscowosc|miasto/.test(h)],
+  ['salesVoiv', (h) => h.includes('sprzedaz') && h.includes('wojewodztw')],
+  ['seatCity', (h) => /siedzib|glownego miejsca/.test(h) && /miejscowosc|miasto/.test(h)],
+  ['seatVoiv', (h) => /siedzib|glownego miejsca/.test(h) && h.includes('wojewodztw')],
   // Cały adres w jednej kolumnie: miasto wyciągamy z adresu, gdy nie ma osobnej kolumny.
   ['address', (h) => h === 'adres' || /^adres (inwestycji|lokalu|nieruchomosci|przedsiewziecia)$/.test(h) ||
     /^lokalizacja( przedsiewzi[e]?cia deweloperskiego| inwestycji)?$/.test(h)],
@@ -61,7 +67,7 @@ const RULES: [Field, Rule][] = [
   ['priceM2', (h) => !startsData(h) && h.includes('cena') && M2.test(h) &&
     !/iloczy|uwzgledn|calkowit|razem/.test(h) && !NOT_UNIT_PRICE.test(h)],
   ['priceTotal', (h) => !startsData(h) && !h.includes('uwzgledn') && !NOT_UNIT_PRICE.test(h) &&
-    (ILOCZYN.test(h) || h === 'cena' || /^cena (pln|zl|brutto pln|brutto zl)$/.test(h) ||
+    (ILOCZYN.test(h) || h === 'cena' || /^cena (pln|zl|brutto pln|brutto zl)$/.test(h) || /^cena od pow/.test(h) ||
      (/^(calkowita )?cena (lokalu|domu|nieruchomosci|calkowita|brutto|produktu|ofertowa)/.test(h) && !M2.test(h)))],
   ['priceFull', (h) => !startsData(h) && h.includes('uwzgledn') && h.startsWith('cena lokalu')],
 
@@ -118,7 +124,8 @@ export const REQUIRED: Field[] = ['city', 'unitRef', 'priceM2'];
 export function missingRequired(map: ColumnMap): Field[] {
   const out: Field[] = [];
   if (map.city === undefined && map.address === undefined) out.push('city');
-  if (map.unitRef === undefined) out.push('unitRef');
+  // Bez numeru lokalu wystarczy powierzchnia: parse.ts tworzy wtedy oznaczenie z metrażu.
+  if (map.unitRef === undefined && map.area === undefined) out.push('unitRef');
   if (map.priceM2 === undefined && !(map.priceTotal !== undefined && map.area !== undefined)) out.push('priceM2');
   return out;
 }
