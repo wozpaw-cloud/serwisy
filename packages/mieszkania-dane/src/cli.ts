@@ -14,7 +14,7 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { Model } from './analytics.ts';
 import { dbPath, openDb } from './db.ts';
-import { backfill, harvest, listDeveloperDatasets } from './harvest.ts';
+import { backfill, harvest, listDeveloperDatasets, probeApi } from './harvest.ts';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
 import { guessFormat, parseFile } from './parse.ts';
 import { generateSample } from './sample.ts';
@@ -91,7 +91,8 @@ async function main(): Promise<number> {
     case 'backfill': {
       // Kod 0: historia kompletna. Kod 3: skończył się limit czasu, ciąg dalszy przy następnym uruchomieniu.
       const db = openDb();
-      const ids = (await listDeveloperDatasets()).map((d) => d.id).slice(0, opt('limit') ? Number(opt('limit')) : undefined);
+      const lim = opt('limit') ? Number(opt('limit')) : undefined;
+      const ids = (await listDeveloperDatasets({ stopAfter: lim })).map((d) => d.id).slice(0, lim);
       const res = await backfill(db, { datasetIds: ids, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       console.log(JSON.stringify({ historia: { zbiory: res.total, pozostalo: res.remaining, bledy: res.errors.length } }));
       if (res.remaining > res.errors.length) {
@@ -101,6 +102,10 @@ async function main(): Promise<number> {
       }
       return finish(db, report(res.summaries, res.errors));
     }
+    case 'probe': {
+      await probeApi();
+      return 0;
+    }
     case 'stats': {
       const db = openDb(dbPath(), { readonly: true });
       const model = new Model(db);
@@ -109,7 +114,7 @@ async function main(): Promise<number> {
       return 0;
     }
     default:
-      console.log('Komendy: sample | ingest-dir <katalog> | harvest [--dry-run] [--limit N] | backfill | stats');
+      console.log('Komendy: sample | ingest-dir <katalog> | harvest [--dry-run] [--limit N] | backfill [--minutes N] | probe | stats');
       return 1;
   }
 }

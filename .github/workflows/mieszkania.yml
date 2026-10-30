@@ -45,8 +45,14 @@ jobs:
             echo "Brak bazy w R2: zaczynamy od zera (wczytanie historii)."
           fi
 
+      - name: Sprawdzenie API dane.gov.pl
+        if: ${{ inputs.dry_run }}
+        timeout-minutes: 10
+        run: npx tsx packages/mieszkania-dane/src/cli.ts probe
+
       - name: Podgląd surowych pól API
         if: ${{ inputs.dry_run }}
+        timeout-minutes: 20
         run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --dry-run --limit 3
 
       - name: Uzupełnij historię cenników

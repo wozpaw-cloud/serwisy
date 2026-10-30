@@ -35,9 +35,15 @@ async function getJson<T>(url: string, tries = 3): Promise<T> {
   throw last;
 }
 
-/** Wszystkie zbiory z cenami ofertowymi. Szukamy po frazie i filtrujemy po tytule. */
-export async function listDeveloperDatasets(limitPages = 500): Promise<DatasetRef[]> {
+/**
+ * Wszystkie zbiory z cenami ofertowymi. Szukamy po frazie i filtrujemy po tytule.
+ * stopAfter: przerwij po tylu trafieniach (podgląd). Postęp idzie na stderr, żeby
+ * w logu GitHub Actions było widać, że lista się pobiera.
+ */
+export async function listDeveloperDatasets(opts: { limitPages?: number; stopAfter?: number } = {}): Promise<DatasetRef[]> {
   const out = new Map<string, DatasetRef>();
+  const limitPages = opts.limitPages ?? 500;
+  const started = Date.now();
   for (const q of ['ceny ofertowe mieszkań dewelopera', 'ceny ofertowe deweloper']) {
     for (let page = 1; page <= limitPages; page++) {
       const body = await getJson<ApiList>(`${API}/datasets?q=${encodeURIComponent(q)}&per_page=100&page=${page}`);
@@ -46,10 +52,53 @@ export async function listDeveloperDatasets(limitPages = 500): Promise<DatasetRe
         const title = String(it.attributes?.title ?? '');
         if (TITLE_RE.test(title)) out.set(String(it.id), { id: String(it.id), title });
       }
+      if (page % 10 === 0) console.error(`lista zbiorów: "${q}", strona ${page}, trafień ${out.size}, ${Math.round((Date.now() - started) / 1000)} s`);
+      if (opts.stopAfter && out.size >= opts.stopAfter) return [...out.values()].slice(0, opts.stopAfter);
       if (!items.length || !body.links?.next) break;
     }
   }
   return [...out.values()];
+}
+
+/**
+ * Diagnostyka API dane.gov.pl: kilka wariantów wyszukiwania (liczba wyników,
+ * pierwsze tytuły, czas odpowiedzi) i surowe pola jednego zbioru i jego zasobów.
+ * Wynik czytamy w logu GitHub Actions, żeby dopasować import do prawdziwego API.
+ */
+export async function probeApi(): Promise<void> {
+  const show = async (label: string, url: string): Promise<ApiList | null> => {
+    const t = Date.now();
+    try {
+      const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/json' }, signal: AbortSignal.timeout(30000) });
+      const text = await res.text();
+      console.log(`\n=== ${label}: HTTP ${res.status}, ${Date.now() - t} ms\n${url}`);
+      let body: ApiList | null = null;
+      try { body = JSON.parse(text) as ApiList; } catch { console.log(text.slice(0, 600)); return null; }
+      console.log('meta:', JSON.stringify(body.meta ?? null).slice(0, 700));
+      console.log('links:', JSON.stringify(body.links ?? null).slice(0, 500));
+      for (const it of (body.data ?? []).slice(0, 8)) console.log(' -', it.id, '|', String(it.attributes?.title ?? '').slice(0, 140));
+      return body;
+    } catch (e) {
+      console.log(`\n=== ${label}: BŁĄD ${(e as Error).message}\n${url}`);
+      return null;
+    }
+  };
+  const enc = encodeURIComponent;
+  const bodies = [
+    await show('fraza bez cudzysłowu', `${API}/datasets?q=${enc('ceny ofertowe mieszkań dewelopera')}&per_page=10`),
+    await show('fraza w cudzysłowie', `${API}/datasets?q=${enc('"ceny ofertowe mieszkań"')}&per_page=10`),
+    await show('filtr tytułu (phrase)', `${API}/datasets?title[phrase]=${enc('ceny ofertowe')}&per_page=10`),
+    await show('filtr tytułu (match)', `${API}/datasets?title[match]=${enc('ceny ofertowe mieszkań')}&per_page=10`),
+    await show('wyszukiwarka ogólna', `${API}/search?q=${enc('ceny ofertowe mieszkań dewelopera')}&per_page=10`),
+  ];
+  const hit = bodies.flatMap((b) => b?.data ?? []).find((it) => TITLE_RE.test(String(it.attributes?.title ?? '')));
+  if (!hit) { console.log('\nŻaden wariant nie zwrócił zbioru z tytułem pasującym do', TITLE_RE); return; }
+  const ds = await getJson<{ data?: ApiItem & { relationships?: unknown } }>(`${API}/datasets/${hit.id}`);
+  console.log(`\n=== ZBIÓR ${hit.id}: atrybuty\n${JSON.stringify(ds.data?.attributes ?? null).slice(0, 4000)}`);
+  console.log(`\n=== ZBIÓR ${hit.id}: powiązania\n${JSON.stringify((ds.data as { relationships?: unknown } | undefined)?.relationships ?? null).slice(0, 2000)}`);
+  const rs = await getJson<ApiList>(`${API}/datasets/${hit.id}/resources?sort=-data_date&per_page=3`);
+  console.log(`\n=== ZASOBY ZBIORU ${hit.id}: meta\n${JSON.stringify(rs.meta ?? null).slice(0, 600)}`);
+  for (const r of (rs.data ?? []).slice(0, 2)) console.log(`\n--- zasób ${r.id}\n${JSON.stringify(r.attributes ?? null).slice(0, 4000)}`);
 }
 
 function pickUrl(a: Record<string, unknown>): string | null {
@@ -102,7 +151,7 @@ export interface HarvestError { datasetId: string; error: string }
  * (SQLite), pobieranie równolegle.
  */
 export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dryRun?: boolean; limit?: number } = {}) {
-  const datasets = (await listDeveloperDatasets()).slice(0, opts.limit ?? Infinity);
+  const datasets = (await listDeveloperDatasets({ stopAfter: opts.limit })).slice(0, opts.limit ?? Infinity);
   const lastOf = db.prepare('SELECT last_snapshot FROM datasets WHERE id = ?');
   const summaries: IngestSummary[] = [];
   const errors: HarvestError[] = [];
