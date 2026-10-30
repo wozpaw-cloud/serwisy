@@ -19,6 +19,10 @@ on:
 
 concurrency: { group: mieszkania, cancel-in-progress: false }
 
+# Zapis do repozytorium potrzebny tylko w trybie podglądu: wynik trafia do gałęzi "diagnostyka".
+permissions:
+  contents: write
+
 jobs:
   import-build-deploy:
     runs-on: ubuntu-latest
@@ -48,12 +52,31 @@ jobs:
       - name: Sprawdzenie API dane.gov.pl
         if: ${{ inputs.dry_run }}
         timeout-minutes: 10
-        run: npx tsx packages/mieszkania-dane/src/cli.ts probe
+        continue-on-error: true
+        run: npx tsx packages/mieszkania-dane/src/cli.ts probe 2>&1 | tee data/probe.txt
 
       - name: Podgląd surowych pól API
         if: ${{ inputs.dry_run }}
-        timeout-minutes: 20
-        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --dry-run --limit 3
+        timeout-minutes: 8
+        continue-on-error: true
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --dry-run --limit 3 2>&1 | tee data/dry-run.txt
+
+      # Logi GitHub Actions są trudno dostępne z zewnątrz, więc wynik podglądu zapisujemy
+      # w osobnej gałęzi "diagnostyka" (nadpisywanej przy każdym podglądzie).
+      - name: Zapisz wynik podglądu w gałęzi diagnostyka
+        if: ${{ always() && inputs.dry_run }}
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/diag
+          cp data/probe.txt data/dry-run.txt /tmp/diag/ 2>/dev/null || true
+          cd /tmp/diag
+          date -u +%FT%TZ > czas.txt
+          git init -q && git checkout -q -b diagnostyka
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm "Wynik podglądu API"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" diagnostyka
 
       - name: Uzupełnij historię cenników
         id: backfill
