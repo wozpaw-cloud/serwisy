@@ -112,6 +112,37 @@ export async function probeApi(): Promise<void> {
   const rs = await getJson<ApiList>(`${API}/datasets/${hit.id}/resources?sort=-data_date&per_page=3`);
   console.log(`\n=== ZASOBY ZBIORU ${hit.id}: meta\n${JSON.stringify(rs.meta ?? null).slice(0, 600)}`);
   for (const r of (rs.data ?? []).slice(0, 2)) console.log(`\n--- zasób ${r.id}\n${JSON.stringify(r.attributes ?? null).slice(0, 4000)}`);
+  await probeParse();
+}
+
+/**
+ * Test czytania prawdziwych cenników: najnowszy plik z kilkunastu zbiorów
+ * (różni deweloperzy, różne formaty), wynik importu i nierozpoznane kolumny.
+ */
+export async function probeParse(sample = 14): Promise<void> {
+  const list = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=-id&per_page=100`);
+  const picked = (list.data ?? []).filter((_, i) => i % Math.max(1, Math.floor(100 / sample)) === 0).slice(0, sample);
+  const unknownAll = new Map<string, number>();
+  let ok = 0;
+  for (const it of picked) {
+    const title = String(it.attributes?.title ?? '');
+    try {
+      const [res] = await listResources(String(it.id), 1);
+      if (!res) { console.log(`\n### ${it.id} | ${title}\n   brak zasobu z plikiem`); continue; }
+      const p = await parseFile(await download(res.url), res.format);
+      if (p.records.length) ok++;
+      for (const h of p.unknownHeaders) unknownAll.set(h, (unknownAll.get(h) ?? 0) + 1);
+      const r = p.records[0];
+      console.log(`\n### ${it.id} | ${title}\n   ${res.date} ${res.format} | wierszy ${p.rowsRead}, lokali ${p.records.length}, sprzedanych ${p.sold}` +
+        `\n   odrzucone: ${JSON.stringify(p.rejected)} | brak kolumn: ${p.missingColumns.join(', ') || '-'}` +
+        (r ? `\n   przykład: ${JSON.stringify({ woj: r.voivodeship, pow: r.county, gm: r.gmina, m: r.city, inw: r.investmentName, nr: r.unitRef, typ: r.unitType, pow_m2: r.area, zl_m2: r.priceM2, zl: r.priceTotal, data: r.priceM2Date })}` : ''));
+    } catch (e) {
+      console.log(`\n### ${it.id} | ${title}\n   BŁĄD: ${(e as Error).message}`);
+    }
+  }
+  console.log(`\n=== Wczytane z lokalami: ${ok} z ${picked.length}`);
+  console.log('=== Nierozpoznane nagłówki (ile plików):');
+  for (const [h, n] of [...unknownAll].sort((a, b) => b[1] - a[1]).slice(0, 40)) console.log(`   ${n} × ${h}`);
 }
 
 function pickUrl(a: Record<string, unknown>): string | null {
