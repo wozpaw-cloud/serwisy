@@ -94,8 +94,8 @@ async function main(): Promise<number> {
       const lim = opt('limit') ? Number(opt('limit')) : undefined;
       // Historia co 28 dni: obecność lokalu nie może się urywać między kolejnymi cennikami.
       process.env.PRESENCE_GAP_DAYS ??= '35';
-      const ids = (await listDeveloperDatasets({ stopAfter: lim })).map((d) => d.id).slice(0, lim);
-      const res = await backfill(db, { datasetIds: ids, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
+      const datasets = (await listDeveloperDatasets({ stopAfter: lim })).slice(0, lim);
+      const res = await backfill(db, { datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       console.log(JSON.stringify({ historia: { zbiory: res.total, pozostalo: res.remaining, bledy: res.errors.length } }));
       if (res.remaining > res.errors.length) {
         const run = { ...report(res.summaries, res.errors), status: 'historia-niepelna', remaining: res.remaining };

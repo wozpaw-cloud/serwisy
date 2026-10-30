@@ -216,7 +216,35 @@ function statusOf(v: unknown): OfferStatus {
 // Granice wiarygodności. Wiersze spoza nich odrzucamy z podaniem powodu.
 export const LIMITS = { priceM2: [2500, 100000], priceTotal: [50000, 60000000], area: [10, 800] } as const;
 
-export function toRecords(table: Table, format = 'csv'): ParseResult {
+/** Format z zawartości pliku. Etykieta w portalu bywa myląca (np. "csv" przy pliku Excel). */
+export function sniffFormat(buf: Buffer): string | null {
+  if (buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) return 'xlsx';
+  if (buf.length >= 4 && buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0) return 'xls-stary';
+  const head = buf.subarray(0, 200).toString('utf8').replace(/^\uFEFF/, '').trimStart();
+  if (head.startsWith('<')) return 'xml';
+  if (head.startsWith('{') || head.startsWith('[')) return 'json';
+  return null;
+}
+
+/**
+ * Nazwa dewelopera z tytułu zbioru, gdy plik nie ma takiej kolumny:
+ * "Ceny ofertowe mieszkań dewelopera X sp. z o.o. w 2026 r." -> "X sp. z o.o.".
+ */
+export function devNameFromTitle(title: string | undefined): string | null {
+  if (!title) return null;
+  const t = title.replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+  const m = t.match(/dewelopera\s+(.+)$/i);
+  const name = (m ? m[1] : t.replace(/^ceny ofertowe\s+(\S+\s+)?/i, ''))
+    .replace(/\s+(w|za)\s+(roku\s+)?20\d\d\s*(r\.?|roku)?.*$/i, '')
+    .replace(/\s+(na dzień|z dnia|stan na)\s+.*$/i, '')
+    .replace(/\s*[-–—]\s*(inwestycja|20\d\d|\d{2}\.\d{2}).*$/i, '')
+    .replace(/\s+\d{2}\.\d{2}\.\d{4}.*$/, '')
+    .replace(/\s+20\d\d-\d\d-\d\d.*$/, '')
+    .trim();
+  return name.length >= 2 ? name : null;
+}
+
+export function toRecords(table: Table, format = 'csv', opts: { devFallback?: string | null } = {}): ParseResult {
   const { map, unknown } = mapColumns(table.headers);
   const missing = missingRequired(map);
   const rejected: Record<string, number> = {};
@@ -229,7 +257,7 @@ export function toRecords(table: Table, format = 'csv'): ParseResult {
 
   for (const row of table.rows) {
     if (!row || row.every((v) => isEmpty(v))) continue;
-    const devName = text(cell(row, map, 'devName'));
+    const devName = text(cell(row, map, 'devName')) ?? opts.devFallback ?? null;
     const cityRaw = text(cell(row, map, 'city'));
     const unitRef = text(cell(row, map, 'unitRef'));
     if (!devName || !cityRaw || !unitRef) { reject('brak dewelopera, miejscowości lub numeru lokalu'); continue; }
@@ -279,8 +307,10 @@ export function toRecords(table: Table, format = 'csv'): ParseResult {
   return { records, rowsRead: table.rows.length, sold, rejected, unknownHeaders: unknown, missingColumns: [], format };
 }
 
-export async function parseFile(buf: Buffer, format: string): Promise<ParseResult> {
-  return toRecords(await readTable(buf, format), format);
+export async function parseFile(buf: Buffer, format: string, opts: { devFallback?: string | null } = {}): Promise<ParseResult> {
+  const f = sniffFormat(buf) ?? format;
+  if (f === 'xls-stary') throw new Error('stary format Excel (.xls) nie jest obsługiwany');
+  return toRecords(await readTable(buf, f), f, opts);
 }
 
 export function guessFormat(nameOrUrl: string, contentType = ''): string {

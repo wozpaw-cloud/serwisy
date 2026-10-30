@@ -10,7 +10,8 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
-import { guessFormat, parseFile } from './parse.ts';
+import { devNameFromTitle, guessFormat, parseFile, readTable, sniffFormat } from './parse.ts';
+import { mapColumns } from './columns.ts';
 
 export const API = process.env.DANE_API ?? 'https://api.dane.gov.pl/1.4';
 const UA = 'prostedane.pl importer (kontakt@prostedane.pl)';
@@ -119,9 +120,12 @@ export async function probeApi(): Promise<void> {
  * Test czytania prawdziwych cenników: najnowszy plik z kilkunastu zbiorów
  * (różni deweloperzy, różne formaty), wynik importu i nierozpoznane kolumny.
  */
-export async function probeParse(sample = 14): Promise<void> {
-  const list = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=-id&per_page=100`);
-  const picked = (list.data ?? []).filter((_, i) => i % Math.max(1, Math.floor(100 / sample)) === 0).slice(0, sample);
+export async function probeParse(sample = 30): Promise<void> {
+  // Połowa z najnowszych zbiorów, połowa ze środka listy (starsze, inni deweloperzy).
+  const newest = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=-id&per_page=100`);
+  const middle = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=id&per_page=100&page=40`);
+  const every = (xs: ApiItem[], n: number) => xs.filter((_, i) => i % Math.max(1, Math.floor(xs.length / n)) === 0).slice(0, n);
+  const picked = [...every(newest.data ?? [], sample / 2), ...every(middle.data ?? [], sample / 2)];
   const unknownAll = new Map<string, number>();
   let ok = 0;
   for (const it of picked) {
@@ -129,13 +133,19 @@ export async function probeParse(sample = 14): Promise<void> {
     try {
       const [res] = await listResources(String(it.id), 1);
       if (!res) { console.log(`\n### ${it.id} | ${title}\n   brak zasobu z plikiem`); continue; }
-      const p = await parseFile(await download(res.url), res.format);
+      const buf = await download(res.url);
+      const p = await parseFile(buf, res.format, { devFallback: devNameFromTitle(title) });
       if (p.records.length) ok++;
       for (const h of p.unknownHeaders) unknownAll.set(h, (unknownAll.get(h) ?? 0) + 1);
       const r = p.records[0];
       console.log(`\n### ${it.id} | ${title}\n   ${res.date} ${res.format} | wierszy ${p.rowsRead}, lokali ${p.records.length}, sprzedanych ${p.sold}` +
         `\n   odrzucone: ${JSON.stringify(p.rejected)} | brak kolumn: ${p.missingColumns.join(', ') || '-'}` +
-        (r ? `\n   przykład: ${JSON.stringify({ woj: r.voivodeship, pow: r.county, gm: r.gmina, m: r.city, inw: r.investmentName, nr: r.unitRef, typ: r.unitType, pow_m2: r.area, zl_m2: r.priceM2, zl: r.priceTotal, data: r.priceM2Date })}` : ''));
+        (r ? `\n   przykład: ${JSON.stringify({ dew: r.devName, woj: r.voivodeship, pow: r.county, gm: r.gmina, m: r.city, inw: r.investmentName, nr: r.unitRef, typ: r.unitType, pow_m2: r.area, zl_m2: r.priceM2, zl: r.priceTotal, data: r.priceM2Date })}` : ''));
+      if (!p.records.length) {
+        const table = await readTable(buf, sniffFormat(buf) ?? res.format);
+        const { map } = mapColumns(table.headers);
+        console.log(`   nagłówki (${sniffFormat(buf) ?? res.format}): ${JSON.stringify(table.headers.slice(0, 45))}\n   rozpoznane: ${JSON.stringify(map)}`);
+      }
     } catch (e) {
       console.log(`\n### ${it.id} | ${title}\n   BŁĄD: ${(e as Error).message}`);
     }
@@ -207,7 +217,7 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
       if (opts.dryRun) { console.log(JSON.stringify({ dataset: ds, resource: res.raw }, null, 1)); return; }
       const last = (lastOf.get(ds.id) as { last_snapshot: string | null } | undefined)?.last_snapshot;
       if (last && last >= res.date) return;
-      const parsed = await parseFile(await download(res.url), res.format);
+      const parsed = await parseFile(await download(res.url), res.format, { devFallback: devNameFromTitle(ds.title) });
       summaries.push(ingestSnapshot(db, { datasetId: ds.id, title: ds.title, date: res.date, sourceUrl: res.url }, parsed));
     } catch (e) {
       errors.push({ datasetId: ds.id, error: String((e as Error).message ?? e) });
@@ -224,11 +234,12 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
  * pierwsze wczytanie na kilka nocy; nowe zbiory (nowi deweloperzy) dostają historię
  * przy najbliższym uruchomieniu.
  */
-export async function backfill(db: DatabaseSync, opts: { datasetIds: string[]; perPage?: number; concurrency?: number; minutes?: number; stepDays?: number }) {
+export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[]; perPage?: number; concurrency?: number; minutes?: number; stepDays?: number }) {
   const summaries: IngestSummary[] = [];
   const errors: HarvestError[] = [];
   const done = new Set((db.prepare('SELECT dataset_id FROM backfill_done').all() as { dataset_id: string }[]).map((r) => r.dataset_id));
-  const todo = opts.datasetIds.filter((id) => !done.has(id));
+  const titles = new Map(opts.datasets.map((d) => [d.id, d.title]));
+  const todo = opts.datasets.map((d) => d.id).filter((id) => !done.has(id));
   const markDone = db.prepare('INSERT OR REPLACE INTO backfill_done(dataset_id, finished) VALUES (?, ?)');
   const deadline = Date.now() + (opts.minutes ?? Infinity) * 60000;
   let finished = 0;
@@ -249,8 +260,8 @@ export async function backfill(db: DatabaseSync, opts: { datasetIds: string[]; p
       const latest = all.at(-1);
       if (latest) periodic.set(Number.MAX_SAFE_INTEGER, latest); // i zawsze najnowszy
       for (const r of [...periodic.values()].filter((r, i, xs) => xs.indexOf(r) === i)) {
-        const parsed = await parseFile(await download(r.url), r.format);
-        summaries.push(ingestSnapshot(db, { datasetId: id, date: r.date, sourceUrl: r.url }, parsed));
+        const parsed = await parseFile(await download(r.url), r.format, { devFallback: devNameFromTitle(titles.get(id)) });
+        summaries.push(ingestSnapshot(db, { datasetId: id, title: titles.get(id), date: r.date, sourceUrl: r.url }, parsed));
       }
       markDone.run(id, new Date().toISOString());
       finished++;
@@ -258,5 +269,5 @@ export async function backfill(db: DatabaseSync, opts: { datasetIds: string[]; p
       errors.push({ datasetId: id, error: String((e as Error).message ?? e) });
     }
   });
-  return { summaries, errors, total: opts.datasetIds.length, remaining: todo.length - finished };
+  return { summaries, errors, total: opts.datasets.length, remaining: todo.length - finished };
 }
