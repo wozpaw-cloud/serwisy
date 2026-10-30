@@ -83,6 +83,17 @@ export function readCsv(text: string): Table {
   return { headers: (rows[headerIdx] ?? []).map(String), rows: rows.slice(headerIdx + 1) };
 }
 
+/** Wartość komórki Excela: formuła -> wynik, tekst sformatowany -> zwykły tekst, link -> tekst. */
+function xlsxValue(v: unknown): unknown {
+  if (!v || typeof v !== 'object' || v instanceof Date) return v;
+  const o = v as { result?: unknown; text?: unknown; richText?: { text?: string }[]; error?: unknown };
+  if ('richText' in o && Array.isArray(o.richText)) return o.richText.map((p) => p.text ?? '').join('');
+  if ('result' in o) return xlsxValue(o.result);
+  if ('text' in o) return xlsxValue(o.text);
+  if ('error' in o) return null;
+  return v;
+}
+
 async function readXlsx(buf: Buffer): Promise<Table> {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buf as unknown as ArrayBuffer);
@@ -90,11 +101,7 @@ async function readXlsx(buf: Buffer): Promise<Table> {
   if (!ws) return { headers: [], rows: [] };
   const rows: unknown[][] = [];
   ws.eachRow({ includeEmpty: false }, (row) => {
-    const vals = (row.values as unknown[]).slice(1).map((v) => {
-      if (v && typeof v === 'object' && 'result' in (v as object)) return (v as { result: unknown }).result;
-      if (v && typeof v === 'object' && 'text' in (v as object)) return (v as { text: unknown }).text;
-      return v;
-    });
+    const vals = (row.values as unknown[]).slice(1).map(xlsxValue);
     rows.push(vals);
   });
   const headerIdx = findHeaderRow(rows);
@@ -152,7 +159,7 @@ const ALIAS_HEADERS: Record<Field, string> = {
   devName: 'Nazwa dewelopera', devKrs: 'Nr KRS', devNip: 'NIP',
   devWebsite: 'Adres strony internetowej dewelopera', prospectusUrl: 'Prospekt informacyjny',
   voivodeship: 'Województwo lokalizacji', county: 'Powiat lokalizacji', gmina: 'Gmina lokalizacji',
-  city: 'Miejscowość lokalizacji', street: 'Ulica lokalizacji', buildingNo: 'Nr nieruchomości lokalizacji',
+  city: 'Miejscowość lokalizacji', address: 'Adres inwestycji', street: 'Ulica lokalizacji', buildingNo: 'Nr nieruchomości lokalizacji',
   postalCode: 'Kod pocztowy lokalizacji', investmentName: 'Nazwa inwestycji',
   unitType: 'Rodzaj nieruchomości', unitRef: 'Nr lokalu lub domu',
   priceM2: 'Cena m2 powierzchni użytkowej', priceM2Date: 'Data od której obowiązuje cena m2 powierzchni',
@@ -244,6 +251,19 @@ export function devNameFromTitle(title: string | undefined): string | null {
   return name.length >= 2 ? name : null;
 }
 
+/** Miejscowość z całego adresu: "ul. Polna 5, 62-002 Suchy Las" -> "Suchy Las". */
+export function cityFromAddress(address: string | null): string | null {
+  if (!address) return null;
+  const a = address.replace(/\s+/g, ' ').trim();
+  const m = a.match(/\b\d{2}-\d{3}\s+([^\d,;()]+?)(?=\s*(?:,|;|\(|$|\bul\.|\bal\.|\d))/u);
+  if (m) return m[1].trim();
+  const part = a.split(/[,;]/).map((p) => p.trim()).find((p) => p && !/\d/.test(p) && !/^(ul|al|os|pl|osiedle)\.?\s/i.test(p));
+  return part || null;
+}
+
+// Pozycje cennika, które nie są lokalem mieszkalnym ani domem.
+const NOT_DWELLING = /parking|postoj|garaz|komork|hala|uslug|uzytkow|biur|magazyn|piwnic|rower|handlow|lokal komerc/;
+
 export function toRecords(table: Table, format = 'csv', opts: { devFallback?: string | null } = {}): ParseResult {
   const { map, unknown } = mapColumns(table.headers);
   const missing = missingRequired(map);
@@ -258,7 +278,7 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
   for (const row of table.rows) {
     if (!row || row.every((v) => isEmpty(v))) continue;
     const devName = text(cell(row, map, 'devName')) ?? opts.devFallback ?? null;
-    const cityRaw = text(cell(row, map, 'city'));
+    const cityRaw = text(cell(row, map, 'city')) ?? cityFromAddress(text(cell(row, map, 'address')));
     const unitRef = text(cell(row, map, 'unitRef'));
     if (!devName || !cityRaw || !unitRef) { reject('brak dewelopera, miejscowości lub numeru lokalu'); continue; }
 
@@ -275,6 +295,7 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
     if (priceTotal !== null && (priceTotal < LIMITS.priceTotal[0] || priceTotal > LIMITS.priceTotal[1])) { reject('cena całkowita poza zakresem'); continue; }
     if (area !== null && (area < LIMITS.area[0] || area > LIMITS.area[1])) { reject('powierzchnia poza zakresem'); continue; }
 
+    if (NOT_DWELLING.test(fold(String(cell(row, map, 'unitType') ?? '')))) { reject('nie lokal mieszkalny (parking, komórka, usługi)'); continue; }
     const status = statusOf(cell(row, map, 'status'));
     if (status === 'sprzedany') { sold++; continue; }
 

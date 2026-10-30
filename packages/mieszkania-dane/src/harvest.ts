@@ -120,12 +120,18 @@ export async function probeApi(): Promise<void> {
  * Test czytania prawdziwych cenników: najnowszy plik z kilkunastu zbiorów
  * (różni deweloperzy, różne formaty), wynik importu i nierozpoznane kolumny.
  */
-export async function probeParse(sample = 30): Promise<void> {
-  // Połowa z najnowszych zbiorów, połowa ze środka listy (starsze, inni deweloperzy).
-  const newest = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=-id&per_page=100`);
-  const middle = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=id&per_page=100&page=40`);
+export async function probeParse(sample = 60): Promise<void> {
+  // Zbiory z kilku miejsc listy (najnowsze, środek, najstarsze): różni deweloperzy i szablony.
+  const pages = [
+    `sort=-id&per_page=100`, `sort=id&per_page=100&page=40`, `sort=id&per_page=100&page=5`, `sort=-id&per_page=100&page=30`,
+  ];
   const every = (xs: ApiItem[], n: number) => xs.filter((_, i) => i % Math.max(1, Math.floor(xs.length / n)) === 0).slice(0, n);
-  const picked = [...every(newest.data ?? [], sample / 2), ...every(middle.data ?? [], sample / 2)];
+  const picked: ApiItem[] = [];
+  for (const q of pages) {
+    const body = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&${q}`);
+    picked.push(...every(body.data ?? [], sample / pages.length));
+  }
+  let units = 0, rowsAll = 0;
   const unknownAll = new Map<string, number>();
   let ok = 0;
   for (const it of picked) {
@@ -136,6 +142,8 @@ export async function probeParse(sample = 30): Promise<void> {
       const buf = await download(res.url);
       const p = await parseFile(buf, res.format, { devFallback: devNameFromTitle(title) });
       if (p.records.length) ok++;
+      units += p.records.length;
+      rowsAll += p.rowsRead;
       for (const h of p.unknownHeaders) unknownAll.set(h, (unknownAll.get(h) ?? 0) + 1);
       const r = p.records[0];
       console.log(`\n### ${it.id} | ${title}\n   ${res.date} ${res.format} | wierszy ${p.rowsRead}, lokali ${p.records.length}, sprzedanych ${p.sold}` +
@@ -144,13 +152,13 @@ export async function probeParse(sample = 30): Promise<void> {
       if (!p.records.length) {
         const table = await readTable(buf, sniffFormat(buf) ?? res.format);
         const { map } = mapColumns(table.headers);
-        console.log(`   nagłówki (${sniffFormat(buf) ?? res.format}): ${JSON.stringify(table.headers.slice(0, 45))}\n   rozpoznane: ${JSON.stringify(map)}`);
+        console.log(`   nagłówki (${sniffFormat(buf) ?? res.format}): ${JSON.stringify(table.headers)}\n   rozpoznane: ${JSON.stringify(map)}\n   pierwszy wiersz: ${JSON.stringify(table.rows[0] ?? null)}`);
       }
     } catch (e) {
       console.log(`\n### ${it.id} | ${title}\n   BŁĄD: ${(e as Error).message}`);
     }
   }
-  console.log(`\n=== Wczytane z lokalami: ${ok} z ${picked.length}`);
+  console.log(`\n=== Wczytane z lokalami: ${ok} z ${picked.length} plików; lokali ${units} z ${rowsAll} wierszy`);
   console.log('=== Nierozpoznane nagłówki (ile plików):');
   for (const [h, n] of [...unknownAll].sort((a, b) => b[1] - a[1]).slice(0, 40)) console.log(`   ${n} × ${h}`);
 }

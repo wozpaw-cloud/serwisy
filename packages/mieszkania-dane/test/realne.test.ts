@@ -74,3 +74,39 @@ describe('nazwa dewelopera z tytułu zbioru', () => {
     expect(toRecords(t, 'csv').records).toHaveLength(0);
   });
 });
+
+describe('kolejne szablony z prawdziwych plików', () => {
+  it('szablon z "Kategoria produktu": cena za m² lokalu, nie wykończenia; bez miejsc postojowych', () => {
+    const t = readCsv([
+      'Nazwa dewelopera;Lokalizacja przedsięwzięcia deweloperskiego lub zadania inwestycyjnego - miejscowość;Kategoria produktu;Nr produktu nadany przez dewelopera;Cena brutto/m2 powierzchni produktu [zł];Cena brutto produktu [zł];Data zmiany ceny;Wykończenie cena/m2 [zł];Wykończenie cena [zł]',
+      'Archi;Wrocław;Mieszkanie;A.1.01;14500,00;725000,00;2026-10-01;900;45000',
+      'Archi;Wrocław;Miejsce postojowe;P-12;4000;50000;2026-10-01;;',
+    ].join('\n'));
+    const p = toRecords(t);
+    expect(p.records).toHaveLength(1);
+    expect(p.records[0]).toMatchObject({ unitRef: 'A.1.01', priceM2: 14500, priceTotal: 725000, priceM2Date: '2026-10-01', city: 'Wrocław' });
+    expect(p.rejected['nie lokal mieszkalny (parking, komórka, usługi)']).toBe(1);
+  });
+  it('cały adres w jednej kolumnie i cena za m² wyliczona z ceny i powierzchni', () => {
+    const t = readCsv([
+      'Deweloper;Lokalizacja przedsięwziecia deweloperskiego;Numer lokalu mieszkalnego;Powierzchnia użytkowa lokalu mieszkalnego (m2);Cena brutto lokalu mieszkalnego (zł)',
+      'Fasolowa;ul. Fasolowa 12, 02-482 Warszawa;M3;50;750000',
+    ].join('\n'));
+    const r = toRecords(t).records[0];
+    expect(r).toMatchObject({ city: 'Warszawa', unitRef: 'M3', area: 50, priceM2: 15000 });
+  });
+  it('arkusz z własnymi nazwami: "ID mieszkania", "Adres", "Cena m2 [PLN]", "Cena [PLN]"', () => {
+    const { map } = mapColumns(['Nazwa dewelopera', 'ID mieszkania', 'Nazwa mieszkania', 'Status oferty', 'Rodzaj lokalu', 'Adres', 'Liczba pokoi', 'Powierzchnia [m2]', 'Cena [PLN]', 'Cena m2 [PLN]', 'Data od której obowiązuje cena']);
+    expect(map).toMatchObject({ unitRef: 1, status: 3, unitType: 4, address: 5, rooms: 6, area: 7, priceTotal: 8, priceM2: 9, priceM2Date: 10 });
+  });
+  it('"Oznaczenie", "Cena Brutto/m² (ofertowa w zł)", "Całkowita cena Brutto", "Powierzchnia (proj. w m²)"', () => {
+    const { map } = mapColumns(['Lp.', 'Nazwa dewelopera', 'Inwestycja', 'Produkt', 'Oznaczenie', 'Numer', 'Piętro', 'Status', 'Powierzchnia (proj. w m²)', 'Cena Brutto/m² (ofertowa w zł)', 'Całkowita cena Brutto (ofertowa w zł)', 'Miejscowość']);
+    expect(map).toMatchObject({ unitType: 3, unitRef: 4, area: 8, priceM2: 9, priceTotal: 10, city: 11 });
+  });
+  it('miejscowość z adresu', async () => {
+    const { cityFromAddress } = await import('../src/parse.ts');
+    expect(cityFromAddress('ul. Polna 5, 62-002 Suchy Las')).toBe('Suchy Las');
+    expect(cityFromAddress('Warszawa, ul. Okrzei 6')).toBe('Warszawa');
+    expect(cityFromAddress('62-095 Murowana Goślina, ul. Długa 1')).toBe('Murowana Goślina');
+  });
+});

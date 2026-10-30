@@ -7,7 +7,7 @@ import { fold } from './normalize.ts';
 
 export type Field =
   | 'devName' | 'devKrs' | 'devNip' | 'devWebsite'
-  | 'voivodeship' | 'county' | 'gmina' | 'city' | 'street' | 'buildingNo' | 'postalCode'
+  | 'voivodeship' | 'county' | 'gmina' | 'city' | 'street' | 'buildingNo' | 'postalCode' | 'address'
   | 'investmentName' | 'unitType' | 'unitRef'
   | 'priceM2' | 'priceM2Date' | 'priceTotal' | 'priceTotalDate' | 'priceFull' | 'priceFullDate'
   | 'area' | 'rooms' | 'status' | 'prospectusUrl';
@@ -23,6 +23,9 @@ const loc = (word: RegExp, bare: string[] = []): Rule => (h) =>
   !NOT_INVESTMENT.test(h) && ((h.includes('lokalizacj') && word.test(h)) || bare.includes(h));
 // "iloczyn" bywa z literówką ("iloczym").
 const ILOCZYN = /iloczy/;
+const M2 = /\bm ?2\b|\bmetr/;
+// Ceny, które nie są ceną lokalu: wykończenie, udział w gruncie, parking, promocje czasowe.
+const NOT_UNIT_PRICE = /wykonczen|udzial|grunt|postoj|parking|garaz|komork|pomieszczen|promocj|obowiazuje|czesci/;
 
 // Kolejność ma znaczenie: pierwsza pasująca reguła wygrywa, a każdy nagłówek
 // przypisujemy do co najwyżej jednego pola.
@@ -36,29 +39,35 @@ const RULES: [Field, Rule][] = [
   ['voivodeship', loc(/wojewodztw/, ['wojewodztwo'])],
   ['county', loc(/powiat/, ['powiat'])],
   ['gmina', loc(/\bgmin/, ['gmina'])],
-  ['city', loc(/miejscowosc|miasto/, ['miejscowosc', 'miasto', 'miejscowosc inwestycji', 'lokalizacja miejscowosc'])],
+  ['city', loc(/miejscowosc|miasto/, ['miejscowosc', 'miasto', 'miejscowosc inwestycji', 'lokalizacja miejscowosc', 'miasto inwestycji'])],
+  // Cały adres w jednej kolumnie: miasto wyciągamy z adresu, gdy nie ma osobnej kolumny.
+  ['address', (h) => h === 'adres' || /^adres (inwestycji|lokalu|nieruchomosci|przedsiewziecia)$/.test(h) ||
+    /^lokalizacja( przedsiewzi[e]?cia deweloperskiego| inwestycji)?$/.test(h)],
   ['street', loc(/\bulic/, ['ulica'])],
   ['buildingNo', loc(/\b(nr|numer) (nieruchomosci|budynku|domu)\b/, ['nr budynku', 'numer budynku'])],
   ['postalCode', loc(/kod pocztow/, ['kod pocztowy'])],
   ['investmentName', (h) => /nazwa (inwestycji|przedsiewziecia|zadania|projektu)/.test(h)],
 
-  ['unitType', has('rodzaj nieruchomosci')],
+  ['unitType', (h) => has('rodzaj nieruchomosci')(h) ||
+    ['typ', 'rodzaj', 'produkt', 'kategoria produktu', 'rodzaj lokalu', 'typ lokalu', 'typ nieruchomosci', 'rodzaj produktu'].includes(h)],
   ['unitRef', (h) =>
-    (/^(nr|numer) (lokalu lub domu|lokalu|domu|nieruchomosci nadany)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu)/.test(h)) &&
+    (/^(nr|numer) (lokalu lub domu|lokalu|domu|nieruchomosci nadany|produktu)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu)/.test(h)) &&
     !/adres|siedzib|sprzedaz|korespond|lokalizacj/.test(h)],
 
-  ['priceM2Date', (h) => startsData(h) && /cena (za )?(1 )?m ?2/.test(h) && !ILOCZYN.test(h)],
-  ['priceTotalDate', (h) => startsData(h) && ILOCZYN.test(h) && !h.includes('uwzgledn')],
+  ['priceM2Date', (h) => (startsData(h) && h.includes('cena') && M2.test(h) && !ILOCZYN.test(h)) ||
+    /^cena (za )?m ?2 obowiazuje od/.test(h) || h === 'data zmiany ceny' || h === 'data od ktorej obowiazuje cena'],
+  ['priceTotalDate', (h) => (startsData(h) && ILOCZYN.test(h) && !h.includes('uwzgledn')) || h.startsWith('cena obowiazuje od')],
   ['priceFullDate', (h) => startsData(h) && h.includes('uwzgledn') && h.includes('lokal')],
-  ['priceM2', (h) =>
-    !startsData(h) && /cena (za )?(1 )?m ?2|cena za metr/.test(h) && !/iloczy|uwzgledn|calkowit|razem/.test(h)],
-  ['priceTotal', (h) => !startsData(h) && !h.includes('uwzgledn') &&
-    (ILOCZYN.test(h) || (/^cena (lokalu|domu|nieruchomosci|calkowita|brutto)/.test(h) && !/m ?2|metr/.test(h)))],
+  ['priceM2', (h) => !startsData(h) && h.includes('cena') && M2.test(h) &&
+    !/iloczy|uwzgledn|calkowit|razem/.test(h) && !NOT_UNIT_PRICE.test(h)],
+  ['priceTotal', (h) => !startsData(h) && !h.includes('uwzgledn') && !NOT_UNIT_PRICE.test(h) &&
+    (ILOCZYN.test(h) || h === 'cena' || /^cena (pln|zl|brutto pln|brutto zl)$/.test(h) ||
+     (/^(calkowita )?cena (lokalu|domu|nieruchomosci|calkowita|brutto|produktu|ofertowa)/.test(h) && !M2.test(h)))],
   ['priceFull', (h) => !startsData(h) && h.includes('uwzgledn') && h.startsWith('cena lokalu')],
 
-  ['area', (h) => !h.includes('cena') &&
-    (h === 'powierzchnia' || h === 'metraz' || /^powierzchnia (uzytkowa|lokalu|domu|nieruchomosci|m ?2)/.test(h) || h.includes('powierzchnia uzytkowa'))],
-  ['rooms', (h) => h.includes('liczba pokoi') || h === 'pokoje'],
+  ['area', (h) => !h.includes('cena') && !/dzialk|ogrod|taras|balkon|komork|garaz|postoj|loggi|calkowit|piwnic/.test(h) &&
+    (h === 'powierzchnia' || h === 'metraz' || h.startsWith('powierzchni') || /^pow (uzytk|lokalu)/.test(h))],
+  ['rooms', (h) => h.includes('liczba pokoi') || h === 'pokoje' || /^ilosc pok/.test(h)],
   ['status', (h) => h === 'status' || h.startsWith('status ')],
 ];
 
@@ -84,18 +93,32 @@ export function mapColumns(headers: string[]): { map: ColumnMap; unknown: string
     if (hit) map[hit[0]] = i;
     else if (!IGNORED.some((r) => r(h))) unknown.push(raw);
   });
-  // Brak numeru lokalu: wewnętrzny identyfikator też jednoznacznie wskazuje lokal.
+  // Brak numeru lokalu w typowej postaci: kolejno sprawdzamy inne nazwy kolumny,
+  // które jednoznacznie wskazują lokal (identyfikator, oznaczenie, numer).
   if (map.unitRef === undefined) {
-    const i = headers.findIndex((raw) => /^id (lokalu|nieruchomosci|domu)$/.test(fold(raw ?? '')));
-    if (i >= 0) map.unitRef = i;
+    const folded = headers.map((raw) => fold(raw ?? ''));
+    const FALLBACK: RegExp[] = [
+      /^id (lokalu|nieruchomosci|domu|mieszkania)$/, /^nazwa (mieszkania|lokalu)$/, /^oznaczenie$/, /^numer lokalu$/,
+      /^(nr|numer)$/, /^kod produktu$/, /^lokal$/, /^nr lokalu lokalizacji/,
+    ];
+    for (const re of FALLBACK) {
+      const i = folded.findIndex((h) => re.test(h));
+      if (i >= 0) { map.unitRef = i; const u = unknown.indexOf(headers[i]); if (u >= 0) unknown.splice(u, 1); break; }
+    }
   }
   return { map, unknown };
 }
 
-/** Minimalny zestaw pól, bez którego plik nie nadaje się do analizy. Nazwę dewelopera,
- *  gdy jej brak w pliku, bierzemy z tytułu zbioru (parse.ts). */
+/** Minimalny zestaw pól, bez którego plik nie nadaje się do analizy:
+ *  miejsce (miejscowość albo cały adres), numer lokalu i cena za m² (albo cena
+ *  całkowita z powierzchnią, z których ją wyliczamy). Nazwę dewelopera, gdy jej
+ *  brak w pliku, bierzemy z tytułu zbioru (parse.ts). */
 export const REQUIRED: Field[] = ['city', 'unitRef', 'priceM2'];
 
 export function missingRequired(map: ColumnMap): Field[] {
-  return REQUIRED.filter((f) => map[f] === undefined);
+  const out: Field[] = [];
+  if (map.city === undefined && map.address === undefined) out.push('city');
+  if (map.unitRef === undefined) out.push('unitRef');
+  if (map.priceM2 === undefined && !(map.priceTotal !== undefined && map.area !== undefined)) out.push('priceM2');
+  return out;
 }
