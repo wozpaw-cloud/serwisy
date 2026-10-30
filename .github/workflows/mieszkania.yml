@@ -93,12 +93,12 @@ jobs:
         id: backfill
         if: ${{ !inputs.dry_run }}
         continue-on-error: true   # kod 3 = historia jeszcze niepełna, ciąg dalszy jutro
-        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 240
+        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 240 2>&1 | tee data/backfill.txt
 
       - name: Import bieżących cenników
         id: harvest
         if: ${{ !inputs.dry_run && steps.backfill.outcome == 'success' }}
-        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest 2>&1 | tee data/harvest.txt
         # kod 2 = bramka jakości zatrzymała publikację; serwis się nie zbuduje
 
       - name: Zapisz bazę i alarmy w R2
@@ -123,5 +123,29 @@ jobs:
 
       - name: Opublikuj w Cloudflare Workers
         if: ${{ !inputs.dry_run && steps.harvest.outcome == 'success' }}
-        run: npx wrangler deploy
+        run: npx wrangler deploy 2>&1 | tee ../../data/deploy.txt
         working-directory: sites/mieszkania
+
+      # Krótki raport z przebiegu w gałęzi "stan" (logi GitHub Actions są trudno dostępne z zewnątrz).
+      - name: Zapisz raport z przebiegu w gałęzi stan
+        if: ${{ always() && !inputs.dry_run }}
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/stan
+          {
+            echo "czas: $(date -u +%FT%TZ)"
+            echo "historia: ${{ steps.backfill.outcome }}"
+            echo "import: ${{ steps.harvest.outcome }}"
+            echo "rozmiar bazy: $(du -h data/mieszkania.sqlite 2>/dev/null | cut -f1)"
+          } > /tmp/stan/przebieg.txt
+          cp data/last-run.json data/alarms.json /tmp/stan/ 2>/dev/null || true
+          tail -n 60 data/backfill.txt > /tmp/stan/historia.txt 2>/dev/null || true
+          tail -n 60 data/harvest.txt > /tmp/stan/import.txt 2>/dev/null || true
+          grep -iE "https://|error|uploaded|deployed" data/deploy.txt > /tmp/stan/publikacja.txt 2>/dev/null || true
+          cd /tmp/stan
+          git init -q && git checkout -q -b stan
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm "Raport z przebiegu"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" stan
