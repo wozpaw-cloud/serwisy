@@ -225,7 +225,8 @@ function statusOf(v: unknown): OfferStatus {
 }
 
 // Granice wiarygodności. Wiersze spoza nich odrzucamy z podaniem powodu.
-export const LIMITS = { priceM2: [2500, 100000], priceTotal: [50000, 60000000], area: [10, 800] } as const;
+// Powierzchnia od 15 m²: mniejsze pozycje to zwykle miejsca postojowe i komórki bez opisu.
+export const LIMITS = { priceM2: [2500, 100000], priceTotal: [50000, 60000000], area: [15, 800] } as const;
 
 /** Format z zawartości pliku. Etykieta w portalu bywa myląca (np. "csv" przy pliku Excel). */
 export function sniffFormat(buf: Buffer): string | null {
@@ -297,17 +298,8 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
     const seatCity = invCity || salesCity ? null : text(cell(row, map, 'seatCity'));
     const cityRaw = invCity ?? salesCity ?? seatCity;
     const voivRaw = invCity ? text(cell(row, map, 'voivodeship')) : salesCity ? text(cell(row, map, 'salesVoiv')) : text(cell(row, map, 'seatVoiv'));
-    let unitRef = text(cell(row, map, 'unitRef'));
-    if (!unitRef && syntheticRefs) {
-      const a = parseNumber(cell(row, map, 'area'));
-      if (a && a > 0) {
-        const base = `${unitTypeOf(cell(row, map, 'unitType')) === 'dom' ? 'dom' : 'lokal'} ${a.toFixed(2).replace('.', ',')} m²`;
-        const n = (refCount.get(base) ?? 0) + 1;
-        refCount.set(base, n);
-        unitRef = n > 1 ? `${base} (${n})` : base;
-      }
-    }
-    if (!devName || !cityRaw || !unitRef) { reject('brak dewelopera, miejscowości lub numeru lokalu'); continue; }
+    if (NOT_DWELLING.test(fold(String(cell(row, map, 'unitType') ?? '')))) { reject('nie lokal mieszkalny (parking, komórka, usługi)'); continue; }
+    if (!devName || !cityRaw) { reject('brak dewelopera lub miejscowości'); continue; }
 
     // Zero i liczby ujemne traktujemy jak brak wartości (np. "0.00" zamiast ceny za m²).
     const positive = (v: number | null) => (v !== null && v > 0 ? v : null);
@@ -319,12 +311,22 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
     if (area === null && priceM2 && priceTotal) area = Math.round((priceTotal / priceM2) * 100) / 100;
     if (priceM2 === null && priceTotal && area) priceM2 = Math.round((priceTotal / area) * 100) / 100;
 
+    // Numer lokalu. Gdy go brak (cały plik bez numerów albo "n/d" przy domu), a lokal ma
+    // cenę i powierzchnię, rozpoznajemy go po rodzaju i metrażu: "lokal 142,43 m²".
+    let unitRef = text(cell(row, map, 'unitRef'));
+    if (!unitRef && area && (priceM2 || priceTotal) && (syntheticRefs || map.unitRef !== undefined)) {
+      const base = `${unitTypeOf(cell(row, map, 'unitType')) === 'dom' ? 'dom' : 'lokal'} ${area.toFixed(2).replace('.', ',')} m²`;
+      const n = (refCount.get(base) ?? 0) + 1;
+      refCount.set(base, n);
+      unitRef = n > 1 ? `${base} (${n})` : base;
+    }
+    if (!unitRef) { reject('brak numeru lokalu'); continue; }
+
     if (priceM2 === null) { reject('brak ceny za m²'); continue; }
     if (priceM2 < LIMITS.priceM2[0] || priceM2 > LIMITS.priceM2[1]) { reject('cena za m² poza zakresem'); continue; }
     if (priceTotal !== null && (priceTotal < LIMITS.priceTotal[0] || priceTotal > LIMITS.priceTotal[1])) { reject('cena całkowita poza zakresem'); continue; }
     if (area !== null && (area < LIMITS.area[0] || area > LIMITS.area[1])) { reject('powierzchnia poza zakresem'); continue; }
 
-    if (NOT_DWELLING.test(fold(String(cell(row, map, 'unitType') ?? '')))) { reject('nie lokal mieszkalny (parking, komórka, usługi)'); continue; }
     const status = statusOf(cell(row, map, 'status'));
     if (status === 'sprzedany') { sold++; continue; }
 

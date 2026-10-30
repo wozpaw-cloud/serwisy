@@ -32,7 +32,11 @@ import { dateLong } from '../lib/format';
     <h2>Kontrola jakości</h2>
     <ul>
       <li>Kolumny rozpoznajemy po treści nagłówka, nie po kolejności. Nowe, nieznane kolumny trafiają do przeglądu.</li>
-      <li>Odrzucamy wiersze z ceną za m² poza zakresem 2 500–100 000 zł, ceną lokalu poza zakresem 50 tys.–60 mln zł albo powierzchnią poza zakresem 10–800 m².</li>
+      <li>Odrzucamy wiersze z ceną za m² poza zakresem 2 500–100 000 zł, ceną lokalu poza zakresem 50 tys.–60 mln zł albo powierzchnią poza zakresem 15–800 m².</li>
+      <li>Pomijamy pozycje, które nie są mieszkaniem ani domem: miejsca postojowe, garaże, komórki lokatorskie i lokale usługowe.</li>
+      <li>Format pliku rozpoznajemy po jego zawartości, bo opis w portalu bywa niezgodny z plikiem.</li>
+      <li>Gdy cennik nie podaje numerów lokali, rozpoznajemy lokal po rodzaju i powierzchni. Gdy nie podaje miejscowości inwestycji, bierzemy ją z adresu biura sprzedaży albo siedziby dewelopera.</li>
+      <li>Deweloperzy zakładają osobny zbiór na każdy rok. Ten sam lokal w nowym zbiorze zachowuje historię cen.</li>
       <li>Jeśli liczba lokali w ofercie w całym kraju spadnie z dnia na dzień o ponad 25%, wstrzymujemy publikację do czasu sprawdzenia.</li>
     </ul>
 
