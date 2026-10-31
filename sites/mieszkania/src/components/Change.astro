@@ -1,15 +1,9 @@
 ---
-// Zmiana procentowa: liczba w kolorze tekstu, kierunek pokazuje mały trójkąt.
+// Zmiana procentowa: liczba w kolorze tekstu, kierunek pokazuje mały trójkąt (z CSS,
+// bez SVG w każdej komórce tabeli: strony z setkami lokali są dużo lżejsze).
 import { pct } from '../lib/format';
 interface Props { value: number | null; digits?: number }
 const { value, digits = 1 } = Astro.props;
 const dir = value === null || Math.abs(value) < 0.0005 ? 0 : value > 0 ? 1 : -1;
 ---
-<span class="change num">
-  {dir !== 0 && (
-    <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
-      {dir > 0 ? <path d="M5 1 9 8H1z" fill="var(--up)" /> : <path d="M5 9 1 2h8z" fill="var(--down)" />}
-    </svg>
-  )}
-  <span>{pct(value, digits)}</span>
-</span>
+<span class:list={['change num', dir > 0 && 'up', dir < 0 && 'down']}>{pct(value, digits)}</span>

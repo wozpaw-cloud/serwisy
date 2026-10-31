@@ -132,7 +132,16 @@ export function placeLink(c: City): string | null {
 
 export const brandKey = (b: Brand) => `b:${b.key}`;
 export const brandSnap = (b: Brand) => M.snapshot(brandKey(b), b.units);
-export const brands = M.brands.filter((b) => b.investments.length > 0).sort((a, b) => brandSnap(b).units - brandSnap(a).units);
+// Strony inwestycji i deweloperów tylko dla aktualnych (lokale w cenniku w ostatnich 90 dniach):
+// darmowy plan Cloudflare mieści 20 000 plików, a dawno wyprzedanych inwestycji mało kto szuka.
+// Inwestycje bez strony pokazujemy w tabelach bez odnośnika.
+export const invWithPage: Investment[] = M.investments.filter((inv) => inv.units.length > 0 && invIsCurrent(inv));
+const invPageSet = new Set(invWithPage);
+export const invHasPage = (inv: Investment) => invPageSet.has(inv);
+
+export const brands = M.brands.filter((b) => b.investments.some(invHasPage)).sort((a, b) => brandSnap(b).units - brandSnap(a).units);
+const brandPageSet = new Set(brands);
+export const brandHasPage = (b: Brand) => brandPageSet.has(b);
 
 export const houses = () => M.units.filter((u) => u.type === 'dom');
 export const flats = () => M.units.filter((u) => u.type === 'mieszkanie');

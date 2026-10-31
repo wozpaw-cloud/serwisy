@@ -10,7 +10,9 @@ process.env.MIESZKANIA_DB ??= fileURLToPath(new URL('../../data/mieszkania.sqlit
 export default defineConfig({
   site: process.env.SITE_URL ?? 'https://cenaoddewelopera.pl',
   trailingSlash: 'always',
-  build: { format: 'directory', inlineStylesheets: 'always' },
+  // Style i skrypty w osobnych plikach: przeglądarka pobiera je raz dla całego serwisu,
+  // a strony z tabelami są kilkadziesiąt KB lżejsze.
+  build: { format: 'directory', inlineStylesheets: 'never' },
   integrations: [sitemap({ filter: (page) => !page.includes('/404') })],
   vite: {
     server: { fs: { allow: ['../..'] } },

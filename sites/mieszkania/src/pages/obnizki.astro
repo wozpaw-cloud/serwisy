@@ -4,7 +4,7 @@ import LineChart from '../components/LineChart.astro';
 import Bars from '../components/Bars.astro';
 import Change from '../components/Change.astro';
 import AdSlot from '../components/AdSlot.astro';
-import { M, national, citiesWithPage, citySnap, href, unitLabel } from '../lib/data';
+import { M, national, citiesWithPage, citySnap, href, unitLabel, invHasPage } from '../lib/data';
 import { dateLong, num, pctAbs, share, units, zl } from '../lib/format';
 
 const s = national();
@@ -31,7 +31,7 @@ const byCity = citiesWithPage.map((c) => ({ c, s: citySnap(c) })).filter((x) => 
         <thead><tr><th>Inwestycja</th><th>Miasto</th><th>Lokal</th><th class="r">Było</th><th class="r">Jest</th><th class="r">Było za m²</th><th class="r">Jest za m²</th><th class="r">Zmiana</th></tr></thead>
         <tbody>
           {top.map((c) => (
-            <tr><td><a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a></td><td>{c.unit.inv.city.name}</td><td class="num">{unitLabel(c.unit)}</td><td class="r">{zl(c.totalBefore)}</td><td class="r">{zl(c.totalAfter)}</td><td class="r">{zl(Math.round(c.before))}</td><td class="r">{zl(Math.round(c.after))}</td><td class="r"><Change value={c.change} /></td></tr>
+            <tr><td>{invHasPage(c.unit.inv) ? <a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a> : c.unit.inv.name}</td><td>{c.unit.inv.city.name}</td><td class="num">{unitLabel(c.unit)}</td><td class="r">{zl(c.totalBefore)}</td><td class="r">{zl(c.totalAfter)}</td><td class="r">{zl(Math.round(c.before))}</td><td class="r">{zl(Math.round(c.after))}</td><td class="r"><Change value={c.change} /></td></tr>
           ))}
         </tbody>
       </table>

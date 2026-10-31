@@ -7,7 +7,7 @@ import AdSlot from '../components/AdSlot.astro';
 import AiNote from '../components/AiNote.astro';
 import Search from '../components/Search.astro';
 import { SITE } from '../config';
-import { M, national, nationalSeries, citiesWithPage, citySnap, citySeries, href, unitLabel, voivodeships, livePowiaty, liveGminas, powiatLink, gminaLink } from '../lib/data';
+import { M, national, nationalSeries, citiesWithPage, citySnap, citySeries, href, unitLabel, voivodeships, livePowiaty, liveGminas, powiatLink, gminaLink, invHasPage } from '../lib/data';
 import { dateLong, investmentsLoc, unitsGen, num, pct, pctAbs, share, trendWord, units, zl, zlM2, monthName } from '../lib/format';
 
 const s = national();
@@ -112,7 +112,7 @@ const jsonld = [{
         <tbody>
           {cuts.map((c) => (
             <tr>
-              <td><a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a><span class="muted">, {c.unit.inv.city.name}</span></td>
+              <td>{invHasPage(c.unit.inv) ? <a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a> : c.unit.inv.name}<span class="muted">, {c.unit.inv.city.name}</span></td>
               <td class="num">{unitLabel(c.unit)}</td>
               <td class="r">{zl(Math.round(c.before))}</td>
               <td class="r">{zl(Math.round(c.after))}</td>

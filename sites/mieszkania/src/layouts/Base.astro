@@ -125,7 +125,7 @@ const breadcrumbLd = crumbs.length
         </div>
       </div>
     </footer>
-    <script is:inline>
+    <script>
       // Podpowiedź na wykresach liniowych: pionowa linia trafia w najbliższy tydzień.
       document.querySelectorAll('svg[data-chart]').forEach(function (svg) {
         var spec = JSON.parse(svg.getAttribute('data-chart'));
@@ -178,7 +178,7 @@ const breadcrumbLd = crumbs.length
         });
       });
     </script>
-    <script is:inline>
+    <script>
       (function () {
         // Porównywanie bez polskich znaków i wielkości liter: "Ząbki" = "zabki".
         function fold(s) { return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l'); }

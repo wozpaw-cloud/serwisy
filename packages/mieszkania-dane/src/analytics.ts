@@ -13,7 +13,7 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import { addDays } from './ingest.ts';
-import { displayCompanyName, fold, slugify } from './normalize.ts';
+import { displayCompanyName, fold, slugify, streetLabel } from './normalize.ts';
 import { resolvePlace } from './places.ts';
 
 export const BRIDGE_DAYS = 21;
@@ -125,6 +125,21 @@ export class Model {
 
     const invRows = db.prepare('SELECT * FROM investments ORDER BY id').all() as Record<string, any>[];
     const places = invRows.map((r) => resolvePlace({ voivodeship: r.voivodeship, county: r.county, gmina: r.gmina, city: r.city }));
+    // Brak województwa w cenniku: bierzemy najczęstsze województwo tej miejscowości
+    // z innych cenników (inaczej np. Wrocław rozpadłby się na dwie strony).
+    const voivVotes = new Map<string, Map<string, number>>();
+    places.forEach((p, i) => {
+      const v = invRows[i].voivodeship as string | null;
+      if (!v) return;
+      const votes = voivVotes.get(fold(p.city)) ?? new Map<string, number>();
+      votes.set(v, (votes.get(v) ?? 0) + 1);
+      voivVotes.set(fold(p.city), votes);
+    });
+    for (const [i, r] of invRows.entries()) {
+      if (r.voivodeship) continue;
+      const votes = voivVotes.get(fold(places[i].city));
+      if (votes) r.voivodeship = [...votes].sort((a, b) => b[1] - a[1])[0][0];
+    }
     // Brak gminy w cenniku: bierzemy najczęstszą gminę tej miejscowości z innych cenników.
     const placeKey = (voiv: string | null, city: string) => `${voiv ?? ''}|${fold(city)}`;
     const gminaVotes = new Map<string, Map<string, number>>();
@@ -167,7 +182,7 @@ export class Model {
       }
       const named = !!r.name;
       const inv: Investment = {
-        id: r.id, slug: '', name: r.name ?? [r.street ? `ul. ${r.street}` : null, r.building_no].filter(Boolean).join(' ') ?? r.city,
+        id: r.id, slug: '', name: r.name ?? [streetLabel(r.street), r.building_no].filter(Boolean).join(' ') ?? r.city,
         named, devId: r.developer_id, brand: devBrand.get(r.developer_id)!, city,
         street: r.street, buildingNo: r.building_no, postalCode: r.postal_code, prospectusUrl: r.prospectus_url, units: [],
       };

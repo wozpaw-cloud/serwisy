@@ -208,7 +208,10 @@ table.data th.r { text-align: right; }
 table.data tbody tr:hover td { background: var(--band); }
 table.data td:first-child, table.data th:first-child { padding-left: 0.25rem; }
 .change { display: inline-flex; align-items: center; gap: 0.3rem; }
-.change svg { flex: none; }
+.change.up::before, .change.down::before { content: ''; flex: none; width: 9px; height: 9px; }
+.change.up::before { background: var(--up); clip-path: polygon(50% 10%, 90% 80%, 10% 80%); }
+.change.down::before { background: var(--down); clip-path: polygon(50% 90%, 10% 20%, 90% 20%); }
+@media (forced-colors: active) { .change.up::before, .change.down::before { background: CanvasText; } }
 
 /* ---------- wykresy ---------- */
 .chart { margin: 0; display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; position: relative; }

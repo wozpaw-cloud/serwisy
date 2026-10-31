@@ -8,7 +8,7 @@ import Change from './Change.astro';
 import AdSlot from './AdSlot.astro';
 import Context from './Context.astro';
 import PageNav from './PageNav.astro';
-import { M, invStats, href, unitLabel, type AreaRef } from '../lib/data';
+import { M, invStats, href, unitLabel, invHasPage, brandHasPage, type AreaRef } from '../lib/data';
 import { num, pct, share, zl, m2 } from '../lib/format';
 import type { Investment, Point, Unit } from '@serwisy/mieszkania-dane/query';
 
@@ -105,9 +105,9 @@ const nav = [
       <tbody>
         {invs.map((x) => (
           <tr>
-            <td data-v={x.inv.name}><a href={href.inv(x.inv)}>{x.inv.name}</a></td>
+            <td data-v={x.inv.name}>{invHasPage(x.inv) ? <a href={href.inv(x.inv)}>{x.inv.name}</a> : x.inv.name}</td>
             {showPlace && <td>{x.inv.city.name}</td>}
-            <td data-v={x.inv.brand.name}><a href={href.brand(x.inv.brand)}>{x.inv.brand.name}</a></td>
+            <td data-v={x.inv.brand.name}>{brandHasPage(x.inv.brand) ? <a href={href.brand(x.inv.brand)}>{x.inv.brand.name}</a> : x.inv.brand.name}</td>
             <td class="r" data-v={x.inOffer.length}>{num(x.inOffer.length)}</td>
             <td class="r" data-v={x.medianM2 ?? ''}>{zl(x.medianM2)}</td>
             <td class="r" data-v={x.minTotal ?? ''}>{x.minTotal === x.maxTotal ? zl(x.minTotal) : `${num(x.minTotal)}–${zl(x.maxTotal)}`}</td>
@@ -144,7 +144,7 @@ const nav = [
         <tbody>
           {cuts.map((c) => (
             <tr>
-              <td data-v={c.unit.inv.name}><a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a></td>
+              <td data-v={c.unit.inv.name}>{invHasPage(c.unit.inv) ? <a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a> : c.unit.inv.name}</td>
               {showPlace && <td>{c.unit.inv.city.name}</td>}
               <td class="num">{unitLabel(c.unit)}</td>
               <td class="r" data-v={c.before}>{zl(Math.round(c.before))}</td>

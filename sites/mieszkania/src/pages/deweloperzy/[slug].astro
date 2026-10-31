@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import LineChart from '../../components/LineChart.astro';
 import Change from '../../components/Change.astro';
 import AiNote from '../../components/AiNote.astro';
-import { M, brands, brandSnap, brandKey, href, invStats, hasPage } from '../../lib/data';
+import { M, brands, brandSnap, brandKey, href, invStats, hasPage, invHasPage } from '../../lib/data';
 import { num, share, zl, zlM2, units, investmentsLoc } from '../../lib/format';
 import type { Brand } from '@serwisy/mieszkania-dane/query';
 
@@ -34,7 +34,7 @@ const cities = [...new Map(b.investments.map((i) => [i.city.key, i.city])).value
     <div class="table-wrap">
       <table class="data">
         <thead><tr><th>Inwestycja</th><th>Miejscowość</th><th class="r">Lokale w ofercie</th><th class="r">Mediana za m²</th><th class="r">Zmiana od wejścia</th></tr></thead>
-        <tbody>{invs.map((x) => <tr><td><a href={href.inv(x.inv)}>{x.inv.name}</a></td><td>{hasPage(x.inv.city) ? <a href={href.city(x.inv.city)}>{x.inv.city.name}</a> : x.inv.city.name}</td><td class="r">{num(x.inOffer.length)}</td><td class="r">{zl(x.medianM2)}</td><td class="r"><Change value={x.changeSinceFirst} /></td></tr>)}</tbody>
+        <tbody>{invs.map((x) => <tr><td>{invHasPage(x.inv) ? <a href={href.inv(x.inv)}>{x.inv.name}</a> : x.inv.name}</td><td>{hasPage(x.inv.city) ? <a href={href.city(x.inv.city)}>{x.inv.city.name}</a> : x.inv.city.name}</td><td class="r">{num(x.inOffer.length)}</td><td class="r">{zl(x.medianM2)}</td><td class="r"><Change value={x.changeSinceFirst} /></td></tr>)}</tbody>
       </table>
     </div>
   </section>

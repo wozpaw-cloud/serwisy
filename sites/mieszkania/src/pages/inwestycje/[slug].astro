@@ -4,13 +4,13 @@ import LineChart from '../../components/LineChart.astro';
 import Change from '../../components/Change.astro';
 import AdSlot from '../../components/AdSlot.astro';
 import AiNote from '../../components/AiNote.astro';
-import { M, href, invStats, invIsCurrent, chainCity } from '../../lib/data';
-import { fold } from '@serwisy/mieszkania-dane';
+import { M, href, invStats, invIsCurrent, chainCity, invWithPage } from '../../lib/data';
+import { fold, streetLabel } from '@serwisy/mieszkania-dane';
 import { dateLong, dateShort, num, pct, units, zl, zlM2, m2 } from '../../lib/format';
 import type { Investment, Unit } from '@serwisy/mieszkania-dane/query';
 
 export function getStaticPaths() {
-  return M.investments.filter((inv) => inv.units.length > 0).map((inv) => ({ params: { slug: inv.slug }, props: { inv } }));
+  return invWithPage.map((inv) => ({ params: { slug: inv.slug }, props: { inv } }));
 }
 const { inv } = Astro.props as { inv: Investment };
 const st = invStats(inv);
@@ -26,7 +26,7 @@ const byRef = (a: Unit, b: Unit) => a.ref.localeCompare(b.ref, 'pl', { numeric: 
 const offer = [...st.inOffer].sort(byRef);
 const g = inv.city.gmina;
 const gminaPart = !g.urban && fold(g.name) !== fold(inv.city.name) ? `gmina ${g.name}` : null;
-const address = [inv.street ? `ul. ${inv.street}${inv.buildingNo ? ` ${inv.buildingNo}` : ''}` : null, inv.city.name, gminaPart].filter(Boolean).join(', ');
+const address = [inv.street ? `${streetLabel(inv.street)}${inv.buildingNo ? ` ${inv.buildingNo}` : ''}` : null, inv.city.name, gminaPart].filter(Boolean).join(', ');
 // Okruszki: województwo › powiat › gmina › miejscowość (poziomy bez własnej strony bez odnośnika).
 const placeCrumbs = chainCity(inv.city).slice(1).map((a) => ({ label: a.label, href: a.href ?? undefined }));
 const kind = st.types.has('dom') && !st.types.has('mieszkanie') ? 'domy' : st.types.has('dom') ? 'mieszkania i domy' : 'mieszkania';

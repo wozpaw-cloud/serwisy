@@ -19,8 +19,12 @@ export function fold(s: string): string {
 }
 
 /** Adres w URL: "Gorzów Wielkopolski" -> "gorzow-wielkopolski". */
-export function slugify(s: string): string {
-  return fold(s).replace(/\s+/g, '-').replace(/^-+|-+$/g, '') || 'brak';
+/** Adres strony z nazwy: najwyżej 70 znaków, ucięty na granicy słowa (dłuższe nazwy
+ *  plików nie mieszczą się w systemie plików, a długie adresy szkodzą w wynikach wyszukiwania). */
+export function slugify(s: string, max = 70): string {
+  let out = fold(s).replace(/\s+/g, '-').replace(/^-+|-+$/g, '');
+  if (out.length > max) out = out.slice(0, max + 1).replace(/-[^-]*$/, '') || out.slice(0, max);
+  return out || 'brak';
 }
 
 const EMPTY = new Set(['', 'x', '-', '--', 'brak', 'nd', 'n d', 'nie dotyczy', 'null', 'none']);
@@ -116,3 +120,17 @@ export function displayCompanyName(s: string): string {
   const name = base.length >= 2 ? base : s.trim();
   return name === name.toUpperCase() ? titleCase(name) : name;
 }
+
+/** Ulica z przedrostkiem: "Sobieskiego" -> "ul. Sobieskiego"; "ul. Sobieskiego", "al. Jana Pawła II",
+ *  "os. Zielone" bez zmian (bez podwójnego "ul. ul."). */
+export function streetLabel(street: string | null | undefined): string | null {
+  const s = (street ?? '').replace(/\s+/g, ' ').trim();
+  if (!s) return null;
+  const m = /^(ul|ulica|al|aleja|aleje|os|osiedle|pl|plac|rondo|skwer|bulwar|bulw)\b\.?\s*/i.exec(s);
+  if (!m) return `ul. ${s}`;
+  const rest = s.slice(m[0].length);
+  const k = m[1].toLowerCase();
+  const prefix = k.startsWith('ul') ? 'ul.' : k.startsWith('al') ? 'al.' : k.startsWith('os') ? 'os.' : k === 'pl' || k === 'plac' ? 'pl.' : m[1].toLowerCase();
+  return rest ? `${prefix} ${rest.replace(/^(ul|ulica)\b\.?\s*/i, '')}` : s;
+}
+
