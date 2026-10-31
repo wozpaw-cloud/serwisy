@@ -45,6 +45,7 @@ jobs:
             echo "== cenaoddewelopera.pl w publicznym DNS =="
             echo "NS=$(dig +short NS cenaoddewelopera.pl | tr '\n' ' ') A=$(dig +short A cenaoddewelopera.pl | tr '\n' ' ')"
             echo "DNSSEC (rekord DS u rejestratora, powinien być pusty): $(dig +short DS cenaoddewelopera.pl | tr '\n' ' ')"
+            echo "wpis w rejestrze .pl (bez pamięci podręcznej): $(dig +norec +short NS cenaoddewelopera.pl @a-dns.pl | tr '\n' ' ')$(dig +norec NS cenaoddewelopera.pl @a-dns.pl | awk '/AUTHORITY SECTION/{f=1;next} f&&/NS/{printf "%s ", $5}')"
             echo "odpowiedź serwera Cloudflare: $(dig +short NS cenaoddewelopera.pl @vasilii.ns.cloudflare.com | tr '\n' ' ')"
           } 2>&1 | tee /tmp/wynik/domena.txt
 
