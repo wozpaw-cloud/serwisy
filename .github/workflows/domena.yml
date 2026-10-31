@@ -48,6 +48,13 @@ jobs:
             echo "DNSSEC (rekord DS u rejestratora, powinien być pusty): $(dig +short DS cenaoddewelopera.pl | tr '\n' ' ')"
             echo "wpis w rejestrze .pl (bez pamięci podręcznej): $(dig +norec +short NS cenaoddewelopera.pl @a-dns.pl | tr '\n' ' ')$(dig +norec NS cenaoddewelopera.pl @a-dns.pl | awk '/AUTHORITY SECTION/{f=1;next} f&&/NS/{printf "%s ", $5}')"
             echo "odpowiedź serwera Cloudflare: $(dig +short NS cenaoddewelopera.pl @vasilii.ns.cloudflare.com | tr '\n' ' ')"
+            echo "== Serwis na żywo =="
+            SUB=$(api "accounts/$CF_ACCOUNT/workers/subdomain" | jq -r '.result.subdomain // empty')
+            for u in ${SUB:+https://cenaoddewelopera.$SUB.workers.dev/ https://cenaoddewelopera.$SUB.workers.dev/miasta/ https://cenaoddewelopera.$SUB.workers.dev/szukaj.json} https://cenaoddewelopera.pl/ https://www.cenaoddewelopera.pl/; do
+              r=$(curl -sS -m 20 -o /tmp/strona -w "%{http_code} %{size_download}B %{time_total}s" "$u" 2>&1 | tail -1)
+              t=$(grep -o "<title>[^<]*" /tmp/strona 2>/dev/null | head -1 | sed 's/<title>//')
+              echo "$u -> $r ${t:+| $t}"
+            done
           } 2>&1 | tee /tmp/wynik/domena.txt
 
       - name: Zapisz wynik w gałęzi domena

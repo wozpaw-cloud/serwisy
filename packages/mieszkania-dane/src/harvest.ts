@@ -315,6 +315,11 @@ function hashDay(id: string): number {
 const lastSnapshots = (db: DatabaseSync) =>
   new Map((db.prepare('SELECT id, last_snapshot FROM datasets').all() as { id: string; last_snapshot: string | null }[]).map((r) => [String(r.id), r.last_snapshot]));
 
+/** Ostatni dzień, z którego próbowaliśmy wczytać cennik zbioru (także odrzucony):
+ *  ten sam plik nie jest pobierany drugi raz. */
+const lastTriedDates = (db: DatabaseSync) =>
+  new Map((db.prepare('SELECT dataset_id AS id, max(data_date) AS d FROM snapshots GROUP BY dataset_id').all() as { id: string; d: string }[]).map((r) => [String(r.id), r.d]));
+
 /**
  * Codzienny import: dla każdego zbioru pobiera najnowszy cennik, jeśli jest
  * nowszy niż ostatnio wczytany. Pobieranie idzie równolegle, czytanie plików
@@ -324,6 +329,7 @@ const lastSnapshots = (db: DatabaseSync) =>
 export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dryRun?: boolean; limit?: number; minutes?: number; datasets?: DatasetRef[] } = {}) {
   const datasets = opts.datasets ?? (await listDeveloperDatasets({ stopAfter: opts.limit })).slice(0, opts.limit ?? Infinity);
   const last = lastSnapshots(db);
+  const tried = lastTriedDates(db);
   const ordered = [...datasets].sort((a, b) => String(last.get(a.id) ?? '').localeCompare(String(last.get(b.id) ?? '')));
   const summaries: IngestSummary[] = [];
   const errors: HarvestError[] = [];
@@ -351,6 +357,8 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
       if (opts.dryRun) { console.log(JSON.stringify({ dataset: ds, resource: res.raw }, null, 1)); return; }
       const prev = last.get(ds.id);
       if (prev && prev >= res.date) return;
+      const t = tried.get(ds.id);
+      if (t && t >= res.date) return; // ten plik już był i został odrzucony
       const buf = await downloadAny(res.urls);
       await parseSlot(async () => {
         const parsed = await parseFile(buf, res.format, { devFallback: devNameFromTitle(ds.title) });

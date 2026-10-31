@@ -240,7 +240,9 @@ export class Model {
     for (let d = this.asOf; d >= this.firstDate; d = addDays(d, -7)) this.dates.unshift(d);
 
     for (const r of db.prepare('SELECT id, last_snapshot FROM datasets').all() as { id: string; last_snapshot: string | null }[]) {
-      if (!r.last_snapshot || r.last_snapshot < addDays(this.asOf, -STALE_DAYS)) this.staleDatasets.add(r.id);
+      // Nieaktualny: bez nowego cennika od 7 dni, ale jeszcze niedawno aktywny (zbiory z poprzednich
+      // lat, zamknięte przez dewelopera, nie są alarmem).
+      if (r.last_snapshot && r.last_snapshot < addDays(this.asOf, -STALE_DAYS) && r.last_snapshot >= addDays(this.asOf, -60)) this.staleDatasets.add(r.id);
     }
 
     // Siatka cen: jedna tablica na datę pomiaru.
