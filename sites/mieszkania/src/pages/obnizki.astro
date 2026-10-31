@@ -27,7 +27,7 @@ const byCity = citiesWithPage.map((c) => ({ c, s: citySnap(c) })).filter((x) => 
   <section class="section">
     <div class="section-head"><h2>Największe obniżki</h2><p>{num(top.length)} lokali z największym spadkiem ceny za m² w 4 tygodnie.</p></div>
     <div class="table-wrap">
-      <table class="data">
+      <table class="data limited">
         <thead><tr><th>Inwestycja</th><th>Miasto</th><th>Lokal</th><th class="r">Było</th><th class="r">Jest</th><th class="r">Było za m²</th><th class="r">Jest za m²</th><th class="r">Zmiana</th></tr></thead>
         <tbody>
           {top.map((c) => (

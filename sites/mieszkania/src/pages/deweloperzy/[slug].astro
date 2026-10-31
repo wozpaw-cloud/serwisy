@@ -8,7 +8,7 @@ import { num, share, zl, zlM2, units, investmentsLoc } from '../../lib/format';
 import type { Brand } from '@serwisy/mieszkania-dane/query';
 
 export function getStaticPaths() {
-  return brands.map((b) => ({ params: { slug: b.slug }, props: { b } }));
+  return brands.slice(0, Number(process.env.PREVIEW_PAGES ?? Infinity)).map((b) => ({ params: { slug: b.slug }, props: { b } }));
 }
 const { b } = Astro.props as { b: Brand };
 const s = brandSnap(b);
@@ -32,7 +32,7 @@ const cities = [...new Map(b.investments.map((i) => [i.city.key, i.city])).value
   <section class="section">
     <div class="section-head"><h2>Inwestycje</h2></div>
     <div class="table-wrap">
-      <table class="data">
+      <table class="data limited">
         <thead><tr><th>Inwestycja</th><th>Miejscowość</th><th class="r">Lokale w ofercie</th><th class="r">Mediana za m²</th><th class="r">Zmiana od wejścia</th></tr></thead>
         <tbody>{invs.map((x) => <tr><td>{invHasPage(x.inv) ? <a href={href.inv(x.inv)}>{x.inv.name}</a> : x.inv.name}</td><td>{hasPage(x.inv.city) ? <a href={href.city(x.inv.city)}>{x.inv.city.name}</a> : x.inv.city.name}</td><td class="r">{num(x.inOffer.length)}</td><td class="r">{zl(x.medianM2)}</td><td class="r"><Change value={x.changeSinceFirst} /></td></tr>)}</tbody>
       </table>

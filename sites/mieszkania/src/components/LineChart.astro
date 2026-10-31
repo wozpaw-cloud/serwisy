@@ -38,7 +38,10 @@ function build(w: number, h: number, narrow: boolean) {
   const padB = 28;
   let lo = Math.min(...all, ...(ref !== undefined ? [ref] : []), ...(zero ? [0] : []));
   let hi = Math.max(...all, ...(ref !== undefined ? [ref] : []));
-  if (hi === lo) { hi += 1; lo -= 1; }
+  // Prawie płaska linia: najmniejszy zakres osi (2% wartości dla cen, 0,5 pkt dla indeksu),
+  // żeby podziałka nie powtarzała tych samych zaokrąglonych liczb.
+  const minRange = format === 'zl' || format === 'count' ? Math.max(Math.abs(hi + lo) / 2 * 0.04, 2) : format === 'index' ? 0.5 : 1;
+  if (hi - lo < minRange) { const mid = (hi + lo) / 2; hi = mid + minRange / 2; lo = mid - minRange / 2; }
   const step = niceStep(hi - lo, narrow ? 3 : 4);
   lo = zero ? 0 : Math.floor((lo - (hi - lo) * 0.06) / step) * step;
   hi = Math.ceil((hi + (hi - lo) * 0.04) / step) * step;

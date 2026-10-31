@@ -53,10 +53,10 @@ const breadcrumbLd = crumbs.length
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pl_PL" />
-    <meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141b1a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1727" media="(prefers-color-scheme: dark)" />
     <meta name="generator-ai" content="Teksty opisowe generowane automatycznie z danych; komentarze AI oznaczone na stronie." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' fill='none' stroke='%23142320' stroke-width='3'/%3E%3Ctext x='7' y='25' font-size='12' font-family='Arial' font-weight='700' fill='%23142320'%3Em%C2%B2%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='5' fill='%2315213a'/%3E%3Ctext x='7' y='25' font-size='12' font-family='Arial' font-weight='700' fill='%23ffffff'%3Em%C2%B2%3C/text%3E%3C/svg%3E" />
     <script is:inline>document.documentElement.classList.add('js');</script>
     {[...breadcrumbLd, ...jsonld].map((ld) => <script type="application/ld+json" set:html={JSON.stringify(ld)} />)}
     {SITE.ads && SITE.adsClient && !isSample && (
@@ -235,6 +235,21 @@ const breadcrumbLd = crumbs.length
           });
         });
 
+        // ---------- długie tabele: 25 wierszy i przycisk "Pokaż wszystkie" ----------
+        each('table.limited', function (t) {
+          var n = t.tBodies[0] ? t.tBodies[0].rows.length : 0;
+          if (n <= 25) { t.classList.add('all'); return; }
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'show-all';
+          var label = function () { b.textContent = t.classList.contains('all') ? 'Zwiń listę' : 'Pokaż wszystkie (' + n.toLocaleString('pl-PL') + ')'; };
+          label();
+          b.addEventListener('click', function () {
+            t.classList.toggle('all'); label();
+            if (!t.classList.contains('all')) t.scrollIntoView({ block: 'nearest' });
+          });
+          (t.closest('.table-wrap') || t).insertAdjacentElement('afterend', b);
+        });
+
         // ---------- filtr długich tabel ----------
         each('input[data-filter]', function (inp) {
           var tools = inp.closest('.table-tools');
@@ -257,6 +272,7 @@ const breadcrumbLd = crumbs.length
               if (g) g.hidden = !any;
             });
             count.textContent = q ? (shown === 0 ? 'Brak pasujących wierszy' : 'Pasuje ' + shown + ' z ' + total) : '';
+            t.classList.toggle('filtering', !!q);
           });
         });
 

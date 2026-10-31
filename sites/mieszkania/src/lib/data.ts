@@ -1,6 +1,6 @@
 // Jeden model danych na całą budowę serwisu i pochodne listy dla stron.
 import { getModel, median, type Brand, type City, type Gmina, type Investment, type Powiat, type Unit, type Voivodeship } from '@serwisy/mieszkania-dane/query';
-import { addDays } from '@serwisy/mieszkania-dane';
+import { addDays, fold, VOIVODESHIPS } from '@serwisy/mieszkania-dane';
 import { SITE } from '../config';
 
 export const M = getModel();
@@ -26,8 +26,10 @@ export const cityKey = (c: City) => `c:${c.key}`;
 export const citySnap = (c: City) => M.snapshot(cityKey(c), c.units);
 export const citySeries = (c: City) => M.series(cityKey(c), c.units);
 
+// "Polska" albo nazwa województwa w kolumnie miejscowości to błąd w cenniku, nie miasto.
+const NOT_A_CITY = new Set(['polska', ...VOIVODESHIPS.map((v) => fold(v))]);
 export const citiesWithPage: City[] = M.cities
-  .filter((c) => citySnap(c).units >= SITE.minCityUnits)
+  .filter((c) => citySnap(c).units >= SITE.minCityUnits && !NOT_A_CITY.has(fold(c.name)))
   .sort((a, b) => citySnap(b).units - citySnap(a).units);
 const pageCities = new Set(citiesWithPage);
 export const hasPage = (c: City) => pageCities.has(c);
@@ -202,7 +204,12 @@ export function invIsCurrent(inv: Investment): boolean {
 export const investmentsSorted = [...M.investments].sort((a, b) => invStats(b).inOffer.length - invStats(a).inOffer.length);
 
 /** Opis lokalu do list: "M22, 49,2 m²". */
+/** Oznaczenie lokalu: numer budynku (gdy inwestycja ma kilka budynków) i numer lokalu. */
+export function unitRef(u: Unit): string {
+  return u.building && !u.ref.includes(u.building) ? `${u.building} / ${u.ref}` : u.ref;
+}
+
 export function unitLabel(u: Unit): string {
   const a = u.area ? `${u.area.toFixed(1).replace('.', ',')} m²` : '';
-  return [u.ref, a].filter(Boolean).join(', ');
+  return [unitRef(u), a].filter(Boolean).join(', ');
 }

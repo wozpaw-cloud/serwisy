@@ -10,7 +10,7 @@ const rows = brands.map((b) => ({ b, s: brandSnap(b) })).filter((x) => x.s.units
     <p class="lead">{num(rows.length)} deweloperów ma lokale w cennikach z {dateLong(M.asOf)}. Spółki celowe z tą samą stroną internetową łączymy pod jedną marką. To zestawienie oferty, a nie sprzedaży.</p>
   </section>
   <div class="table-wrap">
-    <table class="data">
+    <table class="data limited">
       <thead><tr><th>Deweloper</th><th class="r">Lokale w ofercie</th><th class="r">Inwestycje</th><th class="r">Miasta</th><th class="r">Mediana za m²</th><th class="r">Potaniało, 4 tyg.</th></tr></thead>
       <tbody>
         {rows.map(({ b, s }) => (

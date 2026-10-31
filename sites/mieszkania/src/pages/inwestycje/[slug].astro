@@ -4,13 +4,14 @@ import LineChart from '../../components/LineChart.astro';
 import Change from '../../components/Change.astro';
 import AdSlot from '../../components/AdSlot.astro';
 import AiNote from '../../components/AiNote.astro';
-import { M, href, invStats, invIsCurrent, chainCity, invWithPage } from '../../lib/data';
+import { M, href, invStats, invIsCurrent, chainCity, invWithPage, unitRef } from '../../lib/data';
 import { fold, streetLabel } from '@serwisy/mieszkania-dane';
 import { dateLong, dateShort, num, pct, units, zl, zlM2, m2 } from '../../lib/format';
 import type { Investment, Unit } from '@serwisy/mieszkania-dane/query';
 
 export function getStaticPaths() {
-  return invWithPage.map((inv) => ({ params: { slug: inv.slug }, props: { inv } }));
+  // PREVIEW_PAGES: szybka budowa podglądu z ograniczoną liczbą stron inwestycji.
+  return invWithPage.slice(0, Number(process.env.PREVIEW_PAGES ?? Infinity)).map((inv) => ({ params: { slug: inv.slug }, props: { inv } }));
 }
 const { inv } = Astro.props as { inv: Investment };
 const st = invStats(inv);
@@ -19,10 +20,10 @@ const changes = M.priceChanges(inv.units, 2000);
 // Deweloperzy zwykle przeceniają wiele lokali naraz, więc zmiany grupujemy po dniu.
 const byDay = [...Map.groupBy(changes, (c) => c.date)].map(([date, cs]) => {
   const ch = cs.map((c) => c.change).sort((a, b) => a - b);
-  return { date, n: cs.length, med: ch[Math.floor(ch.length / 2)], min: ch[0], max: ch.at(-1)!, refs: cs.map((c) => c.unit.ref) };
+  return { date, n: cs.length, med: ch[Math.floor(ch.length / 2)], min: ch[0], max: ch.at(-1)!, refs: cs.map((c) => unitRef(c.unit)) };
 }).sort((a, b) => b.date.localeCompare(a.date));
 const gone = inv.units.filter((u) => M.currentM2(u) === null).sort((a, b) => (M.lastSeen(b) ?? '').localeCompare(M.lastSeen(a) ?? ''));
-const byRef = (a: Unit, b: Unit) => a.ref.localeCompare(b.ref, 'pl', { numeric: true });
+const byRef = (a: Unit, b: Unit) => unitRef(a).localeCompare(unitRef(b), 'pl', { numeric: true });
 const offer = [...st.inOffer].sort(byRef);
 const g = inv.city.gmina;
 const gminaPart = !g.urban && fold(g.name) !== fold(inv.city.name) ? `gmina ${g.name}` : null;
@@ -71,7 +72,7 @@ const lastChangeDate = (u: Unit) => (u.prices.length > 1 ? u.prices.at(-1)!.from
         <p>Ceny z cennika z {dateLong(M.asOf)}. Zmiana liczona od pierwszej ceny lokalu w cennikach.</p>
       </div>
       <div class="table-wrap">
-        <table class="data sortable">
+        <table class="data sortable limited">
           <thead><tr><th>Lokal</th><th>Rodzaj</th><th class="r">Powierzchnia</th><th class="r">Cena za m²</th><th class="r">Cena</th><th class="r">Zmiana od wejścia</th><th class="r">Ostatnia zmiana</th></tr></thead>
           <tbody>
             {offer.map((u) => {
@@ -80,7 +81,7 @@ const lastChangeDate = (u: Unit) => (u.prices.length > 1 ? u.prices.at(-1)!.from
               const lc = lastChangeDate(u);
               return (
                 <tr>
-                  <td class="num" data-v={u.ref}>{u.ref}</td>
+                  <td class="num" data-v={unitRef(u)}>{unitRef(u)}</td>
                   <td data-v={`${typeLabel(u)} ${u.rooms ?? 0}`}>{typeLabel(u)}{u.rooms ? `, ${u.rooms} pok.` : ''}</td>
                   <td class="r" data-v={u.area ?? ''}>{m2(u.area)}</td>
                   <td class="r" data-v={p?.m2 ?? ''}>{zl(p?.m2 ?? null)}</td>
@@ -122,7 +123,7 @@ const lastChangeDate = (u: Unit) => (u.prices.length > 1 ? u.prices.at(-1)!.from
           <tbody>
             {gone.slice(0, 200).map((u) => {
               const p = u.prices.at(-1);
-              return <tr><td class="num">{u.ref}</td><td class="r">{m2(u.area)}</td><td class="r">{zl(p?.m2 ?? null)}</td><td class="r">{zl(p?.total ?? null)}</td><td class="r">{dateShort(M.lastSeen(u) ?? M.asOf)}</td></tr>;
+              return <tr><td class="num">{unitRef(u)}</td><td class="r">{m2(u.area)}</td><td class="r">{zl(p?.m2 ?? null)}</td><td class="r">{zl(p?.total ?? null)}</td><td class="r">{dateShort(M.lastSeen(u) ?? M.asOf)}</td></tr>;
             })}
           </tbody>
         </table>

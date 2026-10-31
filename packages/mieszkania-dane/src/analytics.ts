@@ -22,6 +22,8 @@ export const STALE_DAYS = 7;
 export interface Unit {
   i: number; id: number; ref: string; type: 'mieszkanie' | 'dom'; area: number | null; rooms: number | null;
   inv: Investment; dataset: string;
+  /** Numer budynku, gdy inwestycja ma kilka budynków (do rozróżnienia lokali o tym samym numerze). */
+  building: string | null;
   presence: [string, string][];
   prices: { from: string; m2: number; total: number | null }[];
 }
@@ -75,6 +77,20 @@ export function quantile(xs: ArrayLike<number>, q: number): number | null {
   const lo = Math.floor(pos);
   const hi = Math.ceil(pos);
   return a[lo] + (a[hi] - a[lo]) * (pos - lo);
+}
+
+/** Skraca długi tekst na granicy słowa: "ul. Kosmonautów / Architektów / Radinga 166, 168…". */
+function shorten(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max + 1).replace(/[\s,/;]+\S*$/, '');
+  return `${(cut || s.slice(0, max)).replace(/[\s,/;]+$/, '')}…`;
+}
+
+/** Numer budynku bez numeru lokalu: "12A m.1" -> "12A", "1 lok. 5" -> "1". */
+export function baseBuilding(v: string | null | undefined): string | null {
+  const s = String(v ?? '').replace(/\s+/g, ' ').trim()
+    .replace(/\s*[,;]?\s*(m\.?|lok\.?|lokal|mieszk\.?|mieszkanie|apartament|ap\.?)\s*\S+$/i, '').trim();
+  return s || null;
 }
 
 function uniqueSlug(base: string, used: Set<string>): string {
@@ -157,6 +173,9 @@ export class Model {
     const countyVotes = new Map<Gmina, Map<string, number>>();
     const cityByKey = new Map<string, City>();
     const invById = new Map<number, Investment>();
+    const invByMerge = new Map<string, Investment>();
+    const buildingsOf = new Map<Investment, Set<string>>();
+    const buildingOfRow = new Map<number, string | null>();
     invRows.forEach((r, i) => {
       const p = places[i];
       const inferred = p.gmina ?? topVote(gminaVotes.get(placeKey(r.voivodeship, p.city)));
@@ -182,26 +201,52 @@ export class Model {
         this.cities.push(city);
         gmina.cities.push(city);
       }
+      // Jedna inwestycja to: deweloper (marka) + miejscowość + nazwa inwestycji, a bez nazwy
+      // + ulica. Cenniki często podają adres każdego budynku albo lokalu ("Lekcyjna 12A m.1"):
+      // bez scalania każdy budynek, a nawet mieszkanie, byłby osobną inwestycją.
       const named = !!r.name;
-      const inv: Investment = {
-        id: r.id, slug: '', name: r.name ?? [streetLabel(r.street), r.building_no].filter(Boolean).join(' ') ?? r.city,
-        named, devId: r.developer_id, brand: devBrand.get(r.developer_id)!, city,
-        street: r.street, buildingNo: r.building_no, postalCode: r.postal_code, prospectusUrl: r.prospectus_url, units: [],
-      };
-      if (!inv.name) inv.name = city.name;
-      invById.set(inv.id, inv);
-      this.investments.push(inv);
-      city.investments.push(inv);
-      gmina.investments.push(inv);
-      inv.brand.investments.push(inv);
+      const brand = devBrand.get(r.developer_id)!;
+      const building = baseBuilding(r.building_no);
+      const mk = `${brand.key}|${city.key}|${named ? `n:${fold(r.name)}` : `s:${fold(r.street ?? '')}`}`;
+      let inv = invByMerge.get(mk);
+      if (!inv) {
+        inv = {
+          id: r.id, slug: '', name: r.name ?? '', named, devId: r.developer_id, brand, city,
+          street: r.street, buildingNo: building, postalCode: r.postal_code, prospectusUrl: r.prospectus_url, units: [],
+        };
+        invByMerge.set(mk, inv);
+        buildingsOf.set(inv, new Set());
+        this.investments.push(inv);
+        city.investments.push(inv);
+        gmina.investments.push(inv);
+        brand.investments.push(inv);
+      }
+      if (building) buildingsOf.get(inv)!.add(building);
+      buildingOfRow.set(r.id, building);
+      inv.prospectusUrl ??= r.prospectus_url;
+      inv.postalCode ??= r.postal_code;
+      invById.set(r.id, inv);
     });
+    // Nazwa inwestycji bez nazwy: ulica i do trzech numerów budynków ("ul. Lekcyjna 12, 12A, 12B").
+    for (const inv of this.investments) {
+      if (inv.named) continue;
+      const b = [...(buildingsOf.get(inv) ?? [])].sort((x, y) => x.localeCompare(y, 'pl', { numeric: true }));
+      inv.buildingNo = b.length === 1 ? b[0] : null;
+      const street = streetLabel(inv.street);
+      const full = street ? (b.length && b.length <= 3 ? `${street} ${b.join(', ')}` : street) : null;
+      // Bez nazwy i ulicy: "Dom Development, Wrocław" (sama nazwa miasta myliłaby się ze stroną miasta).
+      inv.name = full ? shorten(full, 48) : ''; // nazwa z marką: w assignNames, gdy marki mają już nazwy
+    }
     for (const [g, votes] of countyVotes) g.county = topVote(votes);
 
     const unitRows = db.prepare('SELECT id, investment_id, dataset_id, ref, type, area, rooms FROM units ORDER BY id').all() as Record<string, any>[];
     const unitById = new Map<number, Unit>();
     for (const r of unitRows) {
       const inv = invById.get(r.investment_id)!;
-      const u: Unit = { i: this.units.length, id: r.id, ref: r.ref, type: r.type, area: r.area, rooms: r.rooms, inv, dataset: r.dataset_id, presence: [], prices: [] };
+      const many = (buildingsOf.get(inv)?.size ?? 0) > 1;
+      const b = many ? buildingOfRow.get(r.investment_id) ?? null : null;
+      // Numer lokalu bez powtórzonego adresu budynku ("12A m.1" -> lokal "1" w budynku "12A").
+      const u: Unit = { i: this.units.length, id: r.id, ref: r.ref, type: r.type, area: r.area, rooms: r.rooms, inv, dataset: r.dataset_id, building: b, presence: [], prices: [] };
       this.units.push(u);
       unitById.set(u.id, u);
       inv.units.push(u);
@@ -225,7 +270,13 @@ export class Model {
       GROUP BY data_date HAVING count(*) >= ? ORDER BY data_date DESC LIMIT 1`).get(tomorrow, need) as { d: string } | undefined;
     const ends = this.units.flatMap((u) => u.presence.map((p) => p[1])).filter((d) => d <= tomorrow).sort();
     const last = busy?.d ?? ends.at(-1);
-    const first = this.units.flatMap((u) => u.presence.map((p) => p[0])).sort()[0];
+    // Początek wykresów: pierwszy dzień z cennikami wielu zbiorów (pojedyncze wcześniejsze
+    // cenniki dawałyby kilka miesięcy pustej osi).
+    const perDay = db.prepare(`SELECT max(n) AS m FROM (SELECT count(*) AS n FROM snapshots WHERE status IN ('ok', 'ostrzezenie') GROUP BY data_date)`).get() as { m: number | null };
+    const needFirst = Math.max(need, Math.round((perDay.m ?? 0) * 0.1));
+    const busyFirst = db.prepare(`SELECT data_date AS d FROM snapshots WHERE status IN ('ok', 'ostrzezenie')
+      GROUP BY data_date HAVING count(*) >= ? ORDER BY data_date LIMIT 1`).get(needFirst) as { d: string } | undefined;
+    const first = busyFirst?.d ?? this.units.flatMap((u) => u.presence.map((p) => p[0])).sort()[0];
     this.asOf = last ?? new Date().toISOString().slice(0, 10);
     this.firstDate = first ?? this.asOf;
     // Lokal z ostatniego cennika swojego zbioru jest w ofercie "dziś", jeśli ten cennik jest
@@ -314,14 +365,16 @@ export class Model {
       const base = slugify(g.name);
       g.slug = uniqueSlug(gCount.get(base)! > 1 && !g.urban ? `${base}-${slugify(g.county ?? g.voivodeship ?? '')}` : base, usedGmina);
     }
-    const usedInv = new Set<string>();
-    for (const inv of [...this.investments].sort((a, b) => a.id - b.id)) inv.slug = uniqueSlug(`${inv.city.slug}-${slugify(inv.name)}`, usedInv);
     const usedBrand = new Set<string>();
     for (const b of [...this.brands].sort((a, z) => z.units.length - a.units.length)) {
       const shortest = [...b.legalNames].map(displayCompanyName).sort((x, y) => x.length - y.length)[0];
       b.name = shortest.replace(/\s+projekt\s+\d+$/i, '').trim() || shortest;
       b.slug = uniqueSlug(slugify(b.name), usedBrand);
     }
+    // Inwestycja bez nazwy i ulicy: "Dom Development, Wrocław" (sama nazwa miasta myliłaby się ze stroną miasta).
+    for (const inv of this.investments) if (!inv.name) inv.name = `${inv.brand.name}, ${inv.city.name}`;
+    const usedInv = new Set<string>();
+    for (const inv of [...this.investments].sort((a, b) => a.id - b.id)) inv.slug = uniqueSlug(`${inv.city.slug}-${slugify(inv.name)}`, usedInv);
     // Powiaty: nazwy powtarzają się między województwami (np. powiat średzki), wtedy dopisujemy województwo.
     const usedPowiat = new Set<string>();
     const pCount = new Map<string, number>();
