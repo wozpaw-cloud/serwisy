@@ -122,6 +122,7 @@ export class Model {
   /** prices[k][i] = cena za m² lokalu i w dacie dates[k], NaN gdy poza ofertą */
   private grid: Float32Array[] = [];
   private seriesCache = new Map<string, Series>();
+  private snapCache = new Map<string, Snapshot>();
 
   constructor(db: DatabaseSync) {
     const devs = db.prepare('SELECT id, legal_name, website_host, brand_key FROM developers').all() as
@@ -436,7 +437,17 @@ export class Model {
   private dateIndex(weeksBack: number): number { return Math.max(0, this.dates.length - 1 - weeksBack); }
 
   /** Stan na ostatni dzień i zmiany w czasie dla zbioru lokali. */
+  /** Stan na dziś dla zbioru lokali; klucz jednoznacznie wskazuje zbiór (pamięć podręczna:
+   *  ten sam stan pokazuje wiele stron, np. pasek notowań na każdej stronie). */
   snapshot(key: string, units: Unit[]): Snapshot {
+    const hit = this.snapCache.get(key);
+    if (hit) return hit;
+    const out = this.computeSnapshot(key, units);
+    this.snapCache.set(key, out);
+    return out;
+  }
+
+  private computeSnapshot(key: string, units: Unit[]): Snapshot {
     const s = this.series(key, units);
     const k = this.dates.length - 1;
     const k4 = this.dateIndex(4);
