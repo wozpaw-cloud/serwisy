@@ -53,6 +53,7 @@ jobs:
       - name: Podsumowanie i próbki stron
         if: always()
         run: |
+          set +o pipefail
           cd sites/mieszkania
           {
             echo "plików: $(find dist -type f | wc -l) (limit 20000)"

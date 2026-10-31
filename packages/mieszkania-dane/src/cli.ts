@@ -45,7 +45,11 @@ function report(summaries: IngestSummary[], errors: { datasetId: string; error: 
     priceChanges: summaries.reduce((a, s) => a + s.priceChanges, 0),
     problemCount: problems.length,
     problemReasons: Object.fromEntries([...reasons].sort((a, b) => b[1] - a[1]).slice(0, 30)),
-    problems: problems.slice(0, MAX_PROBLEMS),
+    // Po kilka przykładów z każdej przyczyny, żeby rzadkie błędy nie ginęły pod częstymi.
+    problems: (() => {
+      const per = new Map<string, number>();
+      return problems.filter((p) => { const k = `${p.status}: ${reason(p.note)}`; const c = per.get(k) ?? 0; per.set(k, c + 1); return c < 10; }).slice(0, MAX_PROBLEMS);
+    })(),
   };
 }
 
@@ -89,6 +93,44 @@ function finish(db: ReturnType<typeof openDb>, summary: ReturnType<typeof report
   return blocked ? 2 : 0;
 }
 
+// Wersja danych: zmiana oznacza wczytanie całej historii od nowa (np. zmiana sposobu zapisu).
+// 2 (31.10.2026): historia wczytywana dzień po dniu dla wszystkich zbiorów naraz.
+const DATA_VERSION = '2';
+// Wersja rozpoznawania plików: po zmianie zbiory, z których nie wszedł żaden cennik,
+// wracają do wczytania historii.
+const PARSER_VERSION = '4';
+
+function getMeta(db: ReturnType<typeof openDb>, key: string): string | null {
+  return (db.prepare('SELECT value FROM meta WHERE key = ?').get(key) as { value: string } | undefined)?.value ?? null;
+}
+
+/** Baza w bieżącej wersji: przy zmianie wersji danych zaczynamy od zera, przy zmianie
+ *  parsera wracamy do zbiorów bez żadnego przyjętego cennika. */
+function openCurrentDb() {
+  let db = openDb();
+  const hasData = (db.prepare('SELECT count(*) AS n FROM snapshots').get() as { n: number }).n > 0;
+  if (hasData && getMeta(db, 'wersja_danych') !== DATA_VERSION) {
+    console.error(`Baza w wersji ${getMeta(db, 'wersja_danych') ?? '1'}, wymagana ${DATA_VERSION}: wczytuję całą historię od nowa.`);
+    db.close();
+    rmSync(dbPath());
+    db = openDb();
+  }
+  db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('wersja_danych', ?)").run(DATA_VERSION);
+  const pv = getMeta(db, 'wersja_parsera');
+  if (pv !== null && pv !== PARSER_VERSION) {
+    const ids = (db.prepare(`SELECT dataset_id AS id FROM backfill_done
+      WHERE dataset_id NOT IN (SELECT id FROM datasets WHERE last_snapshot IS NOT NULL)`).all() as { id: string }[]).map((r) => r.id);
+    const delSnap = db.prepare('DELETE FROM snapshots WHERE dataset_id = ?');
+    const delDone = db.prepare('DELETE FROM backfill_done WHERE dataset_id = ?');
+    db.exec('BEGIN');
+    for (const id of ids) { delSnap.run(id); delDone.run(id); }
+    db.exec('COMMIT');
+    console.error(`Nowa wersja rozpoznawania plików (${pv} -> ${PARSER_VERSION}): ${ids.length} zbiorów bez przyjętego cennika wraca do wczytania.`);
+  }
+  db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('wersja_parsera', ?)").run(PARSER_VERSION);
+  return db;
+}
+
 /** Odrzucone pliki pogrupowane po nagłówkach (do ulepszania rozpoznawania kolumn). */
 function saveRejected() {
   const list = rejectedReport();
@@ -127,7 +169,7 @@ async function main(): Promise<number> {
     }
     case 'backfill': {
       // Kod 0: historia kompletna. Kod 3: skończył się limit czasu, ciąg dalszy przy następnym uruchomieniu.
-      const db = openDb();
+      const db = openCurrentDb();
       const lim = opt('limit') ? Number(opt('limit')) : undefined;
       // Historia co 28 dni: obecność lokalu nie może się urywać między kolejnymi cennikami.
       process.env.PRESENCE_GAP_DAYS ??= '35';

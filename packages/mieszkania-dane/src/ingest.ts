@@ -60,7 +60,8 @@ export function ingestSnapshot(
     : status === 'ostrzezenie' ? `odrzucone wiersze: ${JSON.stringify(parsed.rejected)}`
     : parsed.unknownHeaders.length ? `nowe kolumny: ${parsed.unknownHeaders.slice(0, 5).join(' | ')}` : undefined;
 
-  const saveSnapshot = db.prepare(`INSERT INTO snapshots(dataset_id, data_date, source_url, format, rows_read, records, rejected_json, unknown_headers, status, note)
+  // Dwa pliki z jednego dnia (np. CSV i XLSX): przyjęty zastępuje wcześniej odrzucony.
+  const saveSnapshot = db.prepare(`INSERT OR REPLACE INTO snapshots(dataset_id, data_date, source_url, format, rows_read, records, rejected_json, unknown_headers, status, note)
     VALUES (?,?,?,?,?,?,?,?,?,?)`);
 
   if (status === 'odrzucony') {
@@ -133,11 +134,15 @@ export function ingestSnapshot(
       if (seen.has(unitId)) continue; // ten sam lokal dwa razy w jednym pliku: liczy się pierwszy wiersz
       seen.add(unitId);
 
+      // Ten sam lokal bywa w dwóch zbiorach (roczne zbiory 2025 i 2026). Informacji starszej
+      // niż to, co już wiemy o lokalu, nie wpisujemy: historia musi iść do przodu.
       const p = q.presLast.get(unitId) as { from_date: string; to_date: string } | undefined;
+      if (p && date <= p.to_date) continue;
       if (p && p.to_date >= gapLimit) q.presExt.run(date, unitId, p.from_date);
       else q.presIns.run(unitId, date, date);
 
       const last = q.priceLast.get(unitId) as { from_date: string; price_m2: number; price_total: number | null } | undefined;
+      if (last && date < last.from_date) continue;
       const changed = !last
         || Math.abs(last.price_m2 - r.priceM2) >= 0.5
         || (last.price_total !== null && r.priceTotal !== null && Math.abs(last.price_total - r.priceTotal) > Math.max(1, last.price_total * 0.001));

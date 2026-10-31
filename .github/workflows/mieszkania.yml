@@ -3,7 +3,7 @@
 # Baza z historią cen leży w Cloudflare R2 (kubeł "serwisy-dane"), spakowana gzipem.
 #
 # Pierwsze uruchomienia: najpierw wczytuje historię cenników (cennik co 28 dni,
-# po 2,5 godziny dziennie, aż skończy). Dopiero z pełną historią importuje bieżące
+# do 3,5 godziny dziennie, aż skończy). Dopiero z pełną historią importuje bieżące
 # cenniki i publikuje serwis. Potem codziennie: nowe cenniki, budowa, publikacja.
 name: Ceny mieszkań - import i publikacja
 
@@ -26,7 +26,7 @@ permissions:
 jobs:
   import-build-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 350
     # bash -eo pipefail: błąd programu przed "| tee" przerywa krok (bez tego krok zawsze "udany").
     defaults:
       run:
@@ -113,12 +113,12 @@ jobs:
         id: backfill
         if: ${{ !inputs.dry_run }}
         continue-on-error: true   # kod 3 = historia jeszcze niepełna, ciąg dalszy jutro
-        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 150 2>&1 | tee data/backfill.txt
+        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 210 2>&1 | tee data/backfill.txt
 
       - name: Import bieżących cenników
         id: harvest
         if: ${{ !inputs.dry_run && steps.backfill.outcome == 'success' }}
-        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --minutes 120 2>&1 | tee data/harvest.txt
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --minutes 80 2>&1 | tee data/harvest.txt
         # kod 2 = bramka jakości zatrzymała publikację; serwis się nie zbuduje
 
       - name: Zapisz bazę i alarmy w R2

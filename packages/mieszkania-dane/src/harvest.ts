@@ -204,6 +204,8 @@ function toResource(it: ApiItem): ResourceRef[] {
   const urls = resourceUrls(a);
   const date = String(a.data_date ?? a.created ?? a.modified ?? '').slice(0, 10);
   if (!urls.length || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+  // Data z przyszłości (literówka dewelopera, np. 2029) przesunęłaby "dziś" całego serwisu.
+  if (date > new Date(Date.now() + 86400000).toISOString().slice(0, 10)) return [];
   const stored = urls.some((u) => (DANE_HOST.test(u) || u.startsWith(new URL(API).origin)) && !/\/datasets\//.test(u));
   return [{ id: String(it.id), date, url: urls[0], urls, stored, format: guessFormat(urls.find((u) => /\.\w{3,4}(\?|$)/.test(u)) ?? urls[0], String(a.format ?? '')), raw: a }];
 }
@@ -242,7 +244,21 @@ async function downloadAny(urls: string[]): Promise<Buffer> {
   throw last;
 }
 
-async function download(url: string, maxBytes = 30 * 1024 * 1024): Promise<Buffer> {
+/** Pobranie z ponowieniem po błędzie sieci, przekroczeniu czasu albo 429/5xx. */
+async function download(url: string, maxBytes = 30 * 1024 * 1024, tries = 3): Promise<Buffer> {
+  for (let i = 1; ; i++) {
+    try {
+      return await downloadOnce(url, maxBytes);
+    } catch (e) {
+      const msg = String((e as Error).message ?? e);
+      const transient = /fetch failed|timeout|aborted|ECONNRESET|ETIMEDOUT|socket|HTTP (429|5\d\d)/i.test(msg);
+      if (!transient || i >= tries) throw e;
+      await new Promise((r) => setTimeout(r, 2000 * i));
+    }
+  }
+}
+
+async function downloadOnce(url: string, maxBytes: number): Promise<Buffer> {
   const res = await fetch(url, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(90000), redirect: 'follow' });
   if (!res.ok) throw new Error(`HTTP ${res.status} przy pobieraniu ${url}`);
   const len = Number(res.headers.get('content-length') ?? 0);
@@ -352,14 +368,30 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
   return { datasets: datasets.length, summaries, errors, skippedForTime, skippedDormant };
 }
 
+/** Cenniki do historii: jeden na okres (domyślnie 28 dni) i zawsze najnowszy, jeden na dzień. */
+export function choosePicks(all: ResourceRef[], stepDays = 28): ResourceRef[] {
+  const sorted = [...all].sort((a, b) => a.date.localeCompare(b.date) || Number(b.stored) - Number(a.stored));
+  // Do historii tylko pliki z kopią w dane.gov.pl: link do serwera dewelopera daje
+  // dzisiejszy cennik, nie ten z dnia zasobu. Najnowszy cennik bierzemy zawsze.
+  const periodic = new Map<number, ResourceRef>();
+  for (const r of sorted.filter((x) => x.stored)) {
+    const day = Math.floor(new Date(r.date + 'T00:00:00Z').getTime() / 86400000);
+    periodic.set(Math.floor(day / stepDays), r); // zostaje ostatni cennik okresu
+  }
+  const latest = sorted.filter((x) => x.date === sorted.at(-1)?.date).sort((a, b) => Number(b.stored) - Number(a.stored))[0];
+  const byDate = new Map<string, ResourceRef>();
+  for (const r of [...periodic.values(), ...(latest ? [latest] : [])]) if (!byDate.has(r.date)) byDate.set(r.date, r);
+  return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
 /**
- * Uzupełnienie historii: z każdego zbioru bierze jeden cennik na okres (domyślnie
- * 28 dni) i zawsze najnowszy, od najstarszego. Zbiory pobiera równolegle, a w obrębie
- * zbioru po kolei (historia musi wchodzić chronologicznie). Zbiór z wczytaną historią
- * trafia do backfill_done i kolejne uruchomienia go pomijają; przerwany limitem czasu
- * zaczyna następnym razem od pierwszego niewczytanego cennika. Błąd pojedynczego pliku
- * (np. uszkodzony XLSX) nie zatrzymuje zbioru. Błąd listy zasobów (API) tak: zbiór
- * wraca przy następnym uruchomieniu.
+ * Uzupełnienie historii. Najpierw lista cenników do wczytania ze wszystkich zbiorów,
+ * potem wczytywanie dzień po dniu, od najstarszego: ten sam lokal bywa w dwóch
+ * zbiorach (deweloperzy zakładają nowy zbiór co rok), więc historia musi wchodzić
+ * w kolejności dat dla wszystkich zbiorów naraz. Pliki z jednego dnia pobieramy
+ * równolegle, czytamy po jednym. Zbiór z wczytaną historią trafia do backfill_done;
+ * po limicie czasu kolejne uruchomienie zaczyna od pierwszego niewczytanego dnia.
+ * Błąd pojedynczego pliku nie zatrzymuje zbioru; błąd listy zasobów (API) tak.
  */
 export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[]; concurrency?: number; minutes?: number; stepDays?: number }) {
   const summaries: IngestSummary[] = [];
@@ -369,56 +401,71 @@ export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[];
   const titles = new Map(opts.datasets.map((d) => [d.id, d.title]));
   const todo = opts.datasets.map((d) => d.id).filter((id) => !done.has(id));
   const markDone = db.prepare('INSERT OR REPLACE INTO backfill_done(dataset_id, finished) VALUES (?, ?)');
-  const lastOf = db.prepare('SELECT last_snapshot FROM datasets WHERE id = ?');
+  // Ostatni wczytany dzień zbioru (także plik odrzucony): od niego wznawiamy.
+  const lastTried = db.prepare('SELECT max(data_date) AS d FROM snapshots WHERE dataset_id = ?');
   const deadline = Date.now() + (opts.minutes ?? Infinity) * 60000;
-  const step = opts.stepDays ?? 28;
-  let finished = 0;
+  const conc = opts.concurrency ?? 10;
   let timedOut = false;
   let lastLog = Date.now();
+  const log = (msg: () => string) => { if (Date.now() - lastLog > 60000) { lastLog = Date.now(); console.error(msg()); } };
 
-  await pool(todo, opts.concurrency ?? 10, async (id) => {
+  // 1. Lista cenników do wczytania.
+  type Item = { id: string; date: string; urls: string[]; format: string; url: string };
+  const plan: Item[] = [];
+  const listed: string[] = [];
+  let n = 0;
+  await pool(todo, conc, async (id) => {
     if (Date.now() >= deadline) { timedOut = true; return; }
-    if (Date.now() - lastLog > 60000) {
-      lastLog = Date.now();
-      console.error(`historia: ${finished} z ${todo.length} zbiorów, plików ${summaries.length}, błędów API ${errors.length}, błędów plików ${fileErrors.length}`);
-    }
-    let all: ResourceRef[];
+    log(() => `historia, lista cenników: ${n} z ${todo.length} zbiorów, cenników do wczytania ${plan.length}`);
     try {
-      all = await listAllResources(id);
+      const picks = choosePicks(await listAllResources(id), opts.stepDays);
+      const from = (lastTried.get(id) as { d: string | null } | undefined)?.d ?? '';
+      for (const r of picks) if (r.date > from) plan.push({ id, date: r.date, urls: r.urls, format: r.format, url: r.url });
+      listed.push(id);
     } catch (e) {
       errors.push({ datasetId: id, error: String((e as Error).message ?? e) });
-      return;
+    } finally {
+      n++;
     }
-    // Jeden cennik na okres: niemal każdy deweloper publikuje codziennie,
-    // więc pełna historia dzień po dniu to ponad milion plików.
-    // Do historii tylko pliki z kopią w dane.gov.pl: link do serwera dewelopera daje
-    // dzisiejszy cennik, nie ten z dnia zasobu. Najnowszy cennik bierzemy zawsze.
-    const periodic = new Map<number, ResourceRef>();
-    const sorted = all.sort((a, b) => a.date.localeCompare(b.date));
-    for (const r of sorted.filter((x) => x.stored)) {
-      const day = Math.floor(new Date(r.date + 'T00:00:00Z').getTime() / 86400000);
-      periodic.set(Math.floor(day / step), r); // zostaje ostatni cennik okresu
-    }
-    const latest = sorted.at(-1);
-    if (latest) periodic.set(Number.MAX_SAFE_INTEGER, latest); // i zawsze najnowszy
-    const picks = [...new Set(periodic.values())];
-    for (const r of picks) {
-      if (Date.now() >= deadline) { timedOut = true; return; }
-      const loaded = (lastOf.get(id) as { last_snapshot: string | null } | undefined)?.last_snapshot;
-      if (loaded && loaded >= r.date) continue; // wczytany w poprzednim, przerwanym uruchomieniu
+  });
+  console.error(`historia: lista gotowa, zbiorów ${listed.length}, cenników do wczytania ${plan.length}, błędów API ${errors.length}`);
+
+  // 2. Wczytywanie dzień po dniu.
+  plan.sort((a, b) => a.date.localeCompare(b.date));
+  const lastDateOf = new Map<string, string>();
+  for (const it of plan) lastDateOf.set(it.id, it.date);
+  let doneUpTo = '';
+  let k = 0;
+  for (let i = 0; i < plan.length && !timedOut; ) {
+    const date = plan[i].date;
+    let j = i;
+    while (j < plan.length && plan[j].date === date) j++;
+    if (Date.now() >= deadline) { timedOut = true; break; }
+    await pool(plan.slice(i, j), conc, async (it) => {
       try {
-        const buf = await downloadAny(r.urls);
+        const buf = await downloadAny(it.urls);
         await parseSlot(async () => {
-          const parsed = await parseFile(buf, r.format, { devFallback: devNameFromTitle(titles.get(id)) });
-          noteRejected(parsed, id, r.date, r.url);
-          summaries.push(ingestSnapshot(db, { datasetId: id, title: titles.get(id), date: r.date, sourceUrl: r.url }, parsed));
+          const parsed = await parseFile(buf, it.format, { devFallback: devNameFromTitle(titles.get(it.id)) });
+          noteRejected(parsed, it.id, it.date, it.url);
+          summaries.push(ingestSnapshot(db, { datasetId: it.id, title: titles.get(it.id), date: it.date, sourceUrl: it.url }, parsed));
         });
       } catch (e) {
-        fileErrors.push({ datasetId: id, error: `${r.date}: ${String((e as Error).message ?? e)}` });
+        fileErrors.push({ datasetId: it.id, error: `${it.date}: ${String((e as Error).message ?? e)}` });
+      } finally {
+        k++;
       }
-    }
-    markDone.run(id, new Date().toISOString());
-    finished++;
-  });
-  return { summaries, errors, fileErrors, total: opts.datasets.length, todo: todo.length, remaining: todo.length - finished, timedOut };
+    });
+    doneUpTo = date;
+    i = j;
+    log(() => `historia: dzień ${date}, plików ${k} z ${plan.length}, przyjętych ${summaries.filter((x) => x.status !== 'odrzucony').length}, błędów plików ${fileErrors.length}`);
+  }
+
+  // Zbiór jest gotowy, gdy wczytaliśmy wszystkie jego cenniki z planu.
+  let finished = 0;
+  const now = new Date().toISOString();
+  for (const id of listed) {
+    const last = lastDateOf.get(id);
+    if (!last || (doneUpTo && last <= doneUpTo)) { markDone.run(id, now); finished++; }
+  }
+  return { summaries, errors, fileErrors, total: opts.datasets.length, todo: todo.length, remaining: todo.length - finished, timedOut, files: plan.length };
 }

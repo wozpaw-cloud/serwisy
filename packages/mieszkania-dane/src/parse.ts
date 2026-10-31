@@ -3,6 +3,7 @@
 import { parse as parseCsv } from 'csv-parse/sync';
 import { XMLParser } from 'fast-xml-parser';
 import ExcelJS from 'exceljs';
+import { readZipSheets } from './zip-sheet.ts';
 import { mapColumns, missingRequired, type ColumnMap, type Field } from './columns.ts';
 import { cleanVoivodeship, fold, isEmpty, parseDate, parseNumber, titleCase } from './normalize.ts';
 
@@ -145,16 +146,45 @@ function xlsxValue(v: unknown): unknown {
   return v;
 }
 
+/** Ile pól cennika rozpoznajemy w najlepszym z pierwszych 15 wierszy arkusza. */
+function headerFields(rows: unknown[][]): number {
+  let best = 0;
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    best = Math.max(best, Object.keys(mapColumns((rows[i] ?? []).map((v) => String(v ?? ''))).map).length);
+  }
+  return best;
+}
+
+/** Arkusz z cennikiem: pierwszy z rozpoznanym nagłówkiem, inaczej pierwszy niepusty. */
+function pickSheet(sheets: unknown[][][]): unknown[][] {
+  return sheets.find((r) => headerFields(r) >= 3) ?? sheets.find((r) => r.length) ?? [];
+}
+
 async function readXlsx(buf: Buffer): Promise<Table> {
-  const wb = new ExcelJS.Workbook();
-  await wb.xlsx.load(buf as unknown as ArrayBuffer);
-  const ws = wb.worksheets[0];
-  if (!ws) return { headers: [], rows: [] };
-  const rows: unknown[][] = [];
-  ws.eachRow({ includeEmpty: false }, (row) => {
-    const vals = (row.values as unknown[]).slice(1).map(xlsxValue);
-    rows.push(vals);
-  });
+  let sheets: unknown[][][] = [];
+  let firstError: unknown = null;
+  try {
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buf as unknown as ArrayBuffer);
+    sheets = wb.worksheets.map((ws) => {
+      const rows: unknown[][] = [];
+      ws.eachRow({ includeEmpty: false }, (row) => { rows.push((row.values as unknown[]).slice(1).map(xlsxValue)); });
+      return rows;
+    });
+  } catch (e) {
+    firstError = e;
+  }
+  // ExcelJS nie czyta części plików (nietypowe ścieżki w archiwum, arkusze .ods):
+  // wtedy, albo gdy nie znalazł nagłówka cennika, próbujemy własnego odczytu.
+  if (!sheets.some((r) => headerFields(r) >= 3)) {
+    try {
+      const alt = await readZipSheets(buf);
+      if (!sheets.length || alt.some((r) => headerFields(r) >= 3)) sheets = alt;
+    } catch (e) {
+      if (!sheets.length) throw firstError ?? e;
+    }
+  }
+  const rows = pickSheet(sheets);
   // Teksty z "krzakami" (UTF-8 zapisany jako Windows-1250 przez program dewelopera).
   fixCells(rows);
   const headerIdx = findHeaderRow(rows);
@@ -181,7 +211,7 @@ const KEY_ALIASES: Record<string, Field> = {
   nazwainwestycji: 'investmentName', inwestycja: 'investmentName',
   rodzajnieruchomosci: 'unitType', rodzaj: 'unitType',
   nrlokalu: 'unitRef', numerlokalu: 'unitRef', oznaczenielokalu: 'unitRef', idlokalu: 'unitRef',
-  cenam2: 'priceM2', cenazam2: 'priceM2', cenametra: 'priceM2',
+  cenam2: 'priceM2', cenazam2: 'priceM2', cenametra: 'priceM2', cenamkw: 'priceM2', cenazametr: 'priceM2',
   datacenym2: 'priceM2Date', cenacalkowita: 'priceTotal', cena: 'priceTotal', cenabrutto: 'priceTotal',
   powierzchnia: 'area', powierzchniauzytkowa: 'area', liczbapokoi: 'rooms', pokoje: 'rooms',
   status: 'status', prospekt: 'prospectusUrl',
@@ -194,15 +224,17 @@ function keyToHeader(k: string): string {
   return k.replace(/([a-ząćęłńóśźż])([A-ZĄĆĘŁŃÓŚŹŻ0-9])/g, '$1 $2').replace(/[_\-.]+/g, ' ');
 }
 
+/** Nagłówek z klucza ("MiejscowoscInwestycji", "cena_mkw"): rozbicie na słowa, potem słownik aliasów. */
+function headerFromKey(k: string): string {
+  const h = keyToHeader(k);
+  if (Object.keys(mapColumns([h]).map).length) return h;
+  const alias = KEY_ALIASES[fold(k).replace(/\s+/g, '')];
+  return alias ? ALIAS_HEADERS[alias] : h;
+}
+
 function tableFromObjects(objs: Record<string, unknown>[]): Table {
   const keys = [...new Set(objs.flatMap((o) => Object.keys(o)))];
-  const headers = keys.map((k) => {
-    const h = keyToHeader(k);
-    if (Object.keys(mapColumns([h]).map).length) return h;
-    const alias = KEY_ALIASES[fold(k).replace(/\s+/g, '')];
-    return alias ? ALIAS_HEADERS[alias] : h;
-  });
-  return { headers, rows: objs.map((o) => keys.map((k) => flatten(o[k]))) };
+  return { headers: keys.map(headerFromKey), rows: objs.map((o) => keys.map((k) => flatten(o[k]))) };
 }
 
 function flatten(v: unknown): unknown {
@@ -289,6 +321,7 @@ export const LIMITS = { priceM2: [2500, 100000], priceTotal: [50000, 60000000], 
 export function sniffFormat(buf: Buffer): string | null {
   if (buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) return 'xlsx';
   if (buf.length >= 4 && buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0) return 'xls-stary';
+  if (buf.length >= 4 && ((buf[0] === 0x89 && buf[1] === 0x50) || (buf[0] === 0xff && buf[1] === 0xd8) || buf.subarray(0, 4).toString('latin1') === '%PDF')) return 'nie-cennik';
   const head = buf.subarray(0, 200).toString('utf8').replace(/^\uFEFF/, '').trimStart();
   if (head.startsWith('<')) return 'xml';
   if (head.startsWith('{') || head.startsWith('[')) return 'json';
@@ -327,8 +360,19 @@ export function cityFromAddress(address: string | null): string | null {
 const NOT_DWELLING = /parking|postoj|garaz|komork|hala|uslug|uzytkow|biur|magazyn|piwnic|rower|handlow|lokal komerc|przyleglos|garage|storage|commercial|cellar|office|bike/;
 
 export function toRecords(table: Table, format = 'csv', opts: { devFallback?: string | null } = {}): ParseResult {
-  const { map, unknown } = mapColumns(table.headers);
-  const missing = missingRequired(map);
+  let { map, unknown } = mapColumns(table.headers);
+  let missing = missingRequired(map);
+  // Nagłówki pisane łącznie ("NazwaDewelopera;MiejscowoscInwestycji;NrLokalu;CenaM2"):
+  // rozbijamy jak klucze z plików JSON i XML.
+  if (missing.length) {
+    const alt = table.headers.map((h) => headerFromKey(String(h ?? '')));
+    const m2 = mapColumns(alt);
+    if (missingRequired(m2.map).length < missing.length) {
+      table = { ...table, headers: alt };
+      ({ map, unknown } = m2);
+      missing = missingRequired(map);
+    }
+  }
   const rejected: Record<string, number> = {};
   const rejectedSample: Record<string, unknown[]> = {};
   let current: unknown[] = [];
@@ -421,6 +465,7 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
 export async function parseFile(buf: Buffer, format: string, opts: { devFallback?: string | null } = {}): Promise<ParseResult> {
   const f = sniffFormat(buf) ?? format;
   if (f === 'xls-stary') throw new Error('stary format Excel (.xls) nie jest obsługiwany');
+  if (f === 'nie-cennik') throw new Error('plik nie jest cennikiem (obraz albo PDF)');
   return toRecords(await readTable(buf, f), f, opts);
 }
 

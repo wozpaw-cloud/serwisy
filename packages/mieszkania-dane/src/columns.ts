@@ -69,7 +69,7 @@ const RULES: [Field, Rule][] = [
     !/iloczy|uwzgledn|calkowit|razem/.test(h) && !NOT_UNIT_PRICE.test(h)],
   ['priceTotal', (h) => !startsData(h) && !h.includes('uwzgledn') && !NOT_UNIT_PRICE.test(h) &&
     (ILOCZYN.test(h) || h === 'cena' || /^cena (pln|zl|brutto pln|brutto zl)$/.test(h) || /^cena od pow/.test(h) ||
-     /^cena za (dom|lokal|mieszkanie)$/.test(h) || h === 'total price' ||
+     /^cena za (dom|lokal|mieszkanie)$/.test(h) || h === 'total price' || /^cena (calosciowa|katalogowa)/.test(h) ||
      (/^(calkowita )?cena (lokalu|domu|nieruchomosci|calkowita|brutto|produktu|ofertowa)/.test(h) && !M2.test(h)))],
   ['priceFull', (h) => !startsData(h) && h.includes('uwzgledn') && h.startsWith('cena lokalu')],
 

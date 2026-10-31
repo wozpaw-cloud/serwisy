@@ -99,6 +99,12 @@ CREATE TABLE IF NOT EXISTS backfill_done (
   finished   TEXT NOT NULL
 );
 
+-- Wersje danych i parsera (zmiana wymusza ponowne wczytanie, zob. cli.ts).
+CREATE TABLE IF NOT EXISTS meta (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);
+
 CREATE TABLE IF NOT EXISTS runs (
   id       INTEGER PRIMARY KEY,
   started  TEXT NOT NULL,

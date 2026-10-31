@@ -23,6 +23,9 @@ const RESOURCES: Record<string, string[]> = {
   A: days('2026-01-01', 250), C: ['2026-09-01', '2026-10-01', '2026-10-29'],
   // D: download_url zwraca 404, działa kopia file_url. E: tylko link do serwera dewelopera.
   D: ['2026-06-01', '2026-10-29'], E: ['2026-03-01', '2026-06-01', '2026-10-29'],
+  // Ten sam lokal w zbiorze rocznym 2025 (Y) i 2026 (X).
+  X: days('2026-01-01', 300), Y: days('2025-09-01', 122),
+  F: ['2026-10-01', '2029-08-26'], // literówka w dacie
 };
 const BROKEN = new Set(['C/2026-10-01']);
 const hits: string[] = [];
@@ -164,5 +167,31 @@ describe('adresy plików', () => {
   it('zbiera odrzucone pliki po nagłówkach', () => {
     const rep = mod.rejectedReport();
     expect(Array.isArray(rep)).toBe(true);
+  });
+});
+
+describe('historia w kolejności dat', () => {
+  it('lokal z dwóch zbiorów rocznych ma ciągłą obecność i ceny od najstarszej', async () => {
+    const db = openDb(':memory:');
+    // Celowo najpierw zbiór 2026, potem 2025.
+    await mod.backfill(db, { datasets: [{ id: 'X', title: 'Ceny ofertowe mieszkań Atrapa Dom w 2026 r.' }, { id: 'Y', title: 'Ceny ofertowe mieszkań Atrapa Dom w 2025 r.' }] });
+    const unit = db.prepare("SELECT id FROM units WHERE ref = 'M1'").get() as { id: number };
+    const pres = db.prepare('SELECT from_date, to_date FROM presence WHERE unit_id = ? ORDER BY from_date').all(unit.id) as { from_date: string; to_date: string }[];
+    expect(pres.every((p) => p.from_date <= p.to_date)).toBe(true);
+    expect(pres[0].from_date < '2025-10-01').toBe(true);
+    expect(pres.at(-1)?.to_date).toBe('2026-10-27');
+    expect(pres).toHaveLength(1);
+    const prices = db.prepare('SELECT from_date, price_m2 FROM prices WHERE unit_id = ? ORDER BY from_date').all(unit.id) as { from_date: string; price_m2: number }[];
+    expect(prices[0].from_date < '2025-10-01').toBe(true);
+    // Cena w atrapie zależy od miesiąca: wrzesień 2025 = 10 900, styczeń 2026 = 10 100.
+    expect(prices[0].price_m2).toBe(10900);
+    expect(prices.find((p) => p.from_date.startsWith('2026-01'))?.price_m2).toBe(10100);
+  });
+});
+
+describe('daty z przyszłości', () => {
+  it('pomija zasób z datą z przyszłości', async () => {
+    const all = await mod.listAllResources('F');
+    expect(all.map((r) => r.date)).toEqual(['2026-10-01']);
   });
 });
