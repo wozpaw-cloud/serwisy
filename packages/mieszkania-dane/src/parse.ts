@@ -86,6 +86,18 @@ export function repairMojibake(s: string, force = false): string {
   return new TextDecoder('utf-8').decode(Uint8Array.from(bytes));
 }
 
+/** Komórki z "krzakami" i bez poprawnych polskich liter naprawiamy pojedynczo
+ *  (pliki, w których część nagłówków jest poprawna, a część nie). */
+function fixCells(rows: unknown[][]): void {
+  const one = /Ä[…‡™„†]|Ĺ[‚„›şĽ\u0081]|Ă[łšÓ]/;
+  for (const r of rows) {
+    for (let i = 0; i < r.length; i++) {
+      const v = r[i];
+      if (typeof v === 'string' && one.test(v) && !/[ąćęłńśźżĄĆĘŁŃŚŹŻ]/.test(v)) r[i] = repairMojibake(v, true);
+    }
+  }
+}
+
 /** UTF-8; Windows-1250, gdy większość znaków spoza ASCII to błędne sekwencje UTF-8.
  *  Pojedyncze błędne bajty w pliku UTF-8 nie przełączają kodowania. */
 export function decode(buf: Buffer): string {
@@ -117,6 +129,7 @@ export function readCsv(text: string): Table {
       rows = rows.map((r) => (r.length === 1 ? ((parseCsv(String(r[0]), { ...CSV_OPTS, delimiter: d }) as string[][])[0] ?? []) : r));
     }
   }
+  fixCells(rows);
   const headerIdx = findHeaderRow(rows);
   return { headers: (rows[headerIdx] ?? []).map(String), rows: rows.slice(headerIdx + 1) };
 }
@@ -143,10 +156,7 @@ async function readXlsx(buf: Buffer): Promise<Table> {
     rows.push(vals);
   });
   // Teksty z "krzakami" (UTF-8 zapisany jako Windows-1250 przez program dewelopera).
-  const sample = rows.slice(0, 30).flat().filter((v): v is string => typeof v === 'string').join('\u0001');
-  if (repairMojibake(sample) !== sample) {
-    for (const r of rows) for (let i = 0; i < r.length; i++) if (typeof r[i] === 'string') r[i] = repairMojibake(r[i] as string, true);
-  }
+  fixCells(rows);
   const headerIdx = findHeaderRow(rows);
   return { headers: (rows[headerIdx] ?? []).map((v) => String(v ?? '')), rows: rows.slice(headerIdx + 1) };
 }

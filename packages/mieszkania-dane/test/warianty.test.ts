@@ -84,3 +84,14 @@ describe('kolejne warianty', () => {
     expect(p.records[0]).toMatchObject({ unitRef: 'A1', priceM2: 12500, priceTotal: 625000, city: 'Szczecin' });
   });
 });
+
+describe('krzaki w części nagłówków', () => {
+  it('naprawia tylko zepsute komórki', () => {
+    const csv = ['Nazwa dewelopera;Miejscowość lokalizacji przedsięwzięcia deweloperskiego;Nr lokalu lub domu jednorodzinnego nadany przez dewelopera;Cena m 2 powierzchni uĹĽytkowej lokalu mieszkalnego / domu jednorodzinnego [zĹ‚];Powierzchnia uĹĽytkowa;Status sprzedaży',
+      'Dom Sp. z o.o.;Gdańsk;M1;12000;50;dostępny'].join('\n');
+    const t = readCsv(csv);
+    expect(t.headers[3]).toBe('Cena m 2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł]');
+    expect(t.headers[5]).toBe('Status sprzedaży');
+    expect(toRecords(t).records).toHaveLength(1);
+  });
+});
