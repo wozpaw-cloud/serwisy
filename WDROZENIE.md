@@ -58,7 +58,8 @@ Cloudflare nie sprzedaje domen .pl, więc domenę kupujesz u polskiego rejestrat
 1. Kup domenę `cenaoddewelopera.pl`.
 2. W Cloudflare: Add a domain → wpisz domenę → plan **Free**. Cloudflare poda dwa adresy serwerów nazw (nameservers).
 3. W panelu rejestratora zmień serwery nazw domeny na te dwa adresy. Aktywacja trwa zwykle od kilku godzin do doby.
-4. Gdy Cloudflare pokaże domenę jako aktywną, daj mi znać: włączę adres w pliku `sites/mieszkania/wrangler.jsonc`. Możesz to zrobić też sam: usuń dwa ukośniki przed `"routes"`. Następna publikacja podepnie serwis pod domenę.
+4. Domena jest już wpisana w `sites/mieszkania/wrangler.jsonc`. Pierwsza publikacja po tym, jak Cloudflare uzna domenę za aktywną, sama podepnie pod nią serwis (z www i bez). Dopóki domena nie jest aktywna, publikacja idzie pod zapasowy adres *.workers.dev.
+5. Stan domeny w Cloudflare i uprawnienia klucza sprawdzisz bez zmian w serwisie: Actions → „Sprawdzenie domeny” → Run workflow. Wynik trafia do gałęzi `domena`.
 
 ## 7. Przed włączeniem reklam
 

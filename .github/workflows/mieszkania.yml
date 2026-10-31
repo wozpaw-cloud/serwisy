@@ -121,10 +121,17 @@ jobs:
         if: ${{ !inputs.dry_run && steps.harvest.outcome == 'success' }}
         run: npm run build -w @serwisy/mieszkania
 
+      # Najpierw z domeną. Gdy podpięcie domeny się nie uda (strefa nieaktywna, brak uprawnień),
+      # publikujemy bez niej, pod adresem *.workers.dev, żeby serwis i tak dostał świeże dane.
       - name: Opublikuj w Cloudflare Workers
         if: ${{ !inputs.dry_run && steps.harvest.outcome == 'success' }}
-        run: npx wrangler deploy 2>&1 | tee ../../data/deploy.txt
         working-directory: sites/mieszkania
+        run: |
+          set -o pipefail
+          if npx wrangler deploy 2>&1 | tee ../../data/deploy.txt; then exit 0; fi
+          echo "UWAGA: publikacja z domeną nie powiodła się, publikuję bez domeny." | tee -a ../../data/deploy.txt
+          grep -v '"routes"' wrangler.jsonc > wrangler.bez-domeny.jsonc
+          npx wrangler deploy --config wrangler.bez-domeny.jsonc 2>&1 | tee -a ../../data/deploy.txt
 
       # Krótki raport z przebiegu w gałęzi "stan" (logi GitHub Actions są trudno dostępne z zewnątrz).
       - name: Zapisz raport z przebiegu w gałęzi stan
@@ -142,7 +149,7 @@ jobs:
           cp data/last-run.json data/alarms.json /tmp/stan/ 2>/dev/null || true
           tail -n 60 data/backfill.txt > /tmp/stan/historia.txt 2>/dev/null || true
           tail -n 60 data/harvest.txt > /tmp/stan/import.txt 2>/dev/null || true
-          grep -iE "https://|error|uploaded|deployed" data/deploy.txt > /tmp/stan/publikacja.txt 2>/dev/null || true
+          grep -iE "https://|error|uploaded|deployed|uwaga|cenaoddewelopera\.pl|custom domain" data/deploy.txt > /tmp/stan/publikacja.txt 2>/dev/null || true
           cd /tmp/stan
           git init -q && git checkout -q -b stan
           git config user.name "github-actions[bot]"
