@@ -1,0 +1,92 @@
+# Próbna budowa serwisu na prawdziwej bazie z R2, bez publikacji.
+# Wynik (statystyki, czas, liczba plików, wybrane strony z plikami CSS/JS) trafia
+# do gałęzi "proba-budowy". Nie zmienia bazy ani serwisu.
+name: Próbna budowa serwisu
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  budowa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      MIESZKANIA_DB: ${{ github.workspace }}/data/mieszkania.sqlite
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+
+      - name: Pobierz bazę z R2
+        working-directory: sites/mieszkania
+        run: |
+          mkdir -p ../../data
+          npx wrangler r2 object get serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote
+          gunzip -f ../../data/mieszkania.sqlite.gz
+
+      - name: Statystyki bazy
+        run: |
+          mkdir -p /tmp/wynik
+          npx tsx packages/mieszkania-dane/src/cli.ts stats 2>&1 | grep -v "ExperimentalWarning\|trace-warnings" > /tmp/wynik/statystyki.txt || true
+          cat /tmp/wynik/statystyki.txt | head -40
+
+      - name: Budowa
+        id: build
+        continue-on-error: true
+        run: |
+          set +e
+          /usr/bin/time -v npm run build -w @serwisy/mieszkania > /tmp/wynik/budowa.txt 2> /tmp/wynik/czas.txt
+          echo "kod: $?" >> /tmp/wynik/czas.txt
+          tail -n 40 /tmp/wynik/budowa.txt
+          grep -E "Elapsed|Maximum resident|kod:" /tmp/wynik/czas.txt
+
+      - name: Podsumowanie i próbki stron
+        if: always()
+        run: |
+          cd sites/mieszkania
+          {
+            echo "plików: $(find dist -type f | wc -l) (limit 20000)"
+            echo "rozmiar: $(du -sh dist | cut -f1)"
+            echo "== katalogi (liczba plików) =="
+            for d in dist/*/; do echo "$(find "$d" -type f | wc -l) $d"; done | sort -rn | head -20
+            echo "== największe pliki =="
+            find dist -type f -printf '%s %p\n' | sort -rn | head -15
+          } > /tmp/wynik/podsumowanie.txt 2>&1
+          cat /tmp/wynik/podsumowanie.txt
+          mkdir -p /tmp/wynik/strony
+          # Strona główna, listy, metodologia, kilka miast, gmin, powiatów, województw i inwestycji.
+          for p in index.html miasta/index.html gminy/index.html powiaty/index.html wojewodztwa/index.html metodologia/index.html szukaj/index.html 404.html szukaj.json; do
+            [ -f "dist/$p" ] && mkdir -p "/tmp/wynik/strony/$(dirname $p)" && cp "dist/$p" "/tmp/wynik/strony/$p"
+          done
+          for d in miasta gminy powiaty wojewodztwa inwestycje; do
+            ls -d dist/$d/*/ 2>/dev/null | head -400 | shuf -n 3 --random-source=<(yes) | while read x; do
+              mkdir -p "/tmp/wynik/strony/${x#dist/}" && cp "$x/index.html" "/tmp/wynik/strony/${x#dist/}" 2>/dev/null; done
+          done
+          for c in warszawa krakow poznan gdansk wroclaw; do
+            [ -f "dist/miasta/$c/index.html" ] && mkdir -p "/tmp/wynik/strony/miasta/$c" && cp "dist/miasta/$c/index.html" "/tmp/wynik/strony/miasta/$c/"
+          done
+          [ -d dist/_astro ] && cp -r dist/_astro /tmp/wynik/strony/
+          find /tmp/wynik/strony -type f | wc -l
+
+      - name: Zapisz wynik w gałęzi proba-budowy
+        if: always()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/wynik
+          date -u +%FT%TZ > czas-proby.txt
+          git init -q && git checkout -q -b proba-budowy
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm "Próbna budowa serwisu"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" proba-budowy
