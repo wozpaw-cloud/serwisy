@@ -1,0 +1,37 @@
+plików: 12342 (limit 20000)
+rozmiar: 559M
+== katalogi (liczba plików) ==
+8301 dist/inwestycje/
+3249 dist/deweloperzy/
+481 dist/miasta/
+140 dist/gminy/
+109 dist/powiaty/
+22 dist/raporty/
+17 dist/wojewodztwa/
+6 dist/dane/
+4 dist/_astro/
+1 dist/szukaj/
+1 dist/prywatnosc/
+1 dist/obnizki/
+1 dist/o-serwisie/
+1 dist/metodologia/
+1 dist/indeks/
+1 dist/domy/
+== największe pliki ==
+2392312 dist/dane/gminy-tygodniowo.csv
+2087664 dist/dane/miasta-tygodniowo.csv
+1412653 dist/dane/powiaty-tygodniowo.csv
+1235900 dist/szukaj.json
+1080410 dist/sitemap-0.xml
+913046 dist/dane/inwestycje.csv
+696229 dist/indeks/index.html
+581477 dist/inwestycje/warszawa-mazowieckie-warszawa-13/index.html
+554852 dist/deweloperzy/index.html
+404537 dist/miasta/warszawa-mazowieckie/index.html
+389866 dist/miasta/index.html
+365127 dist/miasta/krakow-malopolskie/index.html
+311742 dist/miasta/wroclaw/index.html
+309224 dist/inwestycje/polska-polska/index.html
+301641 dist/gminy/index.html
+sort: write failed: 'standard output': Broken pipe
+sort: write error
