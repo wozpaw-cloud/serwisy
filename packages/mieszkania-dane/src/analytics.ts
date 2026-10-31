@@ -13,7 +13,7 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import { addDays } from './ingest.ts';
-import { displayCompanyName, fold, slugify, streetLabel } from './normalize.ts';
+import { cleanVoivodeship, displayCompanyName, fold, slugify, streetLabel } from './normalize.ts';
 import { resolvePlace } from './places.ts';
 
 export const BRIDGE_DAYS = 21;
@@ -124,6 +124,8 @@ export class Model {
     }
 
     const invRows = db.prepare('SELECT * FROM investments ORDER BY id').all() as Record<string, any>[];
+    // Województwo w jednej z 16 nazw (w cennikach bywa "wielkopolska", "warmińsko mazurskie").
+    for (const r of invRows) r.voivodeship = cleanVoivodeship(r.voivodeship);
     const places = invRows.map((r) => resolvePlace({ voivodeship: r.voivodeship, county: r.county, gmina: r.gmina, city: r.city }));
     // Brak województwa w cenniku: bierzemy najczęstsze województwo tej miejscowości
     // z innych cenników (inaczej np. Wrocław rozpadłby się na dwie strony).
@@ -226,6 +228,15 @@ export class Model {
     const first = this.units.flatMap((u) => u.presence.map((p) => p[0])).sort()[0];
     this.asOf = last ?? new Date().toISOString().slice(0, 10);
     this.firstDate = first ?? this.asOf;
+    // Lokal z ostatniego cennika swojego zbioru jest w ofercie "dziś", jeśli ten cennik jest
+    // świeży (najwyżej 7 dni): nie każdy deweloper publikuje codziennie.
+    const dsLast = new Map((db.prepare('SELECT id, last_snapshot FROM datasets').all() as { id: string; last_snapshot: string | null }[]).map((r) => [String(r.id), r.last_snapshot]));
+    const freshFrom = addDays(this.asOf, -STALE_DAYS);
+    for (const u of this.units) {
+      const p = u.presence.at(-1);
+      const dl = dsLast.get(String(u.dataset));
+      if (p && dl && p[1] === dl && dl >= freshFrom && dl < this.asOf) p[1] = this.asOf;
+    }
     for (let d = this.asOf; d >= this.firstDate; d = addDays(d, -7)) this.dates.unshift(d);
 
     for (const r of db.prepare('SELECT id, last_snapshot FROM datasets').all() as { id: string; last_snapshot: string | null }[]) {

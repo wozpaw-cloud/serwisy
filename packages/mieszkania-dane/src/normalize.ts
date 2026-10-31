@@ -94,10 +94,23 @@ export function titleCase(s: string): string {
 }
 
 /** Województwo bez przedrostka: "WOJ. MAZOWIECKIE" -> "mazowieckie". */
+export const VOIVODESHIPS = ['dolnośląskie', 'kujawsko-pomorskie', 'lubelskie', 'lubuskie', 'łódzkie', 'małopolskie', 'mazowieckie', 'opolskie',
+  'podkarpackie', 'podlaskie', 'pomorskie', 'śląskie', 'świętokrzyskie', 'warmińsko-mazurskie', 'wielkopolskie', 'zachodniopomorskie'];
+const VOIV_BY_KEY = new Map(VOIVODESHIPS.map((v) => [fold(v).replace(/[^a-z]/g, ''), v]));
+const VOIV_ALIASES: Record<string, string> = {
+  wielkopolska: 'wielkopolskie', malopolska: 'małopolskie', slask: 'śląskie', gornyslask: 'śląskie', dolnyslask: 'dolnośląskie',
+  mazowsze: 'mazowieckie', pomorze: 'pomorskie', podkarpacie: 'podkarpackie', warmiaimazury: 'warmińsko-mazurskie', kujawy: 'kujawsko-pomorskie',
+};
+
+/** Jedna z 16 nazw województw ("woj. Wielkopolska", "warmińsko mazurskie" -> kanoniczna); inaczej null. */
 export function cleanVoivodeship(s: string | null): string | null {
   if (!s) return null;
-  const f = s.toLocaleLowerCase('pl').replace(/woj(ewództwo|\.)?/g, '').trim();
-  return f || null;
+  const k = fold(s).replace(/\bwoj(ewodztwo)?\b/g, '').replace(/[^a-z]/g, '');
+  if (!k) return null;
+  const hit = VOIV_BY_KEY.get(k) ?? VOIV_ALIASES[k];
+  if (hit) return hit;
+  for (const [key, v] of VOIV_BY_KEY) if (k.startsWith(key)) return v;
+  return null;
 }
 
 /** Nazwa domeny ze strony dewelopera: "https://www.Murapol.pl/oferta" -> "murapol.pl". */
