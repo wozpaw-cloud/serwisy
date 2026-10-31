@@ -100,7 +100,7 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p /tmp/diag
-          cp data/probe.txt data/dry-run.txt data/cloudflare.txt data/proba-historii.txt data/proba-last-run.json /tmp/diag/ 2>/dev/null || true
+          cp data/probe.txt data/dry-run.txt data/cloudflare.txt data/proba-historii.txt data/proba-last-run.json /tmp/proba/odrzucone.json /tmp/diag/ 2>/dev/null || true
           cd /tmp/diag
           date -u +%FT%TZ > czas.txt
           git init -q && git checkout -q -b diagnostyka
@@ -165,8 +165,9 @@ jobs:
             echo "historia: ${{ steps.backfill.outcome }} (failure = jeszcze niepełna albo błąd, szczegóły w historia.txt)"
             echo "import: ${{ steps.harvest.outcome }}"
             echo "rozmiar bazy: $(du -h data/mieszkania.sqlite 2>/dev/null | cut -f1)"
+            echo "plików serwisu: $(find sites/mieszkania/dist -type f 2>/dev/null | wc -l) (limit Cloudflare w darmowym planie: 20000)"
           } > /tmp/stan/przebieg.txt
-          cp data/last-run.json data/alarms.json /tmp/stan/ 2>/dev/null || true
+          cp data/last-run.json data/alarms.json data/odrzucone.json /tmp/stan/ 2>/dev/null || true
           grep -v "ExperimentalWarning\|trace-warnings" data/backfill.txt | tail -n 60 > /tmp/stan/historia.txt 2>/dev/null || true
           grep -v "ExperimentalWarning\|trace-warnings" data/harvest.txt | tail -n 60 > /tmp/stan/import.txt 2>/dev/null || true
           grep -iE "https://|error|uploaded|deployed|uwaga|cenaoddewelopera\.pl|custom domain" data/deploy.txt > /tmp/stan/publikacja.txt 2>/dev/null || true

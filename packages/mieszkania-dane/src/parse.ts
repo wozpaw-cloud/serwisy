@@ -45,6 +45,8 @@ export interface ParseResult {
   unknownHeaders: string[];
   missingColumns: Field[];
   format: string;
+  /** Nagłówki pliku (do diagnostyki odrzuconych plików). */
+  headers?: string[];
 }
 
 export type Table = { headers: string[]; rows: unknown[][] };
@@ -285,7 +287,7 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
   const syntheticRefs = refFilled < 0.1;
   const refCount = new Map<string, number>();
   if (missing.length) {
-    return { records, rowsRead: table.rows.length, sold: 0, rejected: { 'brak wymaganych kolumn': table.rows.length }, unknownHeaders: unknown, missingColumns: missing, format };
+    return { records, rowsRead: table.rows.length, sold: 0, rejected: { 'brak wymaganych kolumn': table.rows.length }, unknownHeaders: unknown, missingColumns: missing, format, headers: table.headers };
   }
 
   for (const row of table.rows) {
@@ -358,7 +360,7 @@ export function toRecords(table: Table, format = 'csv', opts: { devFallback?: st
       prospectusUrl: text(cell(row, map, 'prospectusUrl')),
     });
   }
-  return { records, rowsRead: table.rows.length, sold, rejected, rejectedSample, unknownHeaders: unknown, missingColumns: [], format };
+  return { records, rowsRead: table.rows.length, sold, rejected, rejectedSample, unknownHeaders: unknown, missingColumns: [], format, headers: table.headers };
 }
 
 export async function parseFile(buf: Buffer, format: string, opts: { devFallback?: string | null } = {}): Promise<ParseResult> {

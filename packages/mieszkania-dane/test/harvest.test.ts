@@ -19,7 +19,11 @@ function days(from: string, n: number): string[] {
   return Array.from({ length: n }, (_, i) => new Date(d.getTime() + i * 86400000).toISOString().slice(0, 10));
 }
 
-const RESOURCES: Record<string, string[]> = { A: days('2026-01-01', 250), C: ['2026-09-01', '2026-10-01', '2026-10-29'] };
+const RESOURCES: Record<string, string[]> = {
+  A: days('2026-01-01', 250), C: ['2026-09-01', '2026-10-01', '2026-10-29'],
+  // D: download_url zwraca 404, działa kopia file_url. E: tylko link do serwera dewelopera.
+  D: ['2026-06-01', '2026-10-29'], E: ['2026-03-01', '2026-06-01', '2026-10-29'],
+};
 const BROKEN = new Set(['C/2026-10-01']);
 const hits: string[] = [];
 let server: Server;
@@ -39,7 +43,10 @@ beforeAll(async () => {
       const all = [...(RESOURCES[m[1]] ?? [])].sort().reverse();
       const slice = all.slice((page - 1) * perPage, page * perPage);
       return json(200, {
-        data: slice.map((date) => ({ id: `${m[1]}-${date}`, attributes: { data_date: date, format: 'csv', download_url: `${base}/plik/${m[1]}/${date}.csv` } })),
+        data: slice.map((date) => ({ id: `${m[1]}-${date}`, attributes:
+          m[1] === 'D' ? { data_date: date, format: 'csv', download_url: `${base}/brak/${date}/file`, file_url: `${base}/plik/D/${date}.csv` }
+          : m[1] === 'E' ? { data_date: date, format: 'csv', link: `${base.replace('127.0.0.1', 'localhost')}/plik/E/${date}.csv` }
+          : { data_date: date, format: 'csv', download_url: `${base}/plik/${m[1]}/${date}.csv` } })),
         links: { next: page * perPage < all.length ? `${base}/next` : null },
         meta: { count: all.length },
       });
@@ -139,5 +146,23 @@ describe('zbiory uśpione', () => {
     }
     vi.useRealTimers();
     expect(runs.filter((n) => n === 0)).toHaveLength(1);
+  });
+});
+
+describe('adresy plików', () => {
+  it('przy 404 bierze kopię file_url', async () => {
+    const db = openDb(':memory:');
+    const res = await mod.backfill(db, { datasets: [{ id: 'D', title: 'Ceny ofertowe D' }] });
+    expect(res.fileErrors).toHaveLength(0);
+    expect(res.summaries.map((s) => s.date)).toEqual(['2026-06-01', '2026-10-29']);
+  });
+  it('do historii nie bierze linków do serwera dewelopera, tylko najnowszy cennik', async () => {
+    const db = openDb(':memory:');
+    const res = await mod.backfill(db, { datasets: [{ id: 'E', title: 'Ceny ofertowe E' }] });
+    expect(res.summaries.map((s) => s.date)).toEqual(['2026-10-29']);
+  });
+  it('zbiera odrzucone pliki po nagłówkach', () => {
+    const rep = mod.rejectedReport();
+    expect(Array.isArray(rep)).toBe(true);
   });
 });

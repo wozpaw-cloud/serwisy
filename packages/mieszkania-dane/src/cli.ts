@@ -14,7 +14,7 @@ import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:
 import { dirname, join, resolve } from 'node:path';
 import { Model } from './analytics.ts';
 import { dbPath, openDb } from './db.ts';
-import { backfill, harvest, listDeveloperDatasets, probeApi, type DatasetRef } from './harvest.ts';
+import { backfill, harvest, listDeveloperDatasets, probeApi, rejectedReport, type DatasetRef } from './harvest.ts';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
 import { guessFormat, parseFile } from './parse.ts';
 import { generateSample } from './sample.ts';
@@ -89,6 +89,12 @@ function finish(db: ReturnType<typeof openDb>, summary: ReturnType<typeof report
   return blocked ? 2 : 0;
 }
 
+/** Odrzucone pliki pogrupowane po nagłówkach (do ulepszania rozpoznawania kolumn). */
+function saveRejected() {
+  const list = rejectedReport();
+  if (list.length) writeFileSync(join(DATA_DIR, 'odrzucone.json'), JSON.stringify(list, null, 1));
+}
+
 async function main(): Promise<number> {
   switch (cmd) {
     case 'sample': {
@@ -116,6 +122,7 @@ async function main(): Promise<number> {
       const datasets = flag('dry-run') ? undefined : await datasetList(limit);
       const res = await harvest(db, { dryRun: flag('dry-run'), limit, datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       if (flag('dry-run')) return 0;
+      saveRejected();
       return finish(db, report(res.summaries, res.errors));
     }
     case 'backfill': {
@@ -127,6 +134,7 @@ async function main(): Promise<number> {
       const datasets = await datasetList(lim);
       const res = await backfill(db, { datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       const all = [...res.errors, ...res.fileErrors];
+      saveRejected();
       console.log(JSON.stringify({ historia: { zbiory: res.total, doWczytania: res.todo, pozostalo: res.remaining, bledyApi: res.errors.length, bledyPlikow: res.fileErrors.length, limitCzasu: res.timedOut } }));
       // Niepełna: skończył się czas albo API odrzuciło wiele zbiorów (wtedy nie publikujemy
       // i nie zaczynamy codziennego importu). Pojedyncze błędy API nie blokują: te zbiory

@@ -10,7 +10,7 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
-import { devNameFromTitle, guessFormat, parseFile, readTable, sniffFormat } from './parse.ts';
+import { devNameFromTitle, guessFormat, parseFile, readTable, sniffFormat, type ParseResult } from './parse.ts';
 import { mapColumns } from './columns.ts';
 
 export const API = process.env.DANE_API ?? 'https://api.dane.gov.pl/1.4';
@@ -25,7 +25,9 @@ interface ApiItem { id: string | number; attributes?: Record<string, unknown>; l
 interface ApiList { data?: ApiItem[]; links?: { next?: string | null }; meta?: Record<string, unknown> }
 
 export interface DatasetRef { id: string; title: string }
-export interface ResourceRef { id: string; date: string; url: string; format: string; raw: Record<string, unknown> }
+/** urls: adresy pliku po kolei (kopia w dane.gov.pl, potem link dewelopera); stored: plik
+ *  ma kopię w dane.gov.pl (link do serwera dewelopera pokazuje zawsze bieżący cennik). */
+export interface ResourceRef { id: string; date: string; url: string; urls: string[]; stored: boolean; format: string; raw: Record<string, unknown> }
 
 /** Błąd zapytania (4xx poza 429): ponawianie nic nie da. */
 class RequestError extends Error {}
@@ -156,7 +158,7 @@ export async function probeParse(sample = 60): Promise<void> {
     try {
       const [res] = await listResources(String(it.id), 1);
       if (!res) { console.log(`\n### ${it.id} | ${title}\n   brak zasobu z plikiem`); continue; }
-      const buf = await download(res.url);
+      const buf = await downloadAny(res.urls);
       const p = await parseFile(buf, res.format, { devFallback: devNameFromTitle(title) });
       if (p.records.length) ok++;
       units += p.records.length;
@@ -187,20 +189,23 @@ export async function probeParse(sample = 60): Promise<void> {
   for (const [h, n] of [...unknownAll].sort((a, b) => b[1] - a[1]).slice(0, 40)) console.log(`   ${n} × ${h}`);
 }
 
-function pickUrl(a: Record<string, unknown>): string | null {
-  for (const k of ['download_url', 'file_url', 'link', 'url']) {
-    const v = a[k];
-    if (typeof v === 'string' && /^https?:\/\//.test(v)) return v;
-  }
-  return null;
+const isUrl = (v: unknown): v is string => typeof v === 'string' && /^https?:\/\//.test(v);
+const DANE_HOST = /^https?:\/\/(api\.)?dane\.gov\.pl\//;
+
+/** Adresy pliku zasobu: kopia w dane.gov.pl (download_url, file_url, files[]), potem link. */
+function resourceUrls(a: Record<string, unknown>): string[] {
+  const files = Array.isArray(a.files) ? (a.files as Record<string, unknown>[]) : [];
+  const cands = [a.download_url, a.file_url, ...files.map((f) => f.download_url), a.link, a.url];
+  return [...new Set(cands.filter(isUrl))];
 }
 
 function toResource(it: ApiItem): ResourceRef[] {
   const a = it.attributes ?? {};
-  const url = pickUrl(a);
+  const urls = resourceUrls(a);
   const date = String(a.data_date ?? a.created ?? a.modified ?? '').slice(0, 10);
-  if (!url || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
-  return [{ id: String(it.id), date, url, format: guessFormat(url, String(a.format ?? '')), raw: a }];
+  if (!urls.length || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+  const stored = urls.some((u) => (DANE_HOST.test(u) || u.startsWith(new URL(API).origin)) && !/\/datasets\//.test(u));
+  return [{ id: String(it.id), date, url: urls[0], urls, stored, format: guessFormat(urls.find((u) => /\.\w{3,4}(\?|$)/.test(u)) ?? urls[0], String(a.format ?? '')), raw: a }];
 }
 
 /** API przyjmuje najwyżej 100 wyników na stronę (więcej: HTTP 422). */
@@ -223,6 +228,18 @@ export async function listAllResources(datasetId: string, maxPages = 30): Promis
     if (items.length < MAX_PER_PAGE || !body.links?.next) break;
   }
   return out;
+}
+
+/** Pobiera plik zasobu: przy 404/410 próbuje kolejnego adresu (kopia, link dewelopera). */
+async function downloadAny(urls: string[]): Promise<Buffer> {
+  let last: unknown;
+  for (const u of urls) {
+    try { return await download(u); } catch (e) {
+      last = e;
+      if (!/HTTP (404|410|403)/.test(String((e as Error).message))) throw e;
+    }
+  }
+  throw last;
 }
 
 async function download(url: string, maxBytes = 30 * 1024 * 1024): Promise<Buffer> {
@@ -248,6 +265,29 @@ async function pool<T, R>(items: T[], size: number, fn: (t: T) => Promise<R>): P
 }
 
 export interface HarvestError { datasetId: string; error: string }
+
+/** Odrzucone pliki pogrupowane po nagłówkach: materiał do ulepszania rozpoznawania kolumn. */
+export interface RejectedFile { count: number; datasets: number; missing: string[]; rejected: Record<string, number>; headers: string[]; sample: unknown; example: { datasetId: string; date: string; url: string } }
+export const rejectedFiles = new Map<string, RejectedFile & { ids: Set<string> }>();
+
+function noteRejected(parsed: ParseResult, datasetId: string, date: string, url: string) {
+  if (parsed.records.length > 0) return;
+  const headers = (parsed.headers ?? []).map((h) => String(h).trim()).filter(Boolean);
+  const key = parsed.missingColumns.join(',') + '|' + headers.map((h) => h.toLowerCase()).join('|');
+  const cur = rejectedFiles.get(key);
+  if (cur) { cur.count++; cur.ids.add(datasetId); return; }
+  if (rejectedFiles.size >= 2000) return;
+  rejectedFiles.set(key, {
+    count: 1, datasets: 1, ids: new Set([datasetId]), missing: parsed.missingColumns, rejected: parsed.rejected,
+    headers: headers.slice(0, 50), sample: Object.values(parsed.rejectedSample ?? {})[0] ?? null, example: { datasetId, date, url },
+  });
+}
+
+/** Najczęstsze grupy odrzuconych plików (do pliku odrzucone.json). */
+export function rejectedReport(limit = 200): RejectedFile[] {
+  return [...rejectedFiles.values()].map(({ ids, ...r }) => ({ ...r, datasets: ids.size }))
+    .sort((a, b) => b.datasets - a.datasets || b.count - a.count).slice(0, limit);
+}
 
 /** Stały dzień tygodnia (0-6) dla zbioru, z jego identyfikatora. */
 function hashDay(id: string): number {
@@ -295,9 +335,10 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
       if (opts.dryRun) { console.log(JSON.stringify({ dataset: ds, resource: res.raw }, null, 1)); return; }
       const prev = last.get(ds.id);
       if (prev && prev >= res.date) return;
-      const buf = await download(res.url);
+      const buf = await downloadAny(res.urls);
       await parseSlot(async () => {
         const parsed = await parseFile(buf, res.format, { devFallback: devNameFromTitle(ds.title) });
+        noteRejected(parsed, ds.id, res.date, res.url);
         summaries.push(ingestSnapshot(db, { datasetId: ds.id, title: ds.title, date: res.date, sourceUrl: res.url }, parsed));
       });
     } catch (e) {
@@ -350,9 +391,11 @@ export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[];
     }
     // Jeden cennik na okres: niemal każdy deweloper publikuje codziennie,
     // więc pełna historia dzień po dniu to ponad milion plików.
+    // Do historii tylko pliki z kopią w dane.gov.pl: link do serwera dewelopera daje
+    // dzisiejszy cennik, nie ten z dnia zasobu. Najnowszy cennik bierzemy zawsze.
     const periodic = new Map<number, ResourceRef>();
     const sorted = all.sort((a, b) => a.date.localeCompare(b.date));
-    for (const r of sorted) {
+    for (const r of sorted.filter((x) => x.stored)) {
       const day = Math.floor(new Date(r.date + 'T00:00:00Z').getTime() / 86400000);
       periodic.set(Math.floor(day / step), r); // zostaje ostatni cennik okresu
     }
@@ -364,9 +407,10 @@ export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[];
       const loaded = (lastOf.get(id) as { last_snapshot: string | null } | undefined)?.last_snapshot;
       if (loaded && loaded >= r.date) continue; // wczytany w poprzednim, przerwanym uruchomieniu
       try {
-        const buf = await download(r.url);
+        const buf = await downloadAny(r.urls);
         await parseSlot(async () => {
           const parsed = await parseFile(buf, r.format, { devFallback: devNameFromTitle(titles.get(id)) });
+          noteRejected(parsed, id, r.date, r.url);
           summaries.push(ingestSnapshot(db, { datasetId: id, title: titles.get(id), date: r.date, sourceUrl: r.url }, parsed));
         });
       } catch (e) {
