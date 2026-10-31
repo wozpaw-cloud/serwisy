@@ -6,14 +6,23 @@ import Change from '../components/Change.astro';
 import AdSlot from '../components/AdSlot.astro';
 import AiNote from '../components/AiNote.astro';
 import Search from '../components/Search.astro';
+import DealCard from '../components/DealCard.astro';
+import InvCard from '../components/InvCard.astro';
 import { SITE } from '../config';
-import { M, national, nationalSeries, citiesWithPage, citySnap, citySeries, href, unitLabel, voivodeships, livePowiaty, liveGminas, powiatLink, gminaLink, invHasPage } from '../lib/data';
+import { M, national, nationalSeries, citiesWithPage, citySnap, href, voivodeships, livePowiaty, liveGminas, powiatLink, gminaLink, deals, houseTiles, newInvestments, promotedInvestments, marketNews, invStats } from '../lib/data';
 import { dateLong, investmentsLoc, unitsGen, num, pct, pctAbs, share, trendWord, units, zl, zlM2, monthName } from '../lib/format';
 
 const s = national();
 const ser = nationalSeries();
 const first = ser.index.find((p) => p.value !== null)?.date ?? M.firstDate;
-const cuts = M.topCuts(M.units, 8);
+const top = deals(M.units, 12);
+const lead = top.slice(0, 4);
+const grid = top.slice(4, 12).length >= 4 ? top.slice(4, 12) : top.slice(0, 8);
+const cityTiles = citiesWithPage.slice(0, 12).map((c) => ({ c, s: citySnap(c) }));
+const homes = houseTiles(6);
+const promoted = promotedInvestments();
+const fresh = newInvestments(5 - Math.min(promoted.length, 3));
+const news = marketNews();
 const lastMonth = M.months().at(-1)!;
 const idxWord = trendWord(s.change.index4w, 'wzrosły', 'spadły', 'prawie się nie zmieniły');
 const description = `Mediana ceny za m² w ofertach deweloperów: ${zlM2(s.medianM2)}. Indeks cen tych samych lokali, obniżki i podaż w miastach, z jawnych cenników w dane.gov.pl.`;
@@ -26,76 +35,77 @@ const jsonld = [{
   isBasedOn: SITE.source.url,
   distribution: [{ '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: new URL('/dane/miasta-tygodniowo.csv', Astro.site).toString() }],
 }];
-// Na stronie głównej najwyżej tyle miast (pełna lista na /miasta/): strona zostaje lekka.
-const HOME_CITIES = 40;
+const dir = (v: number | null) => (v === null || Math.abs(v) < 0.0005 ? 'flat' : v > 0 ? 'up' : 'down');
 ---
+
 <Base title="Ceny mieszkań od deweloperów" description={description} jsonld={jsonld} search={false}>
-  <section class="hero">
-    <h1>Metr kwadratowy w ofertach deweloperów kosztuje dziś {zlM2(s.medianM2)}</h1>
-    <p class="lead">
-      To mediana z {unitsGen(s.units)} w {investmentsLoc(s.investments)}, stan na {dateLong(M.asOf)}.
-      Ceny tych samych lokali w ciągu 4 tygodni {idxWord}{s.change.index4w !== null && Math.abs(s.change.index4w) >= 0.0005 ? ` o ${pctAbs(s.change.index4w)}` : ''}.
-    </p>
-    <div class="finder">
-      <Search id="q-home" size="hero" label="Sprawdź ceny w swojej okolicy: wpisz miejscowość, gminę, powiat albo nazwę osiedla" />
-      <p class="quick">
-        <span class="muted">Najwięcej ofert:</span>
-        {citiesWithPage.slice(0, 6).map((c) => <a href={href.city(c)}>{c.name}</a>)}
+  <section class="hero lead-grid">
+    <div class="lead-main">
+      <p class="lead-date">Ceny z cenników deweloperów, {dateLong(M.asOf)}</p>
+      <h1>Metr w ofertach deweloperów kosztuje dziś {zlM2(s.medianM2)}</h1>
+      <p class="lead">
+        To mediana z {unitsGen(s.units)} w {investmentsLoc(s.investments)}. Ceny tych samych lokali w ciągu 4 tygodni {idxWord}{s.change.index4w !== null && Math.abs(s.change.index4w) >= 0.0005 ? ` o ${pctAbs(s.change.index4w)}` : ''}, a {units(s.cuts.count)} potaniało średnio o {pctAbs(s.cuts.avgDepth)}.
       </p>
+      <div class="finder">
+        <Search id="q-home" size="hero" label="Sprawdź ceny w swojej okolicy: wpisz miejscowość, gminę, powiat albo nazwę osiedla" />
+        <p class="quick">
+          <span class="muted">Najwięcej ofert:</span>
+          {citiesWithPage.slice(0, 6).map((c) => <a href={href.city(c)}>{c.name}</a>)}
+        </p>
+      </div>
+      <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
     </div>
-    <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
+    {lead.length > 0 && (
+      <aside class="lead-side" aria-labelledby="hot-h">
+        <h2 id="hot-h"><span class="hot-dot" aria-hidden="true"></span>Obniżki dnia</h2>
+        <ol class="hot-list">
+          {lead.map((d) => (
+            <li>
+              <a href={href.inv(d.unit.inv)}>
+                <span class="hl-badge">−{pctAbs(d.change)}</span>
+                <span class="hl-body">
+                  <b>{d.unit.inv.name}</b>
+                  <span>{d.unit.inv.city.name} · {d.unit.area ? `${d.unit.area.toFixed(1).replace('.', ',')} m²` : 'lokal'}</span>
+                  <span class="hl-price">{d.totalBefore !== null && <s>{num(d.totalBefore)} zł</s>} <b>{d.totalAfter !== null ? `${num(d.totalAfter)} zł` : `${num(d.after)} zł/m²`}</b></span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <a class="side-more" href="/obnizki/">Wszystkie obniżki</a>
+      </aside>
+    )}
   </section>
 
   <dl class="figures">
-    <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych i {num(s.goneUnits)} poza ofertą w 4 tygodnie</span></div>
-    <div><dt>Potaniało w 4 tygodnie</dt><dd>{share(s.cuts.share)}</dd><span class="delta">{units(s.cuts.count)}, średnio o {pctAbs(s.cuts.avgDepth)}</span></div>
-    <div><dt>Podrożało w 4 tygodnie</dt><dd>{share(s.raises.share)}</dd><span class="delta">{units(s.raises.count)}</span></div>
-    <div><dt>Mediana ceny lokalu</dt><dd>{zl(s.medianTotal)}</dd><span class="delta">przy medianie metrażu {s.medianArea?.toFixed(1).replace('.', ',')} m²</span></div>
+    <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych w 4 tygodnie</span></div>
+    <div><dt>Potaniało w 4 tygodnie</dt><dd class="down">{units(s.cuts.count)}</dd><span class="delta">średnio o {pctAbs(s.cuts.avgDepth)}</span></div>
+    <div><dt>Typowe mieszkanie</dt><dd>{zl(s.medianTotal)}</dd><span class="delta">przy metrażu {s.medianArea?.toFixed(1).replace('.', ',')} m²</span></div>
+    <div><dt>Ceny tych samych lokali</dt><dd>{pct(s.change.index13w)}</dd><span class="delta">w 13 tygodni</span></div>
   </dl>
 
-  <LineChart
-    id="indeks"
-    title="Indeks cen tych samych lokali"
-    sub={`100 = ceny z ${dateLong(first)}. Porównuje co tydzień ceny lokali obecnych w ofercie w obu tygodniach, więc nie zmienia się, gdy do oferty wchodzą droższe lub tańsze inwestycje.`}
-    series={[{ label: 'Polska', points: ser.index }]}
-    format="index"
-    ref={100}
-  />
+  {grid.length > 0 && (
+    <section class="section" aria-labelledby="deals-h">
+      <div class="section-bar"><h2 id="deals-h">Wybite obniżki</h2><a href="/obnizki/">Zobacz wszystkie</a></div>
+      <p class="section-sub">Lokale, które potaniały w ostatnich 4 tygodniach. Cena przekreślona to cena tego samego lokalu sprzed obniżki.</p>
+      <div class="deal-grid">{grid.map((d) => <DealCard d={d} />)}</div>
+    </section>
+  )}
 
-  <div class="two-up">
-    <LineChart title="Mediana ceny za m²" sub="Wszystkie lokale w ofercie w danym tygodniu. Reaguje też na zmianę składu oferty." series={[{ label: 'Polska', points: ser.median }]} format="zl" area={false} />
-    <LineChart title="Lokale w ofercie" sub="Lokale obecne w cennikach w danym tygodniu." series={[{ label: 'Polska', points: ser.count }]} format="count" zero />
-  </div>
-
-  <AdSlot slot="home-1" />
-
-  <section class="section">
-    <div class="section-head">
-      <h2>Ceny w miastach</h2>
-      <p>{citiesWithPage.length > HOME_CITIES ? `${HOME_CITIES} miast z największą liczbą lokali w ofercie.` : `Miasta z co najmniej ${SITE.minCityUnits} lokalami w ofercie.`} Indeks pokazuje zmianę cen tych samych lokali w ostatnich 13 tygodniach.</p>
-    </div>
-    <div class="table-wrap">
-      <table class="data sortable">
-        <thead><tr><th scope="col">Miasto</th><th scope="col" class="r">Mediana za m²</th><th scope="col" class="r">Indeks, 13 tyg.</th><th scope="col">Trend od początku</th><th scope="col" class="r">Lokale</th><th scope="col" class="r">Potaniało, 4 tyg.</th></tr></thead>
-        <tbody>
-          {citiesWithPage.slice(0, HOME_CITIES).map((c) => {
-            const cs = citySnap(c);
-            const se = citySeries(c);
-            return (
-              <tr>
-                <td data-v={c.name}><a href={href.city(c)}>{c.name}</a></td>
-                <td class="r" data-v={cs.medianM2 ?? ''}>{zl(cs.medianM2)}</td>
-                <td class="r" data-v={cs.change.index13w ?? ''}><Change value={cs.change.index13w} /></td>
-                <td data-v={cs.change.indexAll ?? ''}><Sparkline values={se.index.map((p) => p.value)} label={`Indeks ${c.name}: ${pct(cs.change.indexAll)} od początku pomiarów`} ref={100} /></td>
-                <td class="r" data-v={cs.units}>{num(cs.units)}</td>
-                <td class="r" data-v={cs.cuts.share ?? ''}>{share(cs.cuts.share)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-    {citiesWithPage.length > HOME_CITIES && <p class="more"><a href="/miasta/">Wszystkie miasta ({num(citiesWithPage.length)})</a></p>}
+  <section class="section" aria-labelledby="cities-h">
+    <div class="section-bar"><h2 id="cities-h">Ceny mieszkań w miastach</h2><a href="/miasta/">Wszystkie miasta ({num(citiesWithPage.length)})</a></div>
+    <ul class="tile-grid">
+      {cityTiles.map(({ c, s: cs }) => (
+        <li>
+          <a class="tile" href={href.city(c)}>
+            <span class="tile-name">{c.name}</span>
+            <span class="tile-big">{num(cs.medianM2)} <small>zł/m²</small></span>
+            <span class="tile-sub">typowo {num(cs.medianTotal)} zł · {num(cs.units)} ofert</span>
+            <span class={`tile-ch ${dir(cs.change.index13w)}`}>{pct(cs.change.index13w)} <small>w 13 tyg.</small></span>
+          </a>
+        </li>
+      ))}
+    </ul>
     <nav class="browse" aria-label="Ceny według podziału administracyjnego">
       <a href="/wojewodztwa/"><b>Województwa</b><span>{num(voivodeships.length)}</span></a>
       <a href="/powiaty/"><b>Powiaty</b><span>{num(livePowiaty.filter((p) => powiatLink(p)).length)}</span></a>
@@ -104,41 +114,65 @@ const HOME_CITIES = 40;
     </nav>
   </section>
 
-  <section class="section">
-    <div class="section-head">
-      <h2>Największe obniżki w ostatnich 4 tygodniach</h2>
-      <p>Cena za m² teraz w porównaniu z ceną tego samego lokalu 4 tygodnie wcześniej.</p>
+  <section class="section" aria-labelledby="inv-h">
+    <div class="section-bar"><h2 id="inv-h">{promoted.length ? 'Polecane i nowe inwestycje' : 'Nowe inwestycje'}</h2><a href="/deweloperzy/">Wszyscy deweloperzy</a></div>
+    <div class="inv-grid">
+      {promoted.slice(0, 3).map((p) => <InvCard st={invStats(p.inv)} label="Promowane" note={p.note} />)}
+      {fresh.map((st) => <InvCard st={st} label="Nowość" />)}
+      <a class="inv-card cta" href="/dla-deweloperow/">
+        <span class="cta-body">
+          <b>Promuj swoją inwestycję</b>
+          <span>Wyróżnienie na stronie głównej i na stronie miasta, z oznaczeniem „Promowane”.</span>
+          <span class="tb-btn">Sprawdź ofertę</span>
+        </span>
+      </a>
     </div>
-    <div class="table-wrap">
-      <table class="data">
-        <thead><tr><th>Inwestycja</th><th>Lokal</th><th class="r">Było za m²</th><th class="r">Jest za m²</th><th class="r">Zmiana</th></tr></thead>
-        <tbody>
-          {cuts.map((c) => (
-            <tr>
-              <td>{invHasPage(c.unit.inv) ? <a href={href.inv(c.unit.inv)}>{c.unit.inv.name}</a> : c.unit.inv.name}<span class="muted">, {c.unit.inv.city.name}</span></td>
-              <td class="num">{unitLabel(c.unit)}</td>
-              <td class="r">{zl(Math.round(c.before))}</td>
-              <td class="r">{zl(Math.round(c.after))}</td>
-              <td class="r"><Change value={c.change} /></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p><a href="/obnizki/">Wszystkie obniżki i udział obniżek w miastach</a></p>
   </section>
 
+  <div class="news-homes">
+    <section class="section" aria-labelledby="news-h">
+      <div class="section-bar"><h2 id="news-h">Z rynku</h2><a href="/raporty/">Raporty</a></div>
+      <ul class="news-list">
+        {news.map((n) => (
+          <li><a href={n.href}><span class="news-kicker">{n.kicker}</span><b>{n.title}</b><span>{n.text}</span></a></li>
+        ))}
+      </ul>
+      <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
+    </section>
+
+    <section class="section" aria-labelledby="homes-h">
+      <div class="section-bar"><h2 id="homes-h">Ceny domów</h2><a href="/domy/">Więcej</a></div>
+      <a class="tile tile-wide" href="/domy/">
+        <span class="tile-name">Domy od deweloperów w Polsce</span>
+        <span class="tile-big">{num(homes.national.medianTotal)} <small>zł</small></span>
+        <span class="tile-sub">typowy dom · {num(homes.national.medianM2)} zł/m² · {num(homes.national.units)} w ofercie</span>
+      </a>
+      <ul class="mini-tiles">
+        {homes.cities.map(({ c, s: hs }) => (
+          <li><a href={href.city(c)}><b>{c.name}</b><span>{num(hs.medianTotal)} zł</span><small>{num(hs.units)} domów</small></a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+
+  <LineChart
+    id="indeks"
+    title="Indeks cen tych samych lokali w Polsce"
+    sub={`100 = ceny z ${dateLong(first)}. Porównuje co tydzień ceny tych samych lokali, więc nie zmienia się, gdy do oferty wchodzą droższe lub tańsze inwestycje.`}
+    series={[{ label: 'Polska', points: ser.index }]}
+    format="index"
+    ref={100}
+  />
+
+  <AdSlot slot="home-1" />
+
   <section class="section">
-    <div class="section-head">
-      <h2>Raport i dane</h2>
-      <p>Co miesiąc podsumowujemy rynek w liczbach. Wszystkie zestawienia z serwisu można pobrać jako pliki CSV.</p>
-    </div>
+    <div class="section-bar"><h2>Raport i dane</h2></div>
+    <p class="section-sub">Co miesiąc podsumowujemy rynek w liczbach. Wszystkie zestawienia z serwisu można pobrać jako pliki CSV.</p>
     <ul class="list-plain">
       <li><a href={href.report(lastMonth)}>Raport: {monthName(lastMonth)}</a></li>
-      <li><a href="/domy/">Domy jednorodzinne od deweloperów</a></li>
+      <li><a href="/indeks/">Indeks cen tych samych lokali</a></li>
       <li><a href="/dane/">Dane do pobrania</a></li>
     </ul>
   </section>
-
-  <p class="source">Źródło: cenniki deweloperów z <a href={SITE.source.url} rel="noopener">dane.gov.pl</a>, obliczenia własne. Ceny ofertowe, nie transakcyjne. <a href="/metodologia/">Jak liczymy</a>.</p>
 </Base>

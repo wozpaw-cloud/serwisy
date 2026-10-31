@@ -1,0 +1,56 @@
+---
+// Oferta promocji dla deweloperów: baner i wyróżniona inwestycja. Zasady: reklama
+// zawsze oznaczona, dane i ceny wyłącznie z cenników, bez danych osobowych odwiedzających.
+import Base from '../layouts/Base.astro';
+import { SITE } from '../config';
+import { M, national, citiesWithPage } from '../lib/data';
+import { num } from '../lib/format';
+const s = national();
+---
+<Base title="Promocja inwestycji dla deweloperów" description="Baner na górze strony i wyróżnienie inwestycji obok cen z okolicy. Reklama zawsze oznaczona, ceny zawsze z cenników w dane.gov.pl." crumbs={[{ label: 'Dla deweloperów' }]} banner={false}>
+  <section class="hero">
+    <h1>Pokaż swoją inwestycję kupującym, którzy właśnie sprawdzają ceny</h1>
+    <p class="lead">
+      W serwisie są ceny {num(s.units)} lokali od deweloperów, ze stronami {num(citiesWithPage.length)} miast. Kupujący porównują tu oferty w swojej okolicy, a Ty możesz pokazać im swoją inwestycję w tym samym miejscu.
+    </p>
+  </section>
+
+  <section class="section">
+    <div class="section-bar"><h2>Formy promocji</h2></div>
+    <div class="offer-grid">
+      <article class="offer">
+        <h3>Baner na górze strony</h3>
+        <p>Pierwsze, co widać pod nagłówkiem. W całym serwisie albo tylko na stronach wybranych miast, np. tam, gdzie budujesz.</p>
+        <ul class="list-plain small muted">
+          <li>Format 970 × 250 px, na telefonie dopasowany do szerokości ekranu</li>
+          <li>Odnośnik do strony inwestycji albo biura sprzedaży</li>
+          <li>Oznaczenie „Reklama” z nazwą dewelopera</li>
+        </ul>
+      </article>
+      <article class="offer">
+        <h3>Wyróżniona inwestycja</h3>
+        <p>Karta inwestycji na stronie głównej i na stronie miasta, przed nowymi inwestycjami, z krótkim dopiskiem, np. „Ostatnie mieszkania z ogródkiem”.</p>
+        <ul class="list-plain small muted">
+          <li>Ceny, liczba lokali i zmiany cen z Twojego cennika w dane.gov.pl</li>
+          <li>Odnośnik do strony inwestycji w serwisie, z historią cen każdego lokalu</li>
+          <li>Oznaczenie „Promowane”</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-bar"><h2>Zasady</h2></div>
+    <ul class="list-plain rules">
+      <li><b>Reklama nie zmienia danych.</b> Ceny, obniżki, rankingi i indeksy liczymy wyłącznie z cenników w dane.gov.pl, tak samo dla wszystkich deweloperów.</li>
+      <li><b>Każda reklama jest oznaczona.</b> Baner ma napis „Reklama” i nazwę reklamodawcy, wyróżniona inwestycja napis „Promowane”.</li>
+      <li><b>Bez śledzenia.</b> Nie zbieramy danych osobowych odwiedzających i nie przekazujemy ich reklamodawcom.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <div class="section-bar"><h2>Kontakt</h2></div>
+    <p>Napisz, którą inwestycję chcesz promować i w jakich miastach. Odpowiemy z wyceną i terminami: <span class="select-text">{SITE.contactEmail}</span></p>
+    <p class="small muted">Stan danych: {M.asOf}.</p>
+  </section>
+</Base>

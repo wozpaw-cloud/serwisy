@@ -1,0 +1,33 @@
+---
+// Baner na górze strony. Gdy deweloper wykupi baner (promo.ts), pokazujemy jego reklamę
+// z oznaczeniem "Reklama"; bez wykupionego banera: zaproszenie do promocji.
+import { topBanner } from '../lib/data';
+interface Props { city?: string }
+const b = topBanner(Astro.props.city);
+---
+<div class="wrap top-banner-wrap">
+  {b ? (
+    <aside class="top-banner paid" aria-label={`Reklama: ${b.advertiser}`}>
+      <span class="ad-label">Reklama · {b.advertiser}</span>
+      <a href={b.href} rel="sponsored noopener" target="_blank">
+        {b.image ? <img src={b.image} alt={b.title ?? b.advertiser} width="970" height="250" loading="eager" /> : (
+          <span class="tb-text"><strong>{b.title}</strong>{b.text && <span>{b.text}</span>}</span>
+        )}
+      </a>
+    </aside>
+  ) : (
+    <aside class="top-banner house" aria-label="Oferta dla deweloperów">
+      <a href="/dla-deweloperow/">
+        <svg class="tb-skyline" viewBox="0 0 360 120" aria-hidden="true">
+          <path d="M0 120V78h28V52h34v26h18V34h40v86M120 120V62h30V18h46v44h22v58M218 120V70h36V40h30v30h20v50h56" fill="none" stroke="currentColor" stroke-width="2" />
+          <g fill="currentColor" opacity=".55">{[0, 1, 2, 3, 4].map((r) => [0, 1, 2].map((c) => <rect x={160 + c * 11} y={28 + r * 14} width="6" height="8" rx="1" />))}</g>
+        </svg>
+        <span class="tb-text">
+          <strong>Twoja inwestycja na górze strony, obok cen z okolicy</strong>
+          <span>Baner, wyróżnienie na liście inwestycji i w obniżkach. Ceny zawsze z cennika, reklama zawsze oznaczona.</span>
+        </span>
+        <span class="tb-btn">Oferta dla deweloperów</span>
+      </a>
+    </aside>
+  )}
+</div>

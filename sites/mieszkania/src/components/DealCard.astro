@@ -1,0 +1,28 @@
+---
+// Karta obniżki: procent na czerwonym znaczku, stara cena przekreślona, nowa wybita.
+import type { Deal } from '../lib/data';
+import { href, unitRef } from '../lib/data';
+import { dateShort, num, pctAbs } from '../lib/format';
+interface Props { d: Deal; showCity?: boolean }
+const { d, showCity = true } = Astro.props;
+const u = d.unit;
+const kind = u.type === 'dom' ? 'Dom' : 'Mieszkanie';
+const rooms = u.rooms ? `, ${u.rooms} pok.` : '';
+const area = u.area ? `, ${u.area.toFixed(1).replace('.', ',')} m²` : '';
+---
+<article class="deal">
+  <a class="deal-link" href={href.inv(u.inv)}>
+    <span class="deal-badge">−{pctAbs(d.change)}</span>
+    <span class="deal-kicker">{showCity ? u.inv.city.name : u.inv.brand.name}</span>
+    <h3 class="deal-title">{u.inv.name}</h3>
+    <span class="deal-unit">{kind}{rooms}{area} · lokal {unitRef(u)}</span>
+    <span class="deal-prices">
+      {d.totalBefore !== null && <s>{num(d.totalBefore)} zł</s>}
+      <b>{d.totalAfter !== null ? `${num(d.totalAfter)} zł` : `${num(d.after)} zł/m²`}</b>
+    </span>
+    <span class="deal-meta">
+      {d.saving !== null ? <span class="deal-save">taniej o {num(d.saving)} zł</span> : <span />}
+      <span>{num(d.after)} zł/m² · od {dateShort(d.date)}</span>
+    </span>
+  </a>
+</article>

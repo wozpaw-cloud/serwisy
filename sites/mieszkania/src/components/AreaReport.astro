@@ -8,7 +8,9 @@ import Change from './Change.astro';
 import AdSlot from './AdSlot.astro';
 import Context from './Context.astro';
 import PageNav from './PageNav.astro';
-import { M, invStats, href, unitLabel, invHasPage, brandHasPage, type AreaRef } from '../lib/data';
+import DealCard from './DealCard.astro';
+import InvCard from './InvCard.astro';
+import { M, invStats, href, unitLabel, invHasPage, brandHasPage, deals, promotedInvestments, newInvestments, type AreaRef } from '../lib/data';
 import { num, pct, share, zl, m2 } from '../lib/format';
 import type { Investment, Point, Unit } from '@serwisy/mieszkania-dane/query';
 
@@ -42,6 +44,10 @@ const hs = M.snapshot(`${skey}:dom`, units.filter((u) => u.type === 'dom'));
 const fs = M.snapshot(`${skey}:mieszkanie`, units.filter((u) => u.type === 'mieszkanie'));
 const showTypes = hs.units >= 5 && fs.units >= 5;
 const width = (s.p75M2 ?? 0) - (s.p25M2 ?? 0) > 6000 ? 1000 : 500;
+// Na górze strony: obniżki z tego obszaru i inwestycje wyróżnione przez deweloperów albo nowe.
+const areaDeals = deals(units, 4);
+const promos = promotedInvestments(investments).slice(0, 3);
+const freshHere = newInvestments(Math.max(0, 3 - promos.length), investments);
 const nav = [
   ...(chain.length > 1 ? [{ id: 'okolica', label: 'Na tle okolicy' }] : []),
   { id: 'wykresy', label: 'Wykresy' },
@@ -59,6 +65,30 @@ const nav = [
   <div><dt>Potaniało w 4 tygodnie</dt><dd>{share(s.cuts.share)}</dd><span class="delta">{num(s.cuts.count)} z {num(s.cuts.base)} lokali</span></div>
   <div><dt>Lokale w ofercie</dt><dd>{num(s.units)}</dd><span class="delta">{num(s.newUnits)} nowych, {num(s.goneUnits)} poza ofertą w 4 tygodnie</span></div>
 </dl>
+
+{areaDeals.length > 0 && (
+  <section class="section" id="okazje" aria-labelledby="okazje-h">
+    <div class="section-bar"><h2 id="okazje-h">Obniżki: {name}</h2>{cuts.length > areaDeals.length && <a href="#obnizki">Wszystkie obniżki tutaj</a>}</div>
+    <div class="deal-grid four">{areaDeals.map((d) => <DealCard d={d} showCity={showPlace} />)}</div>
+  </section>
+)}
+
+{(promos.length > 0 || freshHere.length > 0) && (
+  <section class="section" aria-labelledby="polecane-h">
+    <div class="section-bar"><h2 id="polecane-h">{promos.length ? 'Polecane inwestycje' : 'Nowe inwestycje'}</h2><a href="#inwestycje">Wszystkie inwestycje</a></div>
+    <div class="inv-grid">
+      {promos.map((p) => <InvCard st={invStats(p.inv)} label="Promowane" note={p.note} />)}
+      {freshHere.map((st) => <InvCard st={st} label="Nowość" />)}
+      <a class="inv-card cta" href="/dla-deweloperow/">
+        <span class="cta-body">
+          <b>Twoja inwestycja tutaj</b>
+          <span>Wyróżnienie na stronie {name.startsWith('gmina') || name.startsWith('powiat') || name.startsWith('woj') ? name : `miasta ${name}`}, oznaczone jako „Promowane”.</span>
+          <span class="tb-btn">Sprawdź ofertę</span>
+        </span>
+      </a>
+    </div>
+  </section>
+)}
 
 <Context chain={chain} />
 

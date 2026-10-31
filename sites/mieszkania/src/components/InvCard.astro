@@ -1,0 +1,30 @@
+---
+// Karta inwestycji: wyróżniona przez dewelopera ("Promowane") albo nowa w ofercie.
+import type { InvestmentStats } from '../lib/data';
+import { href } from '../lib/data';
+import { num } from '../lib/format';
+interface Props { st: InvestmentStats; label?: 'Promowane' | 'Nowość'; note?: string }
+const { st, label, note } = Astro.props;
+const inv = st.inv;
+// Kolor nagłówka karty zależy od inwestycji (stały między publikacjami), żeby lista nie była jednolita.
+const hues = [212, 168, 24, 262, 340, 196, 132];
+const hue = hues[inv.id % hues.length];
+const kind = st.types.has('dom') && !st.types.has('mieszkanie') ? 'domów' : 'lokali';
+---
+<article class={`inv-card${label === 'Promowane' ? ' promo' : ''}`} style={`--hue:${hue}`}>
+  <a href={href.inv(inv)}>
+    <span class="ic-top" aria-hidden="true">
+      <svg viewBox="0 0 120 48"><use href="#ic-building" /></svg>
+    </span>
+    {label && <span class={`ic-label${label === 'Promowane' ? ' promo' : ''}`}>{label}</span>}
+    <span class="ic-body">
+      <span class="ic-kicker">{inv.city.name} · {inv.brand.name}</span>
+      <h3>{inv.name}</h3>
+      {note && <span class="ic-note">{note}</span>}
+      <span class="ic-facts">
+        <span><b>{st.minTotal !== null ? `od ${num(st.minTotal)} zł` : '—'}</b></span>
+        <span>{num(st.medianM2)} zł/m² · {num(st.inOffer.length)} {kind}</span>
+      </span>
+    </span>
+  </a>
+</article>

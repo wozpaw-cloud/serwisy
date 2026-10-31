@@ -19,7 +19,7 @@ const title = `Ceny mieszkań od deweloperów: ${city.name}`;
 const description = `${city.name}: mediana ${zlM2(s.medianM2)} w ofertach deweloperów, ${num(s.units)} lokali w ofercie. Indeks cen, obniżki i inwestycje z cenników w dane.gov.pl.`;
 const vHref = voivLink(city.voivodeship);
 ---
-<Base title={title} description={description} crumbs={[...crumbsOf(chain), { label: city.name }]} current="/regiony/">
+<Base title={title} description={description} crumbs={[...crumbsOf(chain), { label: city.name }]} current="/regiony/" bannerCity={city.slug}>
   <section class="hero">
     <h1>{title}</h1>
     <p class="lead">{areaLead(s)}</p>

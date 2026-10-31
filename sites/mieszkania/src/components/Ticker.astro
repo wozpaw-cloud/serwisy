@@ -1,0 +1,23 @@
+---
+// Pasek notowań nad nagłówkiem: cena metra w Polsce i w największych miastach,
+// ze zmianą cen tych samych lokali w 13 tygodni (jak notowania na portalu).
+import { citiesWithPage, citySnap, href, national } from '../lib/data';
+import { num } from '../lib/format';
+const pl = national();
+const rows = [
+  { name: 'Polska', href: '/indeks/', m2: pl.medianM2, ch: pl.change.index13w },
+  ...citiesWithPage.slice(0, 9).map((c) => { const s = citySnap(c); return { name: c.name, href: href.city(c), m2: s.medianM2, ch: s.change.index13w }; }),
+];
+const dir = (v: number | null) => (v === null || Math.abs(v) < 0.0005 ? 'flat' : v > 0 ? 'up' : 'down');
+const p = (v: number | null) => (v === null ? '' : `${v > 0 ? '+' : v < 0 ? '−' : ''}${(Math.abs(v) * 100).toFixed(1).replace('.', ',')}%`);
+---
+<div class="ticker" aria-label="Ceny metra kwadratowego w ofertach deweloperów, zmiana w 13 tygodni">
+  <div class="wrap ticker-row">
+    <ul>
+      {rows.map((r) => (
+        <li><a href={r.href}><b>{r.name}</b> <span>{num(r.m2)} zł/m²</span> <span class={`tk ${dir(r.ch)}`}>{p(r.ch)}</span></a></li>
+      ))}
+    </ul>
+    <a class="ticker-cta" href="/dla-deweloperow/">Dla deweloperów</a>
+  </div>
+</div>

@@ -2,6 +2,8 @@
 import { getModel, median, type Brand, type City, type Gmina, type Investment, type Powiat, type Unit, type Voivodeship } from '@serwisy/mieszkania-dane/query';
 import { addDays, fold, VOIVODESHIPS } from '@serwisy/mieszkania-dane';
 import { SITE } from '../config';
+import { PROMO } from '../promo';
+import { num } from './format';
 
 export const M = getModel();
 
@@ -212,4 +214,101 @@ export function unitRef(u: Unit): string {
 export function unitLabel(u: Unit): string {
   const a = u.area ? `${u.area.toFixed(1).replace('.', ',')} m²` : '';
   return [unitRef(u), a].filter(Boolean).join(', ');
+}
+
+// ---------- portal: obniżki, kafelki miast i domów, nowe i promowane inwestycje, wiadomości ----------
+
+
+export interface Deal {
+  unit: Unit; before: number; after: number; change: number; date: string;
+  totalBefore: number | null; totalAfter: number | null; saving: number | null;
+}
+
+/** Obniżki do pokazania jako "okazje": spadek od 2% do 25% (większe to zwykle błąd w cenniku),
+ *  najwyżej jedna z inwestycji, tylko inwestycje z własną stroną. */
+export function deals(units: Unit[], limit = 12): Deal[] {
+  const seen = new Set<Investment>();
+  const out: Deal[] = [];
+  for (const c of M.topCuts(units, 5000)) {
+    if (c.change > -0.02 || c.change < -0.25 || !invHasPage(c.unit.inv) || seen.has(c.unit.inv)) continue;
+    const area = c.unit.area;
+    const tb = c.totalBefore ?? (area ? c.before * area : null);
+    const ta = c.totalAfter ?? (area ? c.after * area : null);
+    if (tb !== null && ta !== null && ta >= tb) continue;
+    seen.add(c.unit.inv);
+    out.push({ ...c, totalBefore: tb, totalAfter: ta, saving: tb !== null && ta !== null ? tb - ta : null });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+/** Kafelek miasta: mediana za m², typowa cena lokalu, zmiana cen tych samych lokali w 13 tygodni. */
+export function cityTile(c: City) {
+  const s = citySnap(c);
+  return { c, s, href: href.city(c) };
+}
+
+/** Domy: cała Polska i miejscowości z największą liczbą domów w ofercie. */
+export function houseTiles(limit = 6) {
+  const all = houses();
+  const national = M.snapshot('domy', all);
+  const byCity = new Map<City, Unit[]>();
+  for (const u of all) {
+    const c = u.inv.city;
+    if (!byCity.has(c)) byCity.set(c, []);
+    byCity.get(c)!.push(u);
+  }
+  const cities = [...byCity].map(([c, us]) => ({ c, s: M.snapshot(`d:${c.key}`, us) }))
+    .filter((x) => x.s.units >= 5 && hasPage(x.c))
+    .sort((a, b) => b.s.units - a.s.units).slice(0, limit);
+  return { national, cities };
+}
+
+const today = () => M.asOf;
+const activePromo = <T extends { until?: string }>(xs: T[]) => xs.filter((x) => !x.until || x.until >= today());
+
+/** Inwestycje wyróżnione przez dewelopera (oznaczone "Promowane"); opcjonalnie tylko z danego miasta. */
+export function promotedInvestments(pool?: Investment[]) {
+  const bySlug = new Map(invWithPage.map((i) => [i.slug, i]));
+  const inPool = pool ? new Set(pool) : null;
+  return activePromo(PROMO.promoted).map((p) => ({ inv: bySlug.get(p.slug), note: p.note }))
+    .filter((x): x is { inv: Investment; note: string | undefined } => !!x.inv && (!inPool || inPool.has(x.inv)));
+}
+
+/** Baner na górę strony: pierwszy aktywny dla tego miasta albo dla wszystkich stron. */
+export function topBanner(citySlug?: string) {
+  return activePromo(PROMO.banners).find((b) => !b.cities?.length || (citySlug && b.cities.includes(citySlug))) ?? null;
+}
+
+/** Nowe inwestycje: pierwsze lokale w cennikach w ostatnich 60 dniach, najwięcej lokali w ofercie. */
+export function newInvestments(limit = 6, pool?: Investment[]) {
+  const since = addDays(M.asOf, -60);
+  const inPool = pool ? new Set(pool) : null;
+  return invWithPage
+    .filter((i) => !inPool || inPool.has(i))
+    .map((i) => invStats(i))
+    .filter((st) => st.firstSeen && st.firstSeen >= since && st.inOffer.length >= 3)
+    .sort((a, b) => b.inOffer.length - a.inOffer.length)
+    .slice(0, limit);
+}
+
+/** Krótkie wiadomości z rynku, składane z danych (oznaczone jako tekst automatyczny). */
+export function marketNews() {
+  const big = citiesWithPage.slice(0, 20).map((c) => ({ c, s: citySnap(c) })).filter((x) => x.s.units >= 300);
+  const out: { kicker: string; title: string; text: string; href: string }[] = [];
+  const by = (f: (x: (typeof big)[number]) => number | null) => big.filter((x) => f(x) !== null).sort((a, b) => f(b)! - f(a)!);
+  const pctTxt = (v: number) => `${(Math.abs(v) * 100).toFixed(1).replace('.', ',')}%`;
+  const up = by((x) => x.s.change.index13w)[0];
+  if (up && (up.s.change.index13w ?? 0) > 0.001) out.push({ kicker: up.c.name, title: `Ceny tych samych mieszkań wzrosły o ${pctTxt(up.s.change.index13w!)} w trzy miesiące`, text: `Najwięcej wśród ${big.length} największych rynków. Mediana to ${num(up.s.medianM2)} zł za metr.`, href: href.city(up.c) });
+  const down = by((x) => (x.s.change.index13w === null ? null : -x.s.change.index13w))[0];
+  if (down && (down.s.change.index13w ?? 0) < -0.001) out.push({ kicker: down.c.name, title: `Deweloperzy obniżają: ceny tych samych mieszkań spadły o ${pctTxt(down.s.change.index13w!)}`, text: `Zmiana w ostatnich 13 tygodniach, największy spadek wśród dużych rynków.`, href: href.city(down.c) });
+  const cuts = by((x) => x.s.cuts.share)[0];
+  if (cuts && (cuts.s.cuts.share ?? 0) > 0.005) out.push({ kicker: cuts.c.name, title: `Tu najczęściej tanieje: obniżka objęła ${pctTxt(cuts.s.cuts.share!)} mieszkań`, text: `${num(cuts.s.cuts.count)} lokali potaniało w ostatnich 4 tygodniach, średnio o ${pctTxt(cuts.s.cuts.avgDepth ?? 0)}.`, href: href.city(cuts.c) });
+  const cheap = by((x) => (x.s.medianM2 === null ? null : -x.s.medianM2))[0];
+  if (cheap) out.push({ kicker: cheap.c.name, title: `Najtańszy metr wśród dużych miast: ${num(cheap.s.medianM2)} zł`, text: `Typowe mieszkanie w ofercie kosztuje ${num(cheap.s.medianTotal)} zł.`, href: href.city(cheap.c) });
+  const fresh = by((x) => x.s.newUnits)[0];
+  if (fresh && fresh.s.newUnits > 0) out.push({ kicker: fresh.c.name, title: `${num(fresh.s.newUnits)} nowych mieszkań w ofercie w cztery tygodnie`, text: `Najwięcej nowych lokali w cennikach. W ofercie jest ich teraz ${num(fresh.s.units)}.`, href: href.city(fresh.c) });
+  const dear = by((x) => x.s.medianM2)[0];
+  if (dear) out.push({ kicker: dear.c.name, title: `Najdroższy metr: ${num(dear.s.medianM2)} zł w ofertach deweloperów`, text: `Połowa mieszkań kosztuje od ${num(dear.s.p25M2)} do ${num(dear.s.p75M2)} zł za metr.`, href: href.city(dear.c) });
+  return out;
 }
