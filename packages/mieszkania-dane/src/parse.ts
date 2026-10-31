@@ -61,11 +61,40 @@ export async function readTable(buf: Buffer, format: string): Promise<Table> {
   return readCsv(decode(buf));
 }
 
-/** UTF-8, a gdy w tekście pojawiają się znaki zastępcze, Windows-1250. */
+// Znak -> bajt w Windows-1250 (do naprawy tekstu UTF-8 odczytanego jako Windows-1250).
+const CP1250 = (() => {
+  const d = new TextDecoder('windows-1250');
+  const m = new Map<string, number>();
+  for (let b = 0; b < 256; b++) { const c = d.decode(Uint8Array.of(b)); if (!m.has(c)) m.set(c, b); }
+  return m;
+})();
+// Polskie litery z UTF-8 odczytane jako Windows-1250: "WojewĂłdztwo", "uwzglÄ™dniajÄ…ca", "dziaĹ‚alnoĹ›ci".
+const MOJIBAKE = /Ä[…‡™„†]|Ĺ[‚„›şĽ\u0081]|Ă[łšÓ]/g;
+const POLISH = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g;
+
+/** Naprawia tekst z "krzakami" (UTF-8 zapisany albo odczytany jako Windows-1250). */
+export function repairMojibake(s: string): string {
+  const bad = s.match(MOJIBAKE)?.length ?? 0;
+  if (bad < 3 || bad <= (s.match(POLISH)?.length ?? 0) - bad) return s;
+  const bytes: number[] = [];
+  for (const ch of s) {
+    const b = CP1250.get(ch);
+    if (b !== undefined) bytes.push(b);
+    else bytes.push(...Buffer.from(ch, 'utf8'));
+  }
+  return new TextDecoder('utf-8').decode(Uint8Array.from(bytes));
+}
+
+/** UTF-8; Windows-1250, gdy większość znaków spoza ASCII to błędne sekwencje UTF-8.
+ *  Pojedyncze błędne bajty w pliku UTF-8 nie przełączają kodowania. */
 export function decode(buf: Buffer): string {
   let s = new TextDecoder('utf-8').decode(buf);
-  if (s.includes('�')) s = new TextDecoder('windows-1250').decode(buf);
-  return s.replace(/^﻿/, '');
+  const invalid = s.match(/\uFFFD/g)?.length ?? 0;
+  if (invalid) {
+    const nonAscii = s.match(/[^\x00-\x7F]/g)?.length ?? 0;
+    if (invalid > nonAscii * 0.3) s = new TextDecoder('windows-1250').decode(buf);
+  }
+  return repairMojibake(s).replace(/^\uFEFF/, '');
 }
 
 export function detectDelimiter(text: string): string {
@@ -136,6 +165,9 @@ const KEY_ALIASES: Record<string, Field> = {
   datacenym2: 'priceM2Date', cenacalkowita: 'priceTotal', cena: 'priceTotal', cenabrutto: 'priceTotal',
   powierzchnia: 'area', powierzchniauzytkowa: 'area', liczbapokoi: 'rooms', pokoje: 'rooms',
   status: 'status', prospekt: 'prospectusUrl',
+  // Eksport jednego z systemów sprzedaży (klucze po angielsku).
+  number: 'unitRef', unitnumber: 'unitRef', pricepermeter: 'priceM2', priceperm2: 'priceM2', totalprice: 'priceTotal',
+  area: 'area', fulladdress: 'address', issold: 'status', city: 'city', kind: 'unitType',
 };
 
 function keyToHeader(k: string): string {
@@ -214,7 +246,7 @@ function text(v: unknown): string | null {
 }
 
 function unitTypeOf(v: unknown): UnitType {
-  return fold(String(v ?? '')).includes('dom') ? 'dom' : 'mieszkanie';
+  return /dom|house/.test(fold(String(v ?? ''))) ? 'dom' : 'mieszkanie';
 }
 
 function statusOf(v: unknown): OfferStatus {
@@ -223,6 +255,9 @@ function statusOf(v: unknown): OfferStatus {
   if (s.includes('sprzed')) return 'sprzedany';
   if (s.includes('rezerw')) return 'zarezerwowany';
   if (s.includes('dostep') || s.includes('wolny') || s.includes('w sprzedazy')) return 'dostepny';
+  // Kolumna "is sold" / "sprzedany": tak/nie.
+  if (s === 'true' || s === 'tak' || s === 'sold') return 'sprzedany';
+  if (s === 'false' || s === 'nie' || s === 'available') return 'dostepny';
   return null;
 }
 
@@ -269,7 +304,7 @@ export function cityFromAddress(address: string | null): string | null {
 }
 
 // Pozycje cennika, które nie są lokalem mieszkalnym ani domem.
-const NOT_DWELLING = /parking|postoj|garaz|komork|hala|uslug|uzytkow|biur|magazyn|piwnic|rower|handlow|lokal komerc/;
+const NOT_DWELLING = /parking|postoj|garaz|komork|hala|uslug|uzytkow|biur|magazyn|piwnic|rower|handlow|lokal komerc|przyleglos|garage|storage|commercial|cellar|office|bike/;
 
 export function toRecords(table: Table, format = 'csv', opts: { devFallback?: string | null } = {}): ParseResult {
   const { map, unknown } = mapColumns(table.headers);

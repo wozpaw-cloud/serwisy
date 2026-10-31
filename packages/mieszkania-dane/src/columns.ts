@@ -26,7 +26,8 @@ const loc = (word: RegExp, bare: string[] = []): Rule => (h) =>
 const ILOCZYN = /iloczy/;
 const M2 = /\bm ?2\b|\bmetr/;
 // Ceny, które nie są ceną lokalu: wykończenie, udział w gruncie, parking, promocje czasowe.
-const NOT_UNIT_PRICE = /wykonczen|udzial|grunt|postoj|parking|garaz|komork|pomieszczen|promocj|obowiazuje|czesci/;
+// Najniższa cena z ostatnich 30 dni (informacja o obniżce) też nie jest ceną bieżącą.
+const NOT_UNIT_PRICE = /wykonczen|udzial|grunt|postoj|parking|garaz|komork|pomieszczen|promocj|obowiazuje|czesci|ostatnich|najnizsz|30 dni|poprzedni/;
 
 // Kolejność ma znaczenie: pierwsza pasująca reguła wygrywa, a każdy nagłówek
 // przypisujemy do co najwyżej jednego pola.
@@ -55,9 +56,9 @@ const RULES: [Field, Rule][] = [
   ['investmentName', (h) => /nazwa (inwestycji|przedsiewziecia|zadania|projektu)/.test(h)],
 
   ['unitType', (h) => has('rodzaj nieruchomosci')(h) ||
-    ['typ', 'rodzaj', 'produkt', 'kategoria produktu', 'rodzaj lokalu', 'typ lokalu', 'typ nieruchomosci', 'rodzaj produktu'].includes(h)],
+    ['typ', 'rodzaj', 'produkt', 'kategoria produktu', 'rodzaj lokalu', 'typ lokalu', 'typ nieruchomosci', 'rodzaj produktu', 'rodzaj przyleglosci', 'rodzaj obiektu'].includes(h)],
   ['unitRef', (h) =>
-    (/^(nr|numer) (lokalu lub domu|lokalu|domu|nieruchomosci nadany|produktu)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu)/.test(h)) &&
+    (/^(nr|numer) (lokalu lub domu|lokalu|domu|mieszkania|nieruchomosci nadany|produktu)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu|mieszkania)/.test(h)) &&
     !/adres|siedzib|sprzedaz|korespond|lokalizacj/.test(h)],
 
   ['priceM2Date', (h) => (startsData(h) && h.includes('cena') && M2.test(h) && !ILOCZYN.test(h)) ||
@@ -68,11 +69,12 @@ const RULES: [Field, Rule][] = [
     !/iloczy|uwzgledn|calkowit|razem/.test(h) && !NOT_UNIT_PRICE.test(h)],
   ['priceTotal', (h) => !startsData(h) && !h.includes('uwzgledn') && !NOT_UNIT_PRICE.test(h) &&
     (ILOCZYN.test(h) || h === 'cena' || /^cena (pln|zl|brutto pln|brutto zl)$/.test(h) || /^cena od pow/.test(h) ||
+     /^cena za (dom|lokal|mieszkanie)$/.test(h) || h === 'total price' ||
      (/^(calkowita )?cena (lokalu|domu|nieruchomosci|calkowita|brutto|produktu|ofertowa)/.test(h) && !M2.test(h)))],
   ['priceFull', (h) => !startsData(h) && h.includes('uwzgledn') && h.startsWith('cena lokalu')],
 
   ['area', (h) => !h.includes('cena') && !/dzialk|ogrod|taras|balkon|komork|garaz|postoj|loggi|calkowit|piwnic/.test(h) &&
-    (h === 'powierzchnia' || h === 'metraz' || h.startsWith('powierzchni') || /^pow (uzytk|lokalu)/.test(h))],
+    (h === 'powierzchnia' || h === 'metraz' || h === 'm2' || h === 'area' || h.startsWith('powierzchni') || /^pow (uzytk|lokalu)/.test(h))],
   ['rooms', (h) => h.includes('liczba pokoi') || h === 'pokoje' || /^ilosc pok/.test(h)],
   ['status', (h) => h === 'status' || h.startsWith('status ')],
 ];
@@ -105,7 +107,7 @@ export function mapColumns(headers: string[]): { map: ColumnMap; unknown: string
     const folded = headers.map((raw) => fold(raw ?? ''));
     const FALLBACK: RegExp[] = [
       /^id (lokalu|nieruchomosci|domu|mieszkania)$/, /^nazwa (mieszkania|lokalu)$/, /^oznaczenie$/, /^numer lokalu$/,
-      /^(nr|numer)$/, /^kod produktu$/, /^lokal$/, /^nr lokalu lokalizacji/,
+      /^(nr|numer)$/, /^number$/, /^kod produktu$/, /^lokal$/, /^nr lokalu lokalizacji/,
     ];
     for (const re of FALLBACK) {
       const i = folded.findIndex((h) => re.test(h));
