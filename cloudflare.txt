@@ -1,0 +1,3 @@
+CLOUDFLARE_API_TOKEN: jest
+CLOUDFLARE_ACCOUNT_ID: jest (32 znaków)
+R2: dostęp działa

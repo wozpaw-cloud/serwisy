@@ -1,0 +1,60 @@
+(node:2501) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"historia":{"zbiory":5,"doWczytania":5,"pozostalo":0,"bledyApi":0,"bledyPlikow":0,"limitCzasu":false}}
+{
+ "status": "ok",
+ "asOf": "2026-09-23",
+ "unitsInOffer": 9,
+ "files": 46,
+ "problems": 29,
+ "przyczyny": {
+  "odrzucony: nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ost": 6,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórk": 5,
+  "odrzucony: nowe kolumny: type": 5,
+  "odrzucony: nowe kolumny: lp. | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni": 4,
+  "odrzucony: nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy": 3,
+  "odrzucony: nowe kolumny: Inwestycja | Nazwa | Cena za dom + składowe | Składowa ceny 1 | Sk": 2,
+  "odrzucony: nowe kolumny: lp. | ulica nr | PNU | rodzaj obiektu | Numer katalogowy": 2,
+  "odrzucony: nowe kolumny: lp | inwestycja | nr przyległości": 1,
+  "odrzucony: nowe kolumny: Cena lokalu mieszkalnego lub domu jednorodzinnego uwzglÄ™dniajÄ…ca": 1
+ }
+}
+kod wyjścia: 0
+{
+ "asOf": "2026-09-23",
+ "dates": 53,
+ "units": 88,
+ "investments": 10,
+ "cities": 5,
+ "brands": 4,
+ "current": {
+  "asOf": "2026-09-23",
+  "units": 9,
+  "investments": 1,
+  "medianM2": 11400,
+  "p25M2": 11000,
+  "p75M2": 12100,
+  "medianTotal": 933240,
+  "medianArea": 84.81,
+  "cuts": {
+   "share": null,
+   "count": 0,
+   "base": 0,
+   "avgDepth": null
+  },
+  "raises": {
+   "share": null,
+   "count": 0
+  },
+  "newUnits": 9,
+  "goneUnits": 0,
+  "change": {
+   "median4w": null,
+   "median13w": null,
+   "median52w": 0.3902439024390243,
+   "index4w": 0,
+   "index13w": 0,
+   "indexAll": 0.014889612626217241
+  }
+ }
+}

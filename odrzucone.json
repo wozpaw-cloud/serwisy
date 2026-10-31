@@ -1,0 +1,383 @@
+[
+ {
+  "count": 6,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 19
+  },
+  "headers": [
+   "lp.",
+   "inwestycja",
+   "miasto",
+   "ulica nr",
+   "Numer katalogowy",
+   "Rodzaj przyległości",
+   "m2",
+   "cena brutto z ostatnich 30 dni",
+   "cena brutto za m2 z ostatnich 30 dni",
+   "cena brutto",
+   "cena brutto za m2",
+   "status"
+  ],
+  "sample": [
+   1,
+   "PARK MEDYKÓW",
+   "Katowice",
+   "Medyków 34",
+   "0.R10",
+   "Boks rowerowy",
+   4.17,
+   15762.6,
+   3780,
+   15762.6,
+   3780,
+   "dostępne"
+  ],
+  "example": {
+   "datasetId": "4902",
+   "date": "2025-11-19",
+   "url": "https://api.dane.gov.pl/resources/679455,ceny-przylegosci-w-inwestycji-park-medykow-katowice-19112025/file"
+  }
+ },
+ {
+  "count": 5,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 31,
+   "cena całkowita poza zakresem": 63
+  },
+  "headers": [
+   "property Id",
+   "type",
+   "Rodzaj nieruchomości",
+   "number",
+   "price",
+   "Adres inwestycji",
+   "Status",
+   "total Price"
+  ],
+  "sample": [
+   3,
+   "Garage",
+   "garage",
+   "1.1",
+   55000,
+   "Nova Pomorska , g. 1.1",
+   true,
+   55000
+  ],
+  "example": {
+   "datasetId": "4899",
+   "date": "2025-09-24",
+   "url": "https://api.dane.gov.pl/resources/128076,ceny-ofertowe-mieszkan-dewelopera-nova-pomorska-sp-z-oo-2025-09-24/file"
+  }
+ },
+ {
+  "count": 4,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 28
+  },
+  "headers": [
+   "lp.",
+   "nazwa inwestycji",
+   "miasto",
+   "ulica nr",
+   "Numer katalogowy",
+   "Rodzaj przyległości",
+   "m2",
+   "cena brutto z ostatnich 30 dni",
+   "cena brutto za m2 z ostatnich 30 dni",
+   "cena brutto",
+   "cena brutto za m2",
+   "status"
+  ],
+  "sample": [
+   1,
+   "PARK MEDYKÓW",
+   "Katowice",
+   "Medyków 34",
+   "0.R31",
+   "Boks rowerowy",
+   4.12,
+   14515,
+   3779.95,
+   16480,
+   4000,
+   "dostępne"
+  ],
+  "example": {
+   "datasetId": "4902",
+   "date": "2026-05-06",
+   "url": "https://api.dane.gov.pl/resources/1791625,ceny-przylegosci-w-inwestycji-park-medykow-katowice-06052026/file"
+  }
+ },
+ {
+  "count": 2,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {},
+  "headers": [
+   "Nazwa dewelopera",
+   "Nr KRS",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby / głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Województwo adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Powiat adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Gmina adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Miejscowość adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Ulica adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr nieruchomości adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Kod pocztowy adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Powiat lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Gmina lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Inwestycja",
+   "Number",
+   "Nazwa",
+   "Cena za dom",
+   "Cena za dom + składowe",
+   "Data ceny",
+   "Stawka VAT (%)",
+   "Waluta",
+   "Cena za m2",
+   "Kondygnacje",
+   "Pokoje",
+   "Status",
+   "Składowa ceny 1",
+   "Składowa ceny 2",
+   "Składowa ceny 3"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "4890",
+   "date": "2025-11-13",
+   "url": "https://api.dane.gov.pl/resources/590068,ceny-mieszkan-dewelopera-eko-opuchowo-sp-zoo-2025-11-13/file"
+  }
+ },
+ {
+  "count": 2,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 24
+  },
+  "headers": [
+   "lp.",
+   "inwestycja",
+   "miasto",
+   "ulica nr",
+   "Numer katalogowy",
+   "Rodzaj przyległości",
+   "Powierzchnia",
+   "cena brutto",
+   "cena za m2"
+  ],
+  "sample": [
+   1,
+   "PARK MEDYKÓW",
+   "Katowice",
+   "Medyków 34",
+   "0.R10",
+   "Boks rowerowy",
+   4.17,
+   15762.6,
+   3780
+  ],
+  "example": {
+   "datasetId": "4902",
+   "date": "2025-08-27",
+   "url": "https://api.dane.gov.pl/resources/74094,ceny-przylegosci-w-inwestycji-park-medykow-katowice-27082025/file"
+  }
+ },
+ {
+  "count": 2,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 18
+  },
+  "headers": [
+   "lp.",
+   "deweloper",
+   "NIP",
+   "nazwa inwestycji",
+   "miasto",
+   "ulica nr",
+   "PNU",
+   "rodzaj obiektu",
+   "Numer katalogowy",
+   "Rodzaj przyległości",
+   "kondygnacja",
+   "m2",
+   "cena brutto z ostatnich 30 dni",
+   "cena brutto za m2 z ostatnich 30 dni",
+   "cena brutto",
+   "cena brutto za m2",
+   "status"
+  ],
+  "sample": [
+   1,
+   "Apartamenty Medyków Sp. z o.o.",
+   6762610036,
+   "\"PARK MEDYKÓW\"",
+   "Katowice",
+   "Medyków 34",
+   "2025-04-17T00:00:00.000Z",
+   "budynek mieszkalno-usługowy",
+   "PR-0.R31",
+   "Boks rowerowy",
+   "kondygnacja podziemna -1",
+   4.12,
+   16480,
+   4000,
+   16480,
+   4000,
+   "dostępne"
+  ],
+  "example": {
+   "datasetId": "4902",
+   "date": "2026-10-21",
+   "url": "https://api.dane.gov.pl/resources/2840390,ceny-przylegosci-w-inwestycji-park-medykow-katowice-21102026/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 28
+  },
+  "headers": [
+   "lp",
+   "inwestycja",
+   "miasto",
+   "ulica",
+   "nr przyległości",
+   "Rodzaj przyległości",
+   "Powierzchnia przyległości",
+   "Cena całkowita brutto",
+   "cena za m2"
+  ],
+  "sample": [
+   1,
+   "Park Medyków",
+   "Katowice",
+   "Medyków 34",
+   "0.R10",
+   "Boks rowerowy",
+   4.17,
+   15762.6,
+   3780
+  ],
+  "example": {
+   "datasetId": "4902",
+   "date": "2025-07-30",
+   "url": "https://api.dane.gov.pl/resources/70078,cena-przylegosci-w-inwestycji-park-medykow-w-katowicach_30072025/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "nie lokal mieszkalny (parking, komórka, usługi)": 21
+  },
+  "headers": [
+   "lp.",
+   "inwestycja",
+   "miasto",
+   "ulica nr",
+   "Numer katalogowy",
+   "Rodzaj przyległości",
+   "m2",
+   "cena brutto",
+   "cena brutto za m2"
+  ],
+  "sample": [
+   1,
+   "PARK MEDYKÓW",
+   "Katowice",
+   "Medyków 34",
+   "0.R10",
+   "Boks rowerowy",
+   4.17,
+   15762.6,
+   3780
+  ],
+  "example": {
+   "datasetId": "4902",
+   "date": "2025-10-22",
+   "url": "https://api.dane.gov.pl/resources/327637,ceny-przylegosci-w-inwestycji-park-medykow-katowice-22102025/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {},
+  "headers": [
+   "Nazwa dewelopera",
+   "Forma prawna dewelopera",
+   "Nr KRS",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby dewelopera",
+   "Powiat adresu siedziby dewelopera",
+   "Gmina adresu siedziby dewelopera",
+   "Miejscowość adresu siedziby dewelopera",
+   "Ulica adresu siedziby dewelopera",
+   "Nr adresu siedziby dewelopera",
+   "Kod pocztowy adresu siedziby dewelopera",
+   "Województwo adresu w którym prowadzona jest sprzedaż",
+   "Powiat adresu w którym prowadzona jest sprzedaż",
+   "Gmina adresu w którym prowadzona jest sprzedaż",
+   "Miejscowość  adresu w którym prowadzona jest sprzedaż",
+   "Ulica adresu w którym prowadzona jest sprzedaż",
+   "Nr adresu w którym prowadzona jest sprzedaż",
+   "Kod pocztowy adresu w którym prowadzona jest sprzedaż",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Województwo lokalizacji zadania inwestycyjnego",
+   "Powiat lokalizacji zadania inwestycyjnego",
+   "Gmina lokalizacji zadania inwestycyjnego",
+   "Miejscowość lokalizacji zadania inwestycyjnego",
+   "Ulica lokalizacji zadania inwestycyjnego",
+   "Nr nieruchomości lokalizacji zadania inwestycyjnego",
+   "Kod pocztowy lokalizacji zadania inwestycyjnego",
+   "Rodzaj nieruchomości: lokal mieszkalny, dom jednorodzinny",
+   "Nr lokalu lub domu jednorodzinnego nadany przez dewelopera",
+   "Cena m 2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł]",
+   "Data od którek cena obowiącuje cena m 2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy",
+   "Data od któłrej cena obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego uwzglÄ™dniajÄ…ca cenÄ™ lokalu stanowiÄ…cÄ… iloczyn powierzchni oraz metraĹĽu i innych skĹ‚adowych ceny, o ktĂłrych mowa w art. 19a ust. 1 pkt 1), 2) lub 3) [zĹ‚]",
+   "Data od ktĂłrej obowiÄ…zuje cena lokalu mieszkalnego lub domu jednorodzinnego uwzglÄ™dniajÄ…ca cenÄ™ lokalu stanowiÄ…cÄ… iloczyn powierzchni oraz metraĹĽu i innych skĹ‚adowych ceny, o ktĂłrych mowa w art. 19a ust. 1 pkt 1), 2) lub 3)",
+   "Status sprzedaży",
+   "Cena sprzedaży"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "4905",
+   "date": "2026-09-11",
+   "url": "https://api.dane.gov.pl/resources/2609698,zakres-danych-dotyczacych-cen-domow/file"
+  }
+ }
+]

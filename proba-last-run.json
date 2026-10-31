@@ -1,0 +1,202 @@
+{
+ "files": 46,
+ "ok": 17,
+ "warnings": 5,
+ "rejected": 24,
+ "skipped": 0,
+ "newUnits": 88,
+ "priceChanges": 66,
+ "problemCount": 29,
+ "problemReasons": {
+  "odrzucony: nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ost": 6,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórk": 5,
+  "odrzucony: nowe kolumny: type": 5,
+  "odrzucony: nowe kolumny: lp. | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni": 4,
+  "odrzucony: nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy": 3,
+  "odrzucony: nowe kolumny: Inwestycja | Nazwa | Cena za dom + składowe | Składowa ceny 1 | Sk": 2,
+  "odrzucony: nowe kolumny: lp. | ulica nr | PNU | rodzaj obiektu | Numer katalogowy": 2,
+  "odrzucony: nowe kolumny: lp | inwestycja | nr przyległości": 1,
+  "odrzucony: nowe kolumny: Cena lokalu mieszkalnego lub domu jednorodzinnego uwzglÄ™dniajÄ…ca": 1
+ },
+ "problems": [
+  {
+   "datasetId": "4898",
+   "date": "2025-09-24",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórka, usługi)\":77}"
+  },
+  {
+   "datasetId": "4899",
+   "date": "2025-09-24",
+   "status": "odrzucony",
+   "note": "nowe kolumny: type"
+  },
+  {
+   "datasetId": "4898",
+   "date": "2025-10-22",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórka, usługi)\":77}"
+  },
+  {
+   "datasetId": "4890",
+   "date": "2025-11-13",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Inwestycja | Nazwa | Cena za dom + składowe | Składowa ceny 1 | Składowa ceny 2"
+  },
+  {
+   "datasetId": "4899",
+   "date": "2025-10-22",
+   "status": "odrzucony",
+   "note": "nowe kolumny: type"
+  },
+  {
+   "datasetId": "4890",
+   "date": "2026-09-17",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Inwestycja | Nazwa | Cena za dom + składowe | Składowa ceny 1 | Składowa ceny 2"
+  },
+  {
+   "datasetId": "4899",
+   "date": "2025-11-19",
+   "status": "odrzucony",
+   "note": "nowe kolumny: type"
+  },
+  {
+   "datasetId": "4898",
+   "date": "2025-11-19",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórka, usługi)\":77}"
+  },
+  {
+   "datasetId": "4899",
+   "date": "2025-12-17",
+   "status": "odrzucony",
+   "note": "nowe kolumny: type"
+  },
+  {
+   "datasetId": "4898",
+   "date": "2025-12-17",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórka, usługi)\":77}"
+  },
+  {
+   "datasetId": "4899",
+   "date": "2025-12-31",
+   "status": "odrzucony",
+   "note": "nowe kolumny: type"
+  },
+  {
+   "datasetId": "4898",
+   "date": "2025-12-31",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":108,\"nie lokal mieszkalny (parking, komórka, usługi)\":77}"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2025-07-30",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp | inwestycja | nr przyległości"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2025-08-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2025-09-24",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2025-10-22",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2025-11-19",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2025-12-17",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4905",
+   "date": "2026-09-11",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Cena lokalu mieszkalnego lub domu jednorodzinnego uwzglÄ™dniajÄ…ca cenÄ™ lokalu stanowiÄ…cÄ… iloczyn powierzchni oraz metraĹĽu i innych skĹ‚adowych ceny, o ktĂłrych mowa w art. 19a ust. 1 pkt 1), 2) lub 3) [zĹ‚]"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-01-14",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-02-11",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-03-11",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-04-08",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | inwestycja | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-05-06",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni | cena brutto za m2 z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-06-03",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni | cena brutto za m2 z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-07-01",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni | cena brutto za m2 z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-08-26",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | ulica nr | Numer katalogowy | cena brutto z ostatnich 30 dni | cena brutto za m2 z ostatnich 30 dni"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-10-21",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | ulica nr | PNU | rodzaj obiektu | Numer katalogowy"
+  },
+  {
+   "datasetId": "4902",
+   "date": "2026-10-26",
+   "status": "odrzucony",
+   "note": "nowe kolumny: lp. | ulica nr | PNU | rodzaj obiektu | Numer katalogowy"
+  }
+ ],
+ "asOf": "2026-09-23",
+ "unitsInOffer": 9,
+ "previousUnitsInOffer": null,
+ "staleDatasets": 4,
+ "status": "ok"
+}
