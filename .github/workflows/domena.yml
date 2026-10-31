@@ -33,6 +33,7 @@ jobs:
             jq -r "if .success then (if (.result|length)==0 then \"brak stref\" else (.result[] | \"\\(.name)  stan=\\(.status)  serwery=\\(.name_servers|join(\",\"))  to_konto=\\(.account.id == env.CF_ACCOUNT)\") end) else \"błąd: \\($err)\" end" /tmp/zones.json
             echo "== Worker =="
             echo -n "worker cenaoddewelopera istnieje: "; api "accounts/$CF_ACCOUNT/workers/scripts/cenaoddewelopera/settings" | ok
+            echo -n "subdomena workers.dev konta: "; api "accounts/$CF_ACCOUNT/workers/subdomain" | jq -r "if .success then (.result.subdomain // \"brak\") else \"NIE (\\($err))\" end"
             echo -n "domeny podpięte pod workery: "; api "accounts/$CF_ACCOUNT/workers/domains" | jq -r "if .success then ([.result[]? | \"\\(.hostname)->\\(.service)\"] | join(\", \") | if . == \"\" then \"brak\" else . end) else \"NIE (\\($err))\" end"
             for row in $(jq -r '.result[]? | "\(.id),\(.name)"' /tmp/zones.json); do
               id=${row%%,*}; name=${row#*,}
