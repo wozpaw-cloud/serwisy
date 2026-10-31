@@ -214,7 +214,15 @@ export class Model {
       unitById.get(r.unit_id)?.prices.push({ from: r.from_date, m2: r.price_m2, total: r.price_total });
     }
 
-    const last = this.units.flatMap((u) => u.presence.map((p) => p[1])).sort().at(-1);
+    // "Dziś" serwisu: najnowszy dzień, z którego wczytano cenniki wielu zbiorów (1%, najwyżej 50),
+    // nie później niż jutro. Pojedynczy cennik z literówką w dacie (np. 2029) go nie przesunie.
+    const tomorrow = addDays(new Date().toISOString().slice(0, 10), 1);
+    const nDatasets = (db.prepare('SELECT count(*) AS n FROM datasets').get() as { n: number }).n;
+    const need = Math.max(1, Math.min(50, Math.round(nDatasets * 0.01)));
+    const busy = db.prepare(`SELECT data_date AS d FROM snapshots WHERE status IN ('ok', 'ostrzezenie') AND data_date <= ?
+      GROUP BY data_date HAVING count(*) >= ? ORDER BY data_date DESC LIMIT 1`).get(tomorrow, need) as { d: string } | undefined;
+    const ends = this.units.flatMap((u) => u.presence.map((p) => p[1])).filter((d) => d <= tomorrow).sort();
+    const last = busy?.d ?? ends.at(-1);
     const first = this.units.flatMap((u) => u.presence.map((p) => p[0])).sort()[0];
     this.asOf = last ?? new Date().toISOString().slice(0, 10);
     this.firstDate = first ?? this.asOf;
