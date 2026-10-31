@@ -44,6 +44,8 @@ jobs:
             done
             echo "== cenaoddewelopera.pl w publicznym DNS =="
             echo "NS=$(dig +short NS cenaoddewelopera.pl | tr '\n' ' ') A=$(dig +short A cenaoddewelopera.pl | tr '\n' ' ')"
+            echo "DNSSEC (rekord DS u rejestratora, powinien być pusty): $(dig +short DS cenaoddewelopera.pl | tr '\n' ' ')"
+            echo "odpowiedź serwera Cloudflare: $(dig +short NS cenaoddewelopera.pl @vasilii.ns.cloudflare.com | tr '\n' ' ')"
           } 2>&1 | tee /tmp/wynik/domena.txt
 
       - name: Zapisz wynik w gałęzi domena
