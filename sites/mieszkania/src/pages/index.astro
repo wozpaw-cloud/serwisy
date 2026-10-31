@@ -26,6 +26,8 @@ const jsonld = [{
   isBasedOn: SITE.source.url,
   distribution: [{ '@type': 'DataDownload', encodingFormat: 'text/csv', contentUrl: new URL('/dane/miasta-tygodniowo.csv', Astro.site).toString() }],
 }];
+// Na stronie głównej najwyżej tyle miast (pełna lista na /miasta/): strona zostaje lekka.
+const HOME_CITIES = 40;
 ---
 <Base title="Ceny mieszkań od deweloperów" description={description} jsonld={jsonld} search={false}>
   <section class="hero">
@@ -70,13 +72,13 @@ const jsonld = [{
   <section class="section">
     <div class="section-head">
       <h2>Ceny w miastach</h2>
-      <p>Miasta z co najmniej {SITE.minCityUnits} lokalami w ofercie. Indeks pokazuje zmianę cen tych samych lokali w ostatnich 13 tygodniach.</p>
+      <p>{citiesWithPage.length > HOME_CITIES ? `${HOME_CITIES} miast z największą liczbą lokali w ofercie.` : `Miasta z co najmniej ${SITE.minCityUnits} lokalami w ofercie.`} Indeks pokazuje zmianę cen tych samych lokali w ostatnich 13 tygodniach.</p>
     </div>
     <div class="table-wrap">
       <table class="data sortable">
         <thead><tr><th scope="col">Miasto</th><th scope="col" class="r">Mediana za m²</th><th scope="col" class="r">Indeks, 13 tyg.</th><th scope="col">Trend od początku</th><th scope="col" class="r">Lokale</th><th scope="col" class="r">Potaniało, 4 tyg.</th></tr></thead>
         <tbody>
-          {citiesWithPage.map((c) => {
+          {citiesWithPage.slice(0, HOME_CITIES).map((c) => {
             const cs = citySnap(c);
             const se = citySeries(c);
             return (
@@ -93,6 +95,7 @@ const jsonld = [{
         </tbody>
       </table>
     </div>
+    {citiesWithPage.length > HOME_CITIES && <p class="more"><a href="/miasta/">Wszystkie miasta ({num(citiesWithPage.length)})</a></p>}
     <nav class="browse" aria-label="Ceny według podziału administracyjnego">
       <a href="/wojewodztwa/"><b>Województwa</b><span>{num(voivodeships.length)}</span></a>
       <a href="/powiaty/"><b>Powiaty</b><span>{num(livePowiaty.filter((p) => powiatLink(p)).length)}</span></a>

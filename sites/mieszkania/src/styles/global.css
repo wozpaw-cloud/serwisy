@@ -378,3 +378,6 @@ th[aria-sort] { color: var(--ink); }
 .az-index a { min-inline-size: 2.2rem; text-align: center; padding: 0.3rem 0.45rem; border: 1px solid var(--rule); border-radius: 6px; text-decoration: none; }
 .az { columns: 3 15rem; column-gap: 2.5rem; }
 .az-group { break-inside: avoid; margin-bottom: 1.1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+
+/* Odnośnik do pełnej listy pod skróconą tabelą. */
+.more { margin: 0.75rem 0 0; }
