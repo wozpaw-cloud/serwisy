@@ -73,9 +73,10 @@ const MOJIBAKE = /Ä[…‡™„†]|Ĺ[‚„›şĽ\u0081]|Ă[łšÓ]/g;
 const POLISH = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g;
 
 /** Naprawia tekst z "krzakami" (UTF-8 zapisany albo odczytany jako Windows-1250). */
-export function repairMojibake(s: string): string {
+export function repairMojibake(s: string, force = false): string {
   const bad = s.match(MOJIBAKE)?.length ?? 0;
-  if (bad < 3 || bad <= (s.match(POLISH)?.length ?? 0) - bad) return s;
+  if (!force && (bad < 3 || bad <= (s.match(POLISH)?.length ?? 0) - bad)) return s;
+  if (!bad) return s;
   const bytes: number[] = [];
   for (const ch of s) {
     const b = CP1250.get(ch);
@@ -104,14 +105,18 @@ export function detectDelimiter(text: string): string {
   return counts[0][1] > 0 ? counts[0][0] : ';';
 }
 
+const CSV_OPTS = { relax_column_count: true, relax_quotes: true, skip_empty_lines: true, bom: true };
+
 export function readCsv(text: string): Table {
-  const rows: string[][] = parseCsv(text, {
-    delimiter: detectDelimiter(text),
-    relax_column_count: true,
-    relax_quotes: true,
-    skip_empty_lines: true,
-    bom: true,
-  });
+  let rows: string[][] = parseCsv(text, { ...CSV_OPTS, delimiter: detectDelimiter(text) });
+  // Cały wiersz w cudzysłowie (eksport jednokolumnowy): rozbijamy zawartość komórki.
+  const first = rows.slice(0, 5);
+  if (first.length && first.every((r) => r.length === 1)) {
+    const d = detectDelimiter(String(rows[0][0] ?? ''));
+    if (String(rows[0][0] ?? '').split(d).length > 5) {
+      rows = rows.map((r) => (r.length === 1 ? ((parseCsv(String(r[0]), { ...CSV_OPTS, delimiter: d }) as string[][])[0] ?? []) : r));
+    }
+  }
   const headerIdx = findHeaderRow(rows);
   return { headers: (rows[headerIdx] ?? []).map(String), rows: rows.slice(headerIdx + 1) };
 }
@@ -137,6 +142,11 @@ async function readXlsx(buf: Buffer): Promise<Table> {
     const vals = (row.values as unknown[]).slice(1).map(xlsxValue);
     rows.push(vals);
   });
+  // Teksty z "krzakami" (UTF-8 zapisany jako Windows-1250 przez program dewelopera).
+  const sample = rows.slice(0, 30).flat().filter((v): v is string => typeof v === 'string').join('\u0001');
+  if (repairMojibake(sample) !== sample) {
+    for (const r of rows) for (let i = 0; i < r.length; i++) if (typeof r[i] === 'string') r[i] = repairMojibake(r[i] as string, true);
+  }
   const headerIdx = findHeaderRow(rows);
   return { headers: (rows[headerIdx] ?? []).map((v) => String(v ?? '')), rows: rows.slice(headerIdx + 1) };
 }

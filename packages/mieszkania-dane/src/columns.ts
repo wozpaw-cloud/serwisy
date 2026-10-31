@@ -56,7 +56,7 @@ const RULES: [Field, Rule][] = [
   ['investmentName', (h) => /nazwa (inwestycji|przedsiewziecia|zadania|projektu)/.test(h)],
 
   ['unitType', (h) => has('rodzaj nieruchomosci')(h) ||
-    ['typ', 'rodzaj', 'produkt', 'kategoria produktu', 'rodzaj lokalu', 'typ lokalu', 'typ nieruchomosci', 'rodzaj produktu', 'rodzaj przyleglosci', 'rodzaj obiektu'].includes(h)],
+    ['typ', 'rodzaj', 'produkt', 'kategoria produktu', 'rodzaj lokalu', 'typ lokalu', 'typ nieruchomosci', 'rodzaj produktu', 'rodzaj przyleglosci'].includes(h)],
   ['unitRef', (h) =>
     (/^(nr|numer) (lokalu lub domu|lokalu|domu|mieszkania|nieruchomosci nadany|produktu)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu|mieszkania)/.test(h)) &&
     !/adres|siedzib|sprzedaz|korespond|lokalizacj/.test(h)],
@@ -113,6 +113,12 @@ export function mapColumns(headers: string[]): { map: ColumnMap; unknown: string
       const i = folded.findIndex((h) => re.test(h));
       if (i >= 0) { map.unitRef = i; const u = unknown.indexOf(headers[i]); if (u >= 0) unknown.splice(u, 1); break; }
     }
+  }
+  // Eksport z kolumnami "price" i "total price" bez ceny za m²: "price" to cena za m²
+  // (wiersze z ceną spoza zakresu odrzuca parse.ts).
+  if (map.priceM2 === undefined && map.priceTotal !== undefined) {
+    const i = headers.findIndex((raw) => fold(raw ?? '') === 'price');
+    if (i >= 0) { map.priceM2 = i; const u = unknown.indexOf(headers[i]); if (u >= 0) unknown.splice(u, 1); }
   }
   return { map, unknown };
 }

@@ -61,3 +61,26 @@ describe('nagłówki', () => {
     expect(p.sold).toBe(1);
   });
 });
+
+describe('kolejne warianty', () => {
+  it('"rodzaj obiektu" opisuje budynek, nie lokal', () => {
+    const csv = ['lp.;deweloper;nazwa inwestycji;miasto;ulica nr;rodzaj obiektu;nr lokalu;m2;cena brutto z ostatnich 30 dni;cena brutto;cena brutto za m2;status',
+      '1;Apartamenty Sp. z o.o.;Park;Katowice;Medyków 34;budynek mieszkalno-usługowy;M1;82,1;1034460;1034460;12600;dostępne'].join('\n');
+    expect(toRecords(readCsv(csv)).records).toHaveLength(1);
+  });
+  it('wiersze w cudzysłowie (eksport jednokolumnowy)', () => {
+    const line = (cells: string[]) => `"${cells.map((c) => (c.includes(',') ? `""${c}""` : c)).join(',')}"`;
+    const csv = [line(['Nazwa dewelopera', 'Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego', 'Inwestycja', 'Number', 'Cena za dom', 'Cena za m2', 'Status']),
+      line(['Eko Sp. z o.o.', 'Łopuchowo', 'Osiedle, etap 2', 'D7', '990000', '8800', 'dostępny'])].join('\n');
+    const p = toRecords(readCsv(csv));
+    expect(p.missingColumns).toEqual([]);
+    expect(p.records[0]).toMatchObject({ city: 'Łopuchowo', unitRef: 'D7', priceM2: 8800 });
+  });
+  it('"price" obok "total price" to cena za m²', () => {
+    const csv = ['property Id;type;Rodzaj nieruchomości;number;price;Adres inwestycji;Status;total Price',
+      '1;flat;lokal mieszkalny;A1;12500;ul. Pomorska 5, 70-001 Szczecin;dostępny;625000'].join('\n');
+    const p = toRecords(readCsv(csv), 'csv', { devFallback: 'Nova' });
+    expect(p.missingColumns).toEqual([]);
+    expect(p.records[0]).toMatchObject({ unitRef: 'A1', priceM2: 12500, priceTotal: 625000, city: 'Szczecin' });
+  });
+});
