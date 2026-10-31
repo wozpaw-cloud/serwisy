@@ -1,0 +1,59 @@
+# Sprawdzenie domeny w Cloudflare: czy strefa jest aktywna, jakie ma rekordy DNS
+# i czy klucz API ma uprawnienia do podpięcia domeny pod serwis.
+# Nic nie zmienia. Wynik trafia do gałęzi "domena" (logi Actions są trudno dostępne z zewnątrz).
+name: Sprawdzenie domeny
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  domena:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Sprawdź domenę i uprawnienia klucza
+        run: |
+          mkdir -p /tmp/wynik
+          api() { curl -sS -H "Authorization: Bearer $CF_TOKEN" "https://api.cloudflare.com/client/v4/$1"; }
+          err='[.errors[]? | "\(.code) \(.message)"] | join("; ")'
+          ok() { jq -r "if .success then \"tak\" else \"NIE (\\($err))\" end"; }
+          {
+            echo "czas: $(date -u +%FT%TZ)"
+            echo "== Klucz =="
+            echo -n "klucz użytkownika: "; api user/tokens/verify | jq -r ".result.status // ($err)"
+            echo -n "klucz konta: "; api "accounts/$CF_ACCOUNT/tokens/verify" | jq -r ".result.status // ($err)"
+            echo "== Domeny (strefy) widoczne dla klucza =="
+            api "zones?per_page=50" > /tmp/zones.json
+            jq -r "if .success then (if (.result|length)==0 then \"brak stref\" else (.result[] | \"\\(.name)  stan=\\(.status)  serwery=\\(.name_servers|join(\",\"))  to_konto=\\(.account.id == env.CF_ACCOUNT)\") end) else \"błąd: \\($err)\" end" /tmp/zones.json
+            echo "== Worker =="
+            echo -n "worker cenaoddewelopera istnieje: "; api "accounts/$CF_ACCOUNT/workers/scripts/cenaoddewelopera/settings" | ok
+            echo -n "domeny podpięte pod workery: "; api "accounts/$CF_ACCOUNT/workers/domains" | jq -r "if .success then ([.result[]? | \"\\(.hostname)->\\(.service)\"] | join(\", \") | if . == \"\" then \"brak\" else . end) else \"NIE (\\($err))\" end"
+            for row in $(jq -r '.result[]? | "\(.id),\(.name)"' /tmp/zones.json); do
+              id=${row%%,*}; name=${row#*,}
+              echo "== $name =="
+              echo -n "trasy workerów (odczyt): "; api "zones/$id/workers/routes" | ok
+              echo "rekordy DNS w Cloudflare:"
+              api "zones/$id/dns_records?per_page=100" | jq -r "if .success then (if (.result|length)==0 then \"  brak\" else (.result[] | \"  \\(.type) \\(.name) -> \\(.content) proxied=\\(.proxied)\") end) else \"  brak dostępu (\\($err))\" end"
+              echo "publiczny DNS: NS=$(dig +short NS "$name" | tr '\n' ' ') A=$(dig +short A "$name" | tr '\n' ' ') www=$(dig +short "www.$name" | tr '\n' ' ')"
+            done
+            echo "== cenaoddewelopera.pl w publicznym DNS =="
+            echo "NS=$(dig +short NS cenaoddewelopera.pl | tr '\n' ' ') A=$(dig +short A cenaoddewelopera.pl | tr '\n' ' ')"
+          } 2>&1 | tee /tmp/wynik/domena.txt
+
+      - name: Zapisz wynik w gałęzi domena
+        if: always()
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd /tmp/wynik
+          git init -q && git checkout -q -b domena
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm "Wynik sprawdzenia domeny"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" domena
