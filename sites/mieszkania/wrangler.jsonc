@@ -1,14 +1,16 @@
 // Hosting: Cloudflare Workers ze statycznymi plikami (bez kodu po stronie serwera).
 // Zapytania o pliki statyczne są w darmowym planie bez limitu.
 //
-// Serwis działa pod domeną cenaoddewelopera.pl (z www i bez) oraz pod zapasowym
-// adresem *.workers.dev. Linki kanoniczne na stronach wskazują domenę bez www.
-// Gdy podpięcie domeny się nie uda (np. strefa w Cloudflare jeszcze nieaktywna),
-// publikacja idzie bez domeny: wiersz "routes" jest wtedy pomijany (zob. workflow).
+// Serwis działa pod domeną cenaoddewelopera.pl (z www i bez). Linki kanoniczne
+// na stronach wskazują domenę bez www. Gdy podpięcie domeny się nie uda (np. strefa
+// w Cloudflare jeszcze nieaktywna), workflow publikuje bez domeny, pod adresem
+// *.workers.dev: pomija wiersz "routes" i włącza workers_dev. To wymaga
+// zarejestrowanej subdomeny workers.dev na koncie (Workers & Pages w panelu Cloudflare).
 {
   "name": "cenaoddewelopera",
   "compatibility_date": "2026-10-29",
-  "workers_dev": true,
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": { "directory": "./dist", "not_found_handling": "404-page" }
   ,"routes": [{ "pattern": "cenaoddewelopera.pl", "custom_domain": true }, { "pattern": "www.cenaoddewelopera.pl", "custom_domain": true }]
 }

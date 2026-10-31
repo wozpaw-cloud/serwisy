@@ -27,21 +27,38 @@ interface ApiList { data?: ApiItem[]; links?: { next?: string | null }; meta?: R
 export interface DatasetRef { id: string; title: string }
 export interface ResourceRef { id: string; date: string; url: string; format: string; raw: Record<string, unknown> }
 
+/** Błąd zapytania (4xx poza 429): ponawianie nic nie da. */
+class RequestError extends Error {}
+
 async function getJson<T>(url: string, tries = 3): Promise<T> {
   let last: unknown;
   for (let i = 0; i < tries; i++) {
     try {
       const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/json' }, signal: AbortSignal.timeout(30000) });
-      if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status} dla ${url}`);
+      if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status} dla ${url}`);
+      if (!res.ok) throw new RequestError(`HTTP ${res.status} dla ${url}`);
       return (await res.json()) as T;
     } catch (e) {
       last = e;
+      if (e instanceof RequestError || i === tries - 1) break;
       await new Promise((r) => setTimeout(r, 1000 * 2 ** i));
     }
   }
   throw last;
 }
+
+/** Ogranicznik: najwyżej n zadań naraz. Parsowanie XLSX zajmuje dużo pamięci,
+ *  więc pliki pobieramy równolegle, ale czytamy po jednym. */
+function limiter(n: number) {
+  let active = 0;
+  const queue: (() => void)[] = [];
+  return async <R>(fn: () => Promise<R>): Promise<R> => {
+    if (active >= n) await new Promise<void>((r) => queue.push(r));
+    active++;
+    try { return await fn(); } finally { active--; queue.shift()?.(); }
+  };
+}
+const parseSlot = limiter(Number(process.env.PARSE_CONCURRENCY ?? 1));
 
 /**
  * Wszystkie zbiory z cenami ofertowymi. Szukamy po frazie i filtrujemy po tytule.
@@ -178,19 +195,37 @@ function pickUrl(a: Record<string, unknown>): string | null {
   return null;
 }
 
-/** Zasoby zbioru od najnowszego. Każdy dzienny cennik to osobny zasób. */
-export async function listResources(datasetId: string, perPage = 10): Promise<ResourceRef[]> {
-  const body = await getJson<ApiList>(`${API}/datasets/${datasetId}/resources?sort=-data_date&per_page=${perPage}`);
-  return (body.data ?? []).flatMap((it) => {
-    const a = it.attributes ?? {};
-    const url = pickUrl(a);
-    const date = String(a.data_date ?? a.created ?? a.modified ?? '').slice(0, 10);
-    if (!url || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
-    return [{ id: String(it.id), date, url, format: guessFormat(url, String(a.format ?? '')), raw: a }];
-  });
+function toResource(it: ApiItem): ResourceRef[] {
+  const a = it.attributes ?? {};
+  const url = pickUrl(a);
+  const date = String(a.data_date ?? a.created ?? a.modified ?? '').slice(0, 10);
+  if (!url || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+  return [{ id: String(it.id), date, url, format: guessFormat(url, String(a.format ?? '')), raw: a }];
 }
 
-async function download(url: string, maxBytes = 60 * 1024 * 1024): Promise<Buffer> {
+/** API przyjmuje najwyżej 100 wyników na stronę (więcej: HTTP 422). */
+export const MAX_PER_PAGE = 100;
+
+/** Najnowsze zasoby zbioru (od najnowszego). Każdy dzienny cennik to osobny zasób. */
+export async function listResources(datasetId: string, perPage = 10): Promise<ResourceRef[]> {
+  const body = await getJson<ApiList>(`${API}/datasets/${datasetId}/resources?sort=-data_date&per_page=${Math.min(perPage, MAX_PER_PAGE)}`);
+  return (body.data ?? []).flatMap(toResource);
+}
+
+/** Wszystkie zasoby zbioru, strona po stronie (od najnowszego). Zbiór roczny
+ *  z dziennymi cennikami ma ich do ok. 370, czyli 4 strony. */
+export async function listAllResources(datasetId: string, maxPages = 30): Promise<ResourceRef[]> {
+  const out: ResourceRef[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const body = await getJson<ApiList>(`${API}/datasets/${datasetId}/resources?sort=-data_date&per_page=${MAX_PER_PAGE}&page=${page}`);
+    const items = body.data ?? [];
+    out.push(...items.flatMap(toResource));
+    if (items.length < MAX_PER_PAGE || !body.links?.next) break;
+  }
+  return out;
+}
+
+async function download(url: string, maxBytes = 30 * 1024 * 1024): Promise<Buffer> {
   const res = await fetch(url, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(90000), redirect: 'follow' });
   if (!res.ok) throw new Error(`HTTP ${res.status} przy pobieraniu ${url}`);
   const len = Number(res.headers.get('content-length') ?? 0);
@@ -214,75 +249,132 @@ async function pool<T, R>(items: T[], size: number, fn: (t: T) => Promise<R>): P
 
 export interface HarvestError { datasetId: string; error: string }
 
+/** Stały dzień tygodnia (0-6) dla zbioru, z jego identyfikatora. */
+function hashDay(id: string): number {
+  let h = 0;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 7;
+}
+
+const lastSnapshots = (db: DatabaseSync) =>
+  new Map((db.prepare('SELECT id, last_snapshot FROM datasets').all() as { id: string; last_snapshot: string | null }[]).map((r) => [String(r.id), r.last_snapshot]));
+
 /**
  * Codzienny import: dla każdego zbioru pobiera najnowszy cennik, jeśli jest
- * nowszy niż ostatnio wczytany. Wczytywanie do bazy odbywa się po kolei
- * (SQLite), pobieranie równolegle.
+ * nowszy niż ostatnio wczytany. Pobieranie idzie równolegle, czytanie plików
+ * i zapis do bazy po kolei (pamięć, SQLite). Najpierw zbiory najdawniej
+ * aktualizowane: gdy skończy się limit czasu, pominięte zostaną te najświeższe.
  */
-export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dryRun?: boolean; limit?: number } = {}) {
-  const datasets = (await listDeveloperDatasets({ stopAfter: opts.limit })).slice(0, opts.limit ?? Infinity);
-  const lastOf = db.prepare('SELECT last_snapshot FROM datasets WHERE id = ?');
+export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dryRun?: boolean; limit?: number; minutes?: number; datasets?: DatasetRef[] } = {}) {
+  const datasets = opts.datasets ?? (await listDeveloperDatasets({ stopAfter: opts.limit })).slice(0, opts.limit ?? Infinity);
+  const last = lastSnapshots(db);
+  const ordered = [...datasets].sort((a, b) => String(last.get(a.id) ?? '').localeCompare(String(last.get(b.id) ?? '')));
   const summaries: IngestSummary[] = [];
   const errors: HarvestError[] = [];
+  const deadline = Date.now() + (opts.minutes ?? Infinity) * 60000;
+  // Zbiory bez nowego cennika od ponad 45 dni (np. zbiory z poprzedniego roku: deweloperzy
+  // zakładają nowy zbiór co rok) sprawdzamy raz w tygodniu, każdy innego dnia.
+  const today = new Date().toISOString().slice(0, 10);
+  const weekday = Math.floor(Date.parse(today) / 86400000) % 7;
+  const dormant = (ds: DatasetRef) => {
+    const prev = last.get(ds.id);
+    return !!prev && Date.parse(today) - Date.parse(prev) > 45 * 86400000 && hashDay(ds.id) !== weekday;
+  };
+  let skippedDormant = 0;
+  let skippedForTime = 0;
+  let checked = 0;
+  let lastLog = Date.now();
 
-  await pool(datasets, opts.concurrency ?? 6, async (ds) => {
+  await pool(ordered, opts.concurrency ?? 8, async (ds) => {
+    if (!opts.limit && dormant(ds)) { skippedDormant++; return; }
+    if (Date.now() >= deadline) { skippedForTime++; return; }
+    if (Date.now() - lastLog > 60000) { lastLog = Date.now(); console.error(`import: ${checked} z ${ordered.length} zbiorów, nowych cenników ${summaries.length}, błędów ${errors.length}`); }
     try {
       const [res] = await listResources(ds.id, 1);
       if (!res) return;
       if (opts.dryRun) { console.log(JSON.stringify({ dataset: ds, resource: res.raw }, null, 1)); return; }
-      const last = (lastOf.get(ds.id) as { last_snapshot: string | null } | undefined)?.last_snapshot;
-      if (last && last >= res.date) return;
-      const parsed = await parseFile(await download(res.url), res.format, { devFallback: devNameFromTitle(ds.title) });
-      summaries.push(ingestSnapshot(db, { datasetId: ds.id, title: ds.title, date: res.date, sourceUrl: res.url }, parsed));
+      const prev = last.get(ds.id);
+      if (prev && prev >= res.date) return;
+      const buf = await download(res.url);
+      await parseSlot(async () => {
+        const parsed = await parseFile(buf, res.format, { devFallback: devNameFromTitle(ds.title) });
+        summaries.push(ingestSnapshot(db, { datasetId: ds.id, title: ds.title, date: res.date, sourceUrl: res.url }, parsed));
+      });
     } catch (e) {
       errors.push({ datasetId: ds.id, error: String((e as Error).message ?? e) });
+    } finally {
+      checked++;
     }
   });
-  return { datasets: datasets.length, summaries, errors };
+  console.error(`import: sprawdzono ${checked} zbiorów, nowych cenników ${summaries.length}, błędów ${errors.length}, uśpionych pominiętych ${skippedDormant}`);
+  if (skippedForTime) console.error(`import: limit czasu, pominięto ${skippedForTime} zbiorów (wejdą jutro)`);
+  return { datasets: datasets.length, summaries, errors, skippedForTime, skippedDormant };
 }
 
 /**
- * Uzupełnienie historii: z każdego zbioru bierze jeden cennik na tydzień, od
- * najstarszego. Zbiory pobiera równolegle, a w obrębie zbioru po kolei (historia
- * musi wchodzić chronologicznie). Zbiór z wczytaną historią trafia do
- * backfill_done i kolejne uruchomienia go pomijają. Limit czasu pozwala rozłożyć
- * pierwsze wczytanie na kilka nocy; nowe zbiory (nowi deweloperzy) dostają historię
- * przy najbliższym uruchomieniu.
+ * Uzupełnienie historii: z każdego zbioru bierze jeden cennik na okres (domyślnie
+ * 28 dni) i zawsze najnowszy, od najstarszego. Zbiory pobiera równolegle, a w obrębie
+ * zbioru po kolei (historia musi wchodzić chronologicznie). Zbiór z wczytaną historią
+ * trafia do backfill_done i kolejne uruchomienia go pomijają; przerwany limitem czasu
+ * zaczyna następnym razem od pierwszego niewczytanego cennika. Błąd pojedynczego pliku
+ * (np. uszkodzony XLSX) nie zatrzymuje zbioru. Błąd listy zasobów (API) tak: zbiór
+ * wraca przy następnym uruchomieniu.
  */
-export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[]; perPage?: number; concurrency?: number; minutes?: number; stepDays?: number }) {
+export async function backfill(db: DatabaseSync, opts: { datasets: DatasetRef[]; concurrency?: number; minutes?: number; stepDays?: number }) {
   const summaries: IngestSummary[] = [];
   const errors: HarvestError[] = [];
+  const fileErrors: HarvestError[] = [];
   const done = new Set((db.prepare('SELECT dataset_id FROM backfill_done').all() as { dataset_id: string }[]).map((r) => r.dataset_id));
   const titles = new Map(opts.datasets.map((d) => [d.id, d.title]));
   const todo = opts.datasets.map((d) => d.id).filter((id) => !done.has(id));
   const markDone = db.prepare('INSERT OR REPLACE INTO backfill_done(dataset_id, finished) VALUES (?, ?)');
+  const lastOf = db.prepare('SELECT last_snapshot FROM datasets WHERE id = ?');
   const deadline = Date.now() + (opts.minutes ?? Infinity) * 60000;
+  const step = opts.stepDays ?? 28;
   let finished = 0;
+  let timedOut = false;
   let lastLog = Date.now();
+
   await pool(todo, opts.concurrency ?? 10, async (id) => {
-    if (Date.now() > deadline) return;
-    if (Date.now() - lastLog > 60000) { lastLog = Date.now(); console.error(`historia: ${finished} z ${todo.length} zbiorów, plików ${summaries.length}`); }
+    if (Date.now() >= deadline) { timedOut = true; return; }
+    if (Date.now() - lastLog > 60000) {
+      lastLog = Date.now();
+      console.error(`historia: ${finished} z ${todo.length} zbiorów, plików ${summaries.length}, błędów API ${errors.length}, błędów plików ${fileErrors.length}`);
+    }
+    let all: ResourceRef[];
     try {
-      const all = await listResources(id, opts.perPage ?? 500);
-      // Jeden cennik na okres (domyślnie 28 dni): niemal każdy deweloper publikuje codziennie,
-      // więc pełna historia dzień po dniu to ponad milion plików.
-      const step = opts.stepDays ?? 28;
-      const periodic = new Map<number, ResourceRef>();
-      for (const r of all.sort((a, b) => a.date.localeCompare(b.date))) {
-        const day = Math.floor(new Date(r.date + 'T00:00:00Z').getTime() / 86400000);
-        periodic.set(Math.floor(day / step), r); // zostaje ostatni cennik okresu
-      }
-      const latest = all.at(-1);
-      if (latest) periodic.set(Number.MAX_SAFE_INTEGER, latest); // i zawsze najnowszy
-      for (const r of [...periodic.values()].filter((r, i, xs) => xs.indexOf(r) === i)) {
-        const parsed = await parseFile(await download(r.url), r.format, { devFallback: devNameFromTitle(titles.get(id)) });
-        summaries.push(ingestSnapshot(db, { datasetId: id, title: titles.get(id), date: r.date, sourceUrl: r.url }, parsed));
-      }
-      markDone.run(id, new Date().toISOString());
-      finished++;
+      all = await listAllResources(id);
     } catch (e) {
       errors.push({ datasetId: id, error: String((e as Error).message ?? e) });
+      return;
     }
+    // Jeden cennik na okres: niemal każdy deweloper publikuje codziennie,
+    // więc pełna historia dzień po dniu to ponad milion plików.
+    const periodic = new Map<number, ResourceRef>();
+    const sorted = all.sort((a, b) => a.date.localeCompare(b.date));
+    for (const r of sorted) {
+      const day = Math.floor(new Date(r.date + 'T00:00:00Z').getTime() / 86400000);
+      periodic.set(Math.floor(day / step), r); // zostaje ostatni cennik okresu
+    }
+    const latest = sorted.at(-1);
+    if (latest) periodic.set(Number.MAX_SAFE_INTEGER, latest); // i zawsze najnowszy
+    const picks = [...new Set(periodic.values())];
+    for (const r of picks) {
+      if (Date.now() >= deadline) { timedOut = true; return; }
+      const loaded = (lastOf.get(id) as { last_snapshot: string | null } | undefined)?.last_snapshot;
+      if (loaded && loaded >= r.date) continue; // wczytany w poprzednim, przerwanym uruchomieniu
+      try {
+        const buf = await download(r.url);
+        await parseSlot(async () => {
+          const parsed = await parseFile(buf, r.format, { devFallback: devNameFromTitle(titles.get(id)) });
+          summaries.push(ingestSnapshot(db, { datasetId: id, title: titles.get(id), date: r.date, sourceUrl: r.url }, parsed));
+        });
+      } catch (e) {
+        fileErrors.push({ datasetId: id, error: `${r.date}: ${String((e as Error).message ?? e)}` });
+      }
+    }
+    markDone.run(id, new Date().toISOString());
+    finished++;
   });
-  return { summaries, errors, total: opts.datasets.length, remaining: todo.length - finished };
+  return { summaries, errors, fileErrors, total: opts.datasets.length, todo: todo.length, remaining: todo.length - finished, timedOut };
 }

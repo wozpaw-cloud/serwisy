@@ -2,8 +2,8 @@
 # Sekrety repozytorium: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
 # Baza z historią cen leży w Cloudflare R2 (kubeł "serwisy-dane"), spakowana gzipem.
 #
-# Pierwsze uruchomienia: najpierw wczytuje historię cenników od września 2025 r.
-# (po 4 godziny dziennie, aż skończy). Dopiero z pełną historią importuje bieżące
+# Pierwsze uruchomienia: najpierw wczytuje historię cenników (cennik co 28 dni,
+# po 2,5 godziny dziennie, aż skończy). Dopiero z pełną historią importuje bieżące
 # cenniki i publikuje serwis. Potem codziennie: nowe cenniki, budowa, publikacja.
 name: Ceny mieszkań - import i publikacja
 
@@ -27,7 +27,13 @@ jobs:
   import-build-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 330
+    # bash -eo pipefail: błąd programu przed "| tee" przerywa krok (bez tego krok zawsze "udany").
+    defaults:
+      run:
+        shell: bash
     env:
+      # Odczyt dużych plików XLSX potrzebuje więcej pamięci niż domyślne 2 GB.
+      NODE_OPTIONS: --max-old-space-size=8192
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       MIESZKANIA_DB: ${{ github.workspace }}/data/mieszkania.sqlite
@@ -72,6 +78,20 @@ jobs:
         continue-on-error: true
         run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --dry-run --limit 3 2>&1 | tee data/dry-run.txt
 
+      - name: Próba historii (5 zbiorów, baza tymczasowa)
+        if: ${{ inputs.dry_run }}
+        timeout-minutes: 15
+        continue-on-error: true
+        env:
+          MIESZKANIA_DB: /tmp/proba/mieszkania.sqlite
+        run: |
+          set +e
+          npx tsx packages/mieszkania-dane/src/cli.ts backfill --limit 5 > data/proba-historii.txt 2>&1
+          echo "kod wyjścia: $?" >> data/proba-historii.txt
+          npx tsx packages/mieszkania-dane/src/cli.ts stats >> data/proba-historii.txt 2>&1
+          cp /tmp/proba/last-run.json data/proba-last-run.json 2>/dev/null
+          grep -v "ExperimentalWarning\|trace-warnings" data/proba-historii.txt | tail -n 80
+
       # Logi GitHub Actions są trudno dostępne z zewnątrz, więc wynik podglądu zapisujemy
       # w osobnej gałęzi "diagnostyka" (nadpisywanej przy każdym podglądzie).
       - name: Zapisz wynik podglądu w gałęzi diagnostyka
@@ -80,7 +100,7 @@ jobs:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p /tmp/diag
-          cp data/probe.txt data/dry-run.txt data/cloudflare.txt /tmp/diag/ 2>/dev/null || true
+          cp data/probe.txt data/dry-run.txt data/cloudflare.txt data/proba-historii.txt data/proba-last-run.json /tmp/diag/ 2>/dev/null || true
           cd /tmp/diag
           date -u +%FT%TZ > czas.txt
           git init -q && git checkout -q -b diagnostyka
@@ -93,12 +113,12 @@ jobs:
         id: backfill
         if: ${{ !inputs.dry_run }}
         continue-on-error: true   # kod 3 = historia jeszcze niepełna, ciąg dalszy jutro
-        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 240 2>&1 | tee data/backfill.txt
+        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 150 2>&1 | tee data/backfill.txt
 
       - name: Import bieżących cenników
         id: harvest
         if: ${{ !inputs.dry_run && steps.backfill.outcome == 'success' }}
-        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest 2>&1 | tee data/harvest.txt
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --minutes 120 2>&1 | tee data/harvest.txt
         # kod 2 = bramka jakości zatrzymała publikację; serwis się nie zbuduje
 
       - name: Zapisz bazę i alarmy w R2
@@ -130,7 +150,7 @@ jobs:
           set -o pipefail
           if npx wrangler deploy 2>&1 | tee ../../data/deploy.txt; then exit 0; fi
           echo "UWAGA: publikacja z domeną nie powiodła się, publikuję bez domeny." | tee -a ../../data/deploy.txt
-          grep -v '"routes"' wrangler.jsonc > wrangler.bez-domeny.jsonc
+          grep -v '"routes"' wrangler.jsonc | sed 's/"workers_dev": false/"workers_dev": true/' > wrangler.bez-domeny.jsonc
           npx wrangler deploy --config wrangler.bez-domeny.jsonc 2>&1 | tee -a ../../data/deploy.txt
 
       # Krótki raport z przebiegu w gałęzi "stan" (logi GitHub Actions są trudno dostępne z zewnątrz).
@@ -142,13 +162,13 @@ jobs:
           mkdir -p /tmp/stan
           {
             echo "czas: $(date -u +%FT%TZ)"
-            echo "historia: ${{ steps.backfill.outcome }}"
+            echo "historia: ${{ steps.backfill.outcome }} (failure = jeszcze niepełna albo błąd, szczegóły w historia.txt)"
             echo "import: ${{ steps.harvest.outcome }}"
             echo "rozmiar bazy: $(du -h data/mieszkania.sqlite 2>/dev/null | cut -f1)"
           } > /tmp/stan/przebieg.txt
           cp data/last-run.json data/alarms.json /tmp/stan/ 2>/dev/null || true
-          tail -n 60 data/backfill.txt > /tmp/stan/historia.txt 2>/dev/null || true
-          tail -n 60 data/harvest.txt > /tmp/stan/import.txt 2>/dev/null || true
+          grep -v "ExperimentalWarning\|trace-warnings" data/backfill.txt | tail -n 60 > /tmp/stan/historia.txt 2>/dev/null || true
+          grep -v "ExperimentalWarning\|trace-warnings" data/harvest.txt | tail -n 60 > /tmp/stan/import.txt 2>/dev/null || true
           grep -iE "https://|error|uploaded|deployed|uwaga|cenaoddewelopera\.pl|custom domain" data/deploy.txt > /tmp/stan/publikacja.txt 2>/dev/null || true
           cd /tmp/stan
           git init -q && git checkout -q -b stan

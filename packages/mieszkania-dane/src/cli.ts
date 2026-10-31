@@ -2,19 +2,19 @@
 //
 //   tsx src/cli.ts sample                 dane przykładowe do data/sample-snapshots
 //   tsx src/cli.ts ingest-dir <katalog>   wczytanie plików z manifest.json (świeża baza)
-//   tsx src/cli.ts harvest [--dry-run] [--limit N]   codzienny import z dane.gov.pl
-//   tsx src/cli.ts backfill [--limit N]   uzupełnienie historii, tydzień po tygodniu
+//   tsx src/cli.ts harvest [--dry-run] [--limit N] [--minutes N]   codzienny import z dane.gov.pl
+//   tsx src/cli.ts backfill [--limit N] [--minutes N]   uzupełnienie historii, cennik co 28 dni
 //   tsx src/cli.ts stats                  podsumowanie bazy
 //
 // Po imporcie działa bramka jakości: jeśli liczba lokali w ofercie spadła o
 // ponad 25% względem poprzedniego udanego importu, komenda kończy się kodem 2,
 // a automat nie publikuje serwisu (alarm trafia do data/alarms.json).
 
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { Model } from './analytics.ts';
 import { dbPath, openDb } from './db.ts';
-import { backfill, harvest, listDeveloperDatasets, probeApi } from './harvest.ts';
+import { backfill, harvest, listDeveloperDatasets, probeApi, type DatasetRef } from './harvest.ts';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
 import { guessFormat, parseFile } from './parse.ts';
 import { generateSample } from './sample.ts';
@@ -25,17 +25,42 @@ const opt = (name: string) => { const i = args.indexOf(`--${name}`); return i >=
 const DATA_DIR = dirname(dbPath());
 const MAX_DROP = Number(process.env.MAX_OFFER_DROP ?? 0.25);
 
+// W raporcie i alarmach najwyżej tyle pojedynczych problemów; resztę opisuje zestawienie przyczyn.
+const MAX_PROBLEMS = 300;
+
+/** Przyczyna problemu bez numerów i adresów, do zestawienia ("HTTP 404 przy pobieraniu"). */
+const reason = (note: string | null) => (note ?? 'brak opisu').replace(/https?:\/\/\S+/g, '').replace(/\d{4}-\d{2}-\d{2}:?/g, '').replace(/\(\d+ B\)/g, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+
 function report(summaries: IngestSummary[], errors: { datasetId: string; error: string }[] = []) {
   const by = (s: IngestSummary['status']) => summaries.filter((x) => x.status === s).length;
+  const problems = [
+    ...summaries.filter((s) => s.status === 'odrzucony' || s.status === 'ostrzezenie').map((s) => ({ datasetId: s.datasetId, date: s.date as string | null, status: s.status as string, note: s.note ?? null })),
+    ...errors.map((e) => ({ datasetId: e.datasetId, date: null, status: 'blad', note: e.error })),
+  ];
+  const reasons = new Map<string, number>();
+  for (const p of problems) { const k = `${p.status}: ${reason(p.note)}`; reasons.set(k, (reasons.get(k) ?? 0) + 1); }
   return {
     files: summaries.length, ok: by('ok'), warnings: by('ostrzezenie'), rejected: by('odrzucony'), skipped: by('pominiety'),
     newUnits: summaries.reduce((a, s) => a + s.newUnits, 0),
     priceChanges: summaries.reduce((a, s) => a + s.priceChanges, 0),
-    problems: [
-      ...summaries.filter((s) => s.status === 'odrzucony' || s.status === 'ostrzezenie').map((s) => ({ datasetId: s.datasetId, date: s.date, status: s.status, note: s.note ?? null })),
-      ...errors.map((e) => ({ datasetId: e.datasetId, date: null, status: 'blad', note: e.error })),
-    ],
+    problemCount: problems.length,
+    problemReasons: Object.fromEntries([...reasons].sort((a, b) => b[1] - a[1]).slice(0, 30)),
+    problems: problems.slice(0, MAX_PROBLEMS),
   };
+}
+
+/** Lista zbiorów z pliku, jeśli świeża (historia i import w jednym przebiegu
+ *  korzystają z tej samej listy; jej pobranie trwa kilkanaście minut). */
+async function datasetList(limit?: number): Promise<DatasetRef[]> {
+  const file = join(DATA_DIR, 'zbiory.json');
+  const maxAgeH = Number(process.env.DATASET_LIST_MAX_AGE_H ?? 12);
+  if (!limit && existsSync(file) && Date.now() - statSync(file).mtimeMs < maxAgeH * 3600000) {
+    const list = JSON.parse(readFileSync(file, 'utf8')) as DatasetRef[];
+    if (list.length) { console.error(`lista zbiorów z pliku: ${list.length}`); return list; }
+  }
+  const list = (await listDeveloperDatasets({ stopAfter: limit })).slice(0, limit);
+  if (!limit) writeFileSync(file, JSON.stringify(list));
+  return list;
 }
 
 /** Bramka jakości i zapis stanu dla panelu. Zwraca kod wyjścia. */
@@ -45,19 +70,22 @@ function finish(db: ReturnType<typeof openDb>, summary: ReturnType<typeof report
   const prev = db.prepare("SELECT summary FROM runs WHERE status = 'ok' ORDER BY id DESC LIMIT 1").get() as { summary: string } | undefined;
   const prevUnits = prev ? (JSON.parse(prev.summary).unitsInOffer as number) : null;
   const drop = prevUnits ? 1 - snap.units / prevUnits : 0;
-  const blocked = drop > MAX_DROP;
+  const empty = snap.units === 0;
+  const blocked = drop > MAX_DROP || empty;
   const status = blocked ? 'zablokowany' : 'ok';
   const run = { ...summary, asOf: model.asOf, unitsInOffer: snap.units, previousUnitsInOffer: prevUnits, staleDatasets: model.staleDatasets.size, status };
   const now = new Date().toISOString();
   db.prepare('INSERT INTO runs(started, finished, status, summary) VALUES (?,?,?,?)').run(now, now, status, JSON.stringify(run));
   writeFileSync(join(DATA_DIR, 'last-run.json'), JSON.stringify(run, null, 1));
   const alarms = [
-    ...(blocked ? [{ level: 'krytyczny', text: `Liczba lokali w ofercie spadła o ${(drop * 100).toFixed(0)}% (z ${prevUnits} do ${snap.units}). Publikacja wstrzymana.` }] : []),
+    ...(empty ? [{ level: 'krytyczny', text: 'W bazie nie ma żadnego lokalu w ofercie. Publikacja wstrzymana.' }]
+      : blocked ? [{ level: 'krytyczny', text: `Liczba lokali w ofercie spadła o ${(drop * 100).toFixed(0)}% (z ${prevUnits} do ${snap.units}). Publikacja wstrzymana.` }] : []),
+    ...Object.entries(summary.problemReasons).map(([why, n]) => ({ level: 'informacja', text: `${n} × ${why}` })),
     ...summary.problems.map((p) => ({ level: p.status === 'ostrzezenie' ? 'ostrzezenie' : 'blad', text: `${p.datasetId}: ${p.note ?? p.status}` })),
     ...(model.staleDatasets.size ? [{ level: 'informacja', text: `${model.staleDatasets.size} cenników nie aktualizowano od ponad 7 dni.` }] : []),
   ];
   writeFileSync(join(DATA_DIR, 'alarms.json'), JSON.stringify({ generated: now, alarms }, null, 1));
-  console.log(JSON.stringify({ status, asOf: model.asOf, unitsInOffer: snap.units, files: summary.files, problems: summary.problems.length }, null, 1));
+  console.log(JSON.stringify({ status, asOf: model.asOf, unitsInOffer: snap.units, files: summary.files, problems: summary.problemCount, przyczyny: summary.problemReasons }, null, 1));
   return blocked ? 2 : 0;
 }
 
@@ -84,7 +112,9 @@ async function main(): Promise<number> {
     }
     case 'harvest': {
       const db = openDb();
-      const res = await harvest(db, { dryRun: flag('dry-run'), limit: opt('limit') ? Number(opt('limit')) : undefined });
+      const limit = opt('limit') ? Number(opt('limit')) : undefined;
+      const datasets = flag('dry-run') ? undefined : await datasetList(limit);
+      const res = await harvest(db, { dryRun: flag('dry-run'), limit, datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       if (flag('dry-run')) return 0;
       return finish(db, report(res.summaries, res.errors));
     }
@@ -94,15 +124,24 @@ async function main(): Promise<number> {
       const lim = opt('limit') ? Number(opt('limit')) : undefined;
       // Historia co 28 dni: obecność lokalu nie może się urywać między kolejnymi cennikami.
       process.env.PRESENCE_GAP_DAYS ??= '35';
-      const datasets = (await listDeveloperDatasets({ stopAfter: lim })).slice(0, lim);
+      const datasets = await datasetList(lim);
       const res = await backfill(db, { datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
-      console.log(JSON.stringify({ historia: { zbiory: res.total, pozostalo: res.remaining, bledy: res.errors.length } }));
-      if (res.remaining > res.errors.length) {
-        const run = { ...report(res.summaries, res.errors), status: 'historia-niepelna', remaining: res.remaining };
+      const all = [...res.errors, ...res.fileErrors];
+      console.log(JSON.stringify({ historia: { zbiory: res.total, doWczytania: res.todo, pozostalo: res.remaining, bledyApi: res.errors.length, bledyPlikow: res.fileErrors.length, limitCzasu: res.timedOut } }));
+      // Niepełna: skończył się czas albo API odrzuciło wiele zbiorów (wtedy nie publikujemy
+      // i nie zaczynamy codziennego importu). Pojedyncze błędy API nie blokują: te zbiory
+      // wrócą przy następnym uruchomieniu.
+      const apiTrouble = res.errors.length > Math.max(25, 0.02 * res.todo);
+      if (res.remaining > 0 && (res.timedOut || apiTrouble)) {
+        const run = { ...report(res.summaries, all), status: 'historia-niepelna', powod: res.timedOut ? 'limit czasu' : 'błędy API', remaining: res.remaining };
         writeFileSync(join(DATA_DIR, 'last-run.json'), JSON.stringify(run, null, 1));
+        writeFileSync(join(DATA_DIR, 'alarms.json'), JSON.stringify({ generated: new Date().toISOString(), alarms: [
+          { level: apiTrouble ? 'blad' : 'informacja', text: `Historia niepełna (${run.powod}): zostało ${res.remaining} z ${res.todo} zbiorów.` },
+          ...Object.entries(run.problemReasons).map(([why, n]) => ({ level: 'informacja', text: `${n} × ${why}` })),
+        ] }, null, 1));
         return 3;
       }
-      return finish(db, report(res.summaries, res.errors));
+      return finish(db, report(res.summaries, all));
     }
     case 'probe': {
       await probeApi();
