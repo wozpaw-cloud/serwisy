@@ -34,6 +34,20 @@ jobs:
           npx wrangler r2 object get serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote
           gunzip -f ../../data/mieszkania.sqlite.gz
 
+      # Kopia bazy (dane publiczne z dane.gov.pl) do podglądu wyglądu serwisu na prawdziwych danych.
+      - name: Kopia bazy w gałęzi baza-podglad
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/baza && gzip -9c data/mieszkania.sqlite > /tmp/baza/mieszkania.sqlite.gz
+          ls -la /tmp/baza
+          cd /tmp/baza
+          git init -q && git checkout -q -b baza-podglad
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A && git commit -qm "Kopia bazy do podglądu"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" baza-podglad
+
       - name: Statystyki bazy
         run: |
           mkdir -p /tmp/wynik
