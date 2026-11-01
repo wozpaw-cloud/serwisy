@@ -121,6 +121,8 @@ describe('uzupełnianie historii', () => {
 
 describe('codzienny import', () => {
   it('bierze tylko nowszy cennik', async () => {
+    // Stała data: zbiory bez nowego cennika od 45 dni są sprawdzane raz w tygodniu.
+    vi.setSystemTime(new Date('2026-09-09T12:00:00Z'));
     const db = openDb(':memory:');
     await mod.backfill(db, { datasets: [datasets[0]] });
     RESOURCES.A.push('2026-09-08');
@@ -129,6 +131,7 @@ describe('codzienny import', () => {
     const again = await mod.harvest(db, { datasets: [datasets[0]] });
     expect(again.summaries).toHaveLength(0);
     RESOURCES.A.pop();
+    vi.useRealTimers();
   });
   it('limit czasu pomija resztę zbiorów', async () => {
     const res = await mod.harvest(openDb(':memory:'), { datasets, minutes: 0 });
