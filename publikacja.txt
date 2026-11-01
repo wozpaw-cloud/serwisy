@@ -1,0 +1,18 @@
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+Uploaded 1000 of 9384 assets
+Uploaded 2000 of 9384 assets
+Uploaded 3000 of 9384 assets
+Uploaded 4000 of 9384 assets
+Uploaded 5000 of 9384 assets
+Uploaded 6000 of 9384 assets
+Uploaded 6993 of 9384 assets
+Uploaded 7815 of 9384 assets
+Uploaded 8308 of 9384 assets
+Uploaded 8921 of 9384 assets
+Uploaded 8995 of 9384 assets
+Uploaded 9384 of 9384 assets
+✨ Success! Uploaded 9384 files (6 already uploaded) (42.67 sec)
+Uploaded cenaoddewelopera (50.14 sec)
+Deployed cenaoddewelopera triggers (1.24 sec)
+  cenaoddewelopera.pl (custom domain)
+  www.cenaoddewelopera.pl (custom domain)

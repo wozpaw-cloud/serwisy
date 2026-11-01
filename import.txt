@@ -1,0 +1,52 @@
+lista zbiorów z pliku: 18524
+import: 728 z 18524 zbiorów, nowych cenników 3, błędów 57
+import: 1456 z 18524 zbiorów, nowych cenników 5, błędów 130
+import: 2064 z 18524 zbiorów, nowych cenników 6, błędów 211
+import: 2443 z 18524 zbiorów, nowych cenników 6, błędów 373
+import: 2829 z 18524 zbiorów, nowych cenników 10, błędów 508
+import: 3370 z 18524 zbiorów, nowych cenników 11, błędów 623
+import: 4603 z 18524 zbiorów, nowych cenników 13, błędów 690
+import: 6107 z 18524 zbiorów, nowych cenników 13, błędów 693
+import: 7143 z 18524 zbiorów, nowych cenników 22, błędów 699
+import: 8223 z 18524 zbiorów, nowych cenników 94, błędów 704
+import: 9706 z 18524 zbiorów, nowych cenników 143, błędów 707
+import: sprawdzono 9904 zbiorów, nowych cenników 145, błędów 707, uśpionych pominiętych 8620
+{
+ "status": "ok",
+ "asOf": "2026-10-31",
+ "unitsInOffer": 135650,
+ "files": 145,
+ "problems": 773,
+ "przyczyny": {
+  "blad: plik nie jest cennikiem (obraz albo PDF)": 402,
+  "blad: stary format Excel (.xls) nie jest obsługiwany": 173,
+  "blad: fetch failed": 65,
+  "blad: HTTP 404 przy pobieraniu": 53,
+  "blad: HTTP 403 przy pobieraniu": 4,
+  "blad: plik za duży": 3,
+  "odrzucony: brak opisu": 2,
+  "odrzucony: nowe kolumny: type | price": 2,
+  "odrzucony: brak kolumn: city": 2,
+  "odrzucony: brak kolumn: priceM2": 2,
+  "blad: HTTP 500 przy pobieraniu": 2,
+  "odrzucony: brak kolumn: city, unitRef": 1,
+  "odrzucony: brak kolumn: city, unitRef, priceM2": 1,
+  "odrzucony: nowe kolumny: type | price | attached Properties": 1,
+  "odrzucony: nowe kolumny: Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodz": 1,
+  "odrzucony: brak kolumn: unitRef": 1,
+  "ostrzezenie: odrzucone wiersze: {\"cena całkowita poza zakresem\":11,\"nie lokal mieszkalny (par": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":646,\"brak ceny za m²\":113}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":7}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":31}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":11,\"cena c": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":176}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":252}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"cena całkowita poza zakresem\":3,\"nie lokal mieszkalny (park": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":222}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":70}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":148}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":145}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":24}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":15}": 1
+ }
+}

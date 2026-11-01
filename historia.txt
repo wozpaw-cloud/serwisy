@@ -1,0 +1,21 @@
+lista zbiorów (id): strona 20, zbiorów 1972 z 18607, 75 s
+lista zbiorów (id): strona 40, zbiorów 3941 z 18607, 156 s
+lista zbiorów (id): strona 60, zbiorów 5936 z 18607, 219 s
+lista zbiorów (id): strona 80, zbiorów 7934 z 18607, 275 s
+lista zbiorów (id): strona 100, zbiorów 9931 z 18607, 330 s
+lista zbiorów (-id): strona 20, zbiorów 11929 z 18607, 406 s
+lista zbiorów (-id): strona 40, zbiorów 13928 z 18607, 451 s
+lista zbiorów (-id): strona 60, zbiorów 15925 z 18607, 506 s
+lista zbiorów (-id): strona 80, zbiorów 17919 z 18607, 559 s
+lista zbiorów (-id): strona 100, zbiorów 18524 z 18607, 624 s
+lista zbiorów: 18524 zbiorów z cenami (portal podaje 18607 dla frazy w tytule)
+historia: lista gotowa, zbiorów 0, cenników do wczytania 0, błędów API 0
+{"historia":{"zbiory":18524,"doWczytania":0,"pozostalo":0,"bledyApi":0,"bledyPlikow":0,"limitCzasu":false}}
+{
+ "status": "ok",
+ "asOf": "2026-10-31",
+ "unitsInOffer": 135659,
+ "files": 0,
+ "problems": 0,
+ "przyczyny": {}
+}

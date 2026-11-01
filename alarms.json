@@ -1,0 +1,609 @@
+{
+ "generated": "2026-11-01T09:46:27.919Z",
+ "alarms": [
+  {
+   "level": "informacja",
+   "text": "402 × blad: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "informacja",
+   "text": "173 × blad: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "informacja",
+   "text": "65 × blad: fetch failed"
+  },
+  {
+   "level": "informacja",
+   "text": "53 × blad: HTTP 404 przy pobieraniu"
+  },
+  {
+   "level": "informacja",
+   "text": "4 × blad: HTTP 403 przy pobieraniu"
+  },
+  {
+   "level": "informacja",
+   "text": "3 × blad: plik za duży"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × odrzucony: brak opisu"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × odrzucony: nowe kolumny: type | price"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × odrzucony: brak kolumn: city"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × odrzucony: brak kolumn: priceM2"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × blad: HTTP 500 przy pobieraniu"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × odrzucony: brak kolumn: city, unitRef"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × odrzucony: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × odrzucony: nowe kolumny: type | price | attached Properties"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × odrzucony: nowe kolumny: Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodz"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × odrzucony: brak kolumn: unitRef"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"cena całkowita poza zakresem\":11,\"nie lokal mieszkalny (par"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":646,\"brak ceny za m²\":113}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":7}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":31}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":11,\"cena c"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":176}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":252}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"cena całkowita poza zakresem\":3,\"nie lokal mieszkalny (park"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":222}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":70}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":148}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":145}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":24}"
+  },
+  {
+   "level": "informacja",
+   "text": "1 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":15}"
+  },
+  {
+   "level": "blad",
+   "text": "5974: odrzucony"
+  },
+  {
+   "level": "blad",
+   "text": "6002: brak kolumn: city, unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "7987: nowe kolumny: type | price"
+  },
+  {
+   "level": "blad",
+   "text": "11321: odrzucony"
+  },
+  {
+   "level": "blad",
+   "text": "13809: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "17660: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "blad",
+   "text": "32529: nowe kolumny: type | price | attached Properties"
+  },
+  {
+   "level": "blad",
+   "text": "31966: brak kolumn: priceM2"
+  },
+  {
+   "level": "blad",
+   "text": "31202: nowe kolumny: Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł] uwzględniająca cenę lokalu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)"
+  },
+  {
+   "level": "blad",
+   "text": "30952: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "26846: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "23786: nowe kolumny: type | price"
+  },
+  {
+   "level": "blad",
+   "text": "23048: brak kolumn: priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "37002: odrzucone wiersze: {\"cena całkowita poza zakresem\":11,\"nie lokal mieszkalny (parking, komórka, usługi)\":46}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "35028: odrzucone wiersze: {\"brak numeru lokalu\":646,\"brak ceny za m²\":113}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "30595: odrzucone wiersze: {\"brak ceny za m²\":7}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "5329: odrzucone wiersze: {\"brak numeru lokalu\":31}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "8846: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":11,\"cena całkowita poza zakresem\":16,\"powierzchnia poza zakresem\":145,\"cena za m² poza zakresem\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "11322: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":176}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "11323: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":252}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "13783: odrzucone wiersze: {\"cena całkowita poza zakresem\":3,\"nie lokal mieszkalny (parking, komórka, usługi)\":21}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "17819: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":222}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "17890: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":70}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "18245: odrzucone wiersze: {\"brak ceny za m²\":148}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "20395: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":145}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "21381: odrzucone wiersze: {\"brak ceny za m²\":24}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22090: odrzucone wiersze: {\"brak numeru lokalu\":15}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22173: odrzucone wiersze: {\"brak numeru lokalu\":178}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22238: odrzucone wiersze: {\"brak numeru lokalu\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22309: odrzucone wiersze: {\"brak numeru lokalu\":85}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22308: odrzucone wiersze: {\"brak numeru lokalu\":245}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22312: odrzucone wiersze: {\"brak numeru lokalu\":147}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "22244: odrzucone wiersze: {\"brak numeru lokalu\":662}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42295: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":221}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42198: odrzucone wiersze: {\"brak ceny za m²\":43}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "41957: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":73}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "41906: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":96}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "40649: odrzucone wiersze: {\"cena za m² poza zakresem\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "40644: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":2}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "40177: odrzucone wiersze: {\"brak numeru lokalu\":360}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "39510: odrzucone wiersze: {\"brak numeru lokalu\":57}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "39439: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":22,\"brak ceny za m²\":184}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "39218: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":17,\"cena całkowita poza zakresem\":104}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "39082: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":5}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "39081: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":24}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "38685: odrzucone wiersze: {\"brak numeru lokalu\":38}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "37260: odrzucone wiersze: {\"cena całkowita poza zakresem\":70,\"brak ceny za m²\":1,\"cena za m² poza zakresem\":122,\"nie lokal mieszkalny (parking, komórka, usługi)\":199}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "36981: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":42}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "35196: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "35102: odrzucone wiersze: {\"cena całkowita poza zakresem\":200,\"nie lokal mieszkalny (parking, komórka, usługi)\":236,\"brak ceny za m²\":123,\"cena za m² poza zakresem\":1}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "33264: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":99}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "32352: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":326,\"cena całkowita poza zakresem\":13}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "31964: odrzucone wiersze: {\"brak numeru lokalu\":514}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "31876: odrzucone wiersze: {\"cena całkowita poza zakresem\":63,\"powierzchnia poza zakresem\":109}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "30875: odrzucone wiersze: {\"brak numeru lokalu\":13}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "30720: odrzucone wiersze: {\"brak ceny za m²\":1}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "30391: odrzucone wiersze: {\"brak numeru lokalu\":72}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "30372: odrzucone wiersze: {\"brak numeru lokalu\":145,\"nie lokal mieszkalny (parking, komórka, usługi)\":2}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "29165: odrzucone wiersze: {\"brak numeru lokalu\":55}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "28736: odrzucone wiersze: {\"cena całkowita poza zakresem\":101,\"cena za m² poza zakresem\":12,\"nie lokal mieszkalny (parking, komórka, usługi)\":97,\"brak ceny za m²\":109}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "28237: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "28171: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "24899: odrzucone wiersze: {\"brak numeru lokalu\":94}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "24850: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "24363: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":9}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "25120: odrzucone wiersze: {\"cena całkowita poza zakresem\":466,\"brak ceny za m²\":82,\"cena za m² poza zakresem\":619,\"nie lokal mieszkalny (parking, komórka, usługi)\":191}"
+  },
+  {
+   "level": "blad",
+   "text": "4947: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "5324: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "5371: HTTP 404 przy pobieraniu https://www.dane.innotechs.pl/rcm/zuw_urbex_diamentowa_zlotoryja_20251116.xlsx"
+  },
+  {
+   "level": "blad",
+   "text": "5529: HTTP 404 przy pobieraniu https://siodmeniebo.voxdeveloper.com/files/dane_gov_pl/price_changes_csv/20250912-7389f0f3-10/Ceny-ofertowe-mieszkan-dewelopera-bursztynova_sp__z_o_o-2025-09-12.csv"
+  },
+  {
+   "level": "blad",
+   "text": "5483: Maximum nested tags exceeded"
+  },
+  {
+   "level": "blad",
+   "text": "5525: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "5816: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "5819: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "5955: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "6382: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "6608: HTTP 403 przy pobieraniu https://www.botanicpark.pl/mieszkania/uploads/xml/xmlbotanicpark-01.xml"
+  },
+  {
+   "level": "blad",
+   "text": "6941: plik za duży (116303259 B)"
+  },
+  {
+   "level": "blad",
+   "text": "6888: HTTP 403 przy pobieraniu https://jrspolska.com/wp-content/uploads/mieszkania-xml/ceny-2026-10-26.csv"
+  },
+  {
+   "level": "blad",
+   "text": "6317: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "6313: HTTP 500 przy pobieraniu https://www.nieruchomosci-wielbud.pl/api/raport"
+  },
+  {
+   "level": "blad",
+   "text": "7354: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "7534: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "7396: HTTP 404 przy pobieraniu https://app.netbyapp.pl/api/files/investments/0199095c-d077-723b-882b-7133742a24f1/datasets/0199095c-d077-723b-882b-7133742a24f1-2025-09-16.csv"
+  },
+  {
+   "level": "blad",
+   "text": "7411: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "7673: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "7691: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "7773: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "7986: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "8019: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "8087: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "8163: HTTP 404 przy pobieraniu https://miernikdevelopment.com/tabelamieszkan"
+  },
+  {
+   "level": "blad",
+   "text": "8275: Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"
+  },
+  {
+   "level": "blad",
+   "text": "8256: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "8742: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "7915: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "9191: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "5957: HTTP 500 przy pobieraniu https://www.kompashouse.pl/api/raport"
+  },
+  {
+   "level": "blad",
+   "text": "9764: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "9683: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "9857: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "9931: plik za duży (116303265 B)"
+  },
+  {
+   "level": "blad",
+   "text": "8865: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "9125: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "10224: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "9849: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "10272: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "11303: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "11300: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "11474: plik nie jest cennikiem (obraz albo PDF)"
+  },
+  {
+   "level": "blad",
+   "text": "18770: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "19073: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "19184: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "19335: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "35278: Unexpected token 'N', ...\"  \"name\": NaN,\n     \"... is not valid JSON"
+  },
+  {
+   "level": "blad",
+   "text": "30675: HTTP 403 przy pobieraniu https://bielszowicka.pl/wp-content/uploads/mieszkania-xml/ceny-2026-10-26.csv"
+  },
+  {
+   "level": "blad",
+   "text": "28640: Quote Not Closed: the parsing is finished with an opening quote at line 13"
+  },
+  {
+   "level": "blad",
+   "text": "23472: HTTP 403 przy pobieraniu https://arinvest.com.pl/arinvest-xml/mieszkania-2026-07-07.csv"
+  },
+  {
+   "level": "blad",
+   "text": "23459: plik za duży (65026098 B)"
+  },
+  {
+   "level": "blad",
+   "text": "11961: HTTP 405 przy pobieraniu https://www.budmarsc.pl/api/raport"
+  },
+  {
+   "level": "informacja",
+   "text": "1185 cenników nie aktualizowano od ponad 7 dni."
+  }
+ ]
+}

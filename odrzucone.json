@@ -1,0 +1,627 @@
+[
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {},
+  "headers": [
+   "Nazwa dewelopera",
+   "Forma prawna dewelopera",
+   "Nr KRS",
+   "Nr wpisu do CEiDG",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Nr faxu",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr lokalu adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Dodatkowe lokalizacje, w których prowadzona jest sprzedaż",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Powiat lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Gmina lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Ulica lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Nr nieruchomości lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Kod pocztowy lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Rodzaj nieruchomości: lokal mieszkalny, dom jednorodzinny",
+   "Nr lokalu lub domu jednorodzinnego nadany przez dewelopera",
+   "Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł]",
+   "Data od której cena obowiązuje cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni [zł]",
+   "Data od której cena obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3) [zł]",
+   "Data od której obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)",
+   "Rodzaj części nieruchomości będących przedmiotem umowy",
+   "Oznaczenie części nieruchomości nadane przez dewelopera",
+   "Cena części nieruchomości, będących przedmiotem umowy [zł]",
+   "Data od której obowiązuje cena części nieruchomości, będących przedmiotem umowy",
+   "Rodzaj pomieszczeń przynależnych, o których mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali",
+   "Oznaczenie pomieszczeń przynależnych, o których mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali",
+   "Wyszczególnienie cen pomieszczeń przynależnych, o których mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali [zł]",
+   "Data od której obowiązuje cena wyszczególnionych pomieszczeń przynależnych, o których mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali",
+   "Wyszczególnienie praw niezbędnych do korzystania z lokalu mieszkalnego lub domu jednorodzinnego",
+   "Wartość praw niezbędnych do korzystania z lokalu mieszkalnego lub domu jednorodzinnego [zł]",
+   "Data od której obowiązuje cena wartości praw niezbędnych do korzystania z lokalu mieszkalnego lub domu jednorodzinnego",
+   "Wyszczególnienie rodzajów innych świadczeń pieniężnych, które nabywca zobowiązany jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność",
+   "Wartość innych świadczeń pieniężnych, które nabywca zobowiązany jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność [zł]",
+   "Data od której obowiązuje cena wartości innych świadczeń pieniężnych, które nabywca zobowiązany jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność",
+   "Adres strony internetowej, pod którym dostępny jest prospekt informacyjny"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "5974",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871423,ceny-ofertowe-mieszkan-dewelopera-phn-kolejowa-sp-z-oo-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "city",
+   "unitRef"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 60
+  },
+  "headers": [
+   "Nazwa inwestycji",
+   "type",
+   "unit id",
+   "building number",
+   "floor",
+   "rooms",
+   "area m 2",
+   "Cena m2 powierzchni użytkowej",
+   "total price",
+   "currency",
+   "status"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "6002",
+   "date": "2026-10-26",
+   "url": "https://api.dane.gov.pl/resources/2871449,ceny-ofertowe-mieszkan-dewelopera-md-grupa-deweloper-sp-z-o-o-sp-k-2026-10-26/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "brak dewelopera lub miejscowości": 8
+  },
+  "headers": [
+   "property Id",
+   "type",
+   "number",
+   "area",
+   "Adres inwestycji",
+   "Status",
+   "price",
+   "Cena m2 powierzchni użytkowej"
+  ],
+  "sample": [
+   "41",
+   "Flat",
+   "F1.1",
+   62,
+   "Kilińskiego  m. F1.1",
+   true,
+   null,
+   null
+  ],
+  "example": {
+   "datasetId": "7987",
+   "date": "2026-10-29",
+   "url": "https://api.dane.gov.pl/resources/2886260,ceny-ofertowe-mieszkan-dewelopera-deweler-lalewicz-rog-spoka-jawna-2026-10-29/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {},
+  "headers": [
+   "Id nieruchomości",
+   "Nazwa dewelopera",
+   "Nr KRS",
+   "Nr wpisu do CEiDG",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Nr faxu",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr lokalu adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nazwa inwestycji",
+   "Adres strony internetowej inwestycji",
+   "Województwo adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Powiat adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Gmina adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Miejscowość adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Ulica adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr nieruchomości adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr lokalu adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Kod pocztowy adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Powiat lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Gmina lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Ulica lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Nr nieruchomości lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Kod pocztowy lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Rodzaj nieruchomości: lokal mieszkalny, dom jednorodzinny",
+   "Nr nieruchomości nadany przez dewelopera",
+   "Powierzchnia",
+   "Piętro nieruchomości",
+   "Liczba pokoi",
+   "Stawka VAT (%)",
+   "Waluta",
+   "Cena za m2 nieruchomości",
+   "Data od której obowiązuje cena za m2 nieruchomości",
+   "Cena nieruchomości",
+   "Data od której obowiązuje cena nieruchomości",
+   "Adres strony internetowej, pod którym dostępny jest prospekt informacyjny"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "11321",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871443,ceny-ofertowe-mieszkan-dewelopera-robyg-grobla-park-sp-z-oo-nadmotawie-apartments-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "city"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 27
+  },
+  "headers": [
+   "Nazwa dewelopera",
+   "Forma prawna dewelopera",
+   "Nr KRS",
+   "Nr NIP",
+   "Nr REGON",
+   "Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr lokalu adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Rodzaj nieruchomości: lokal mieszkalny, dom jednorodzinny",
+   "Nr lokalu lub domu jednorodzinnego nadany przez dewelopera",
+   "Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł]",
+   "Data od której cena obowiązuje cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni [zł]",
+   "Data od której cena obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3) [zł]",
+   "Data od której obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)",
+   "Rodzaj pomieszczeń przynależnych, o których mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "13809",
+   "date": "2026-11-01",
+   "url": "https://api.dane.gov.pl/resources/2485953,ceny-ofertowe-mieszkan-dewelopera-zakatek-flora-2026-08-21/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "city",
+   "unitRef",
+   "priceM2"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 2
+  },
+  "headers": [
+   "@ http equiv",
+   "@ content",
+   "@ name"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "17660",
+   "date": "2026-10-26",
+   "url": "https://api.dane.gov.pl/resources/2871454,ceny-ofertowe-mieszkan-dewelopera-nowa-budpl-sp-z-oo-2026-10-26t110000000z/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "brak dewelopera lub miejscowości": 39
+  },
+  "headers": [
+   "property Id",
+   "type",
+   "number",
+   "price",
+   "area",
+   "Cena m2 powierzchni użytkowej",
+   "Adres inwestycji",
+   "Status",
+   "attached Properties",
+   "total Price"
+  ],
+  "sample": [
+   11,
+   "Flat",
+   "1",
+   536119,
+   44.1,
+   12156.89,
+   "Legionów 60B, m. 1",
+   true,
+   [
+    {
+     "propertyId": 16,
+     "type": "Garage",
+     "kind": "lot",
+     "number": "1",
+     "price": 43000,
+     "fullAddress": "Legionów 60B, mp. 1"
+    }
+   ],
+   579119
+  ],
+  "example": {
+   "datasetId": "32529",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871425,ceny-ofertowe-mieszkan-dewelopera-ziokowski-sc-dariusz-ziokowski-stanisaw-ziokowski-ewa-boguszewska-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "priceM2"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 148
+  },
+  "headers": [
+   "type",
+   "number",
+   "price",
+   "Adres inwestycji",
+   "Status"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "31966",
+   "date": "2026-10-29",
+   "url": "https://api.dane.gov.pl/resources/2885311,ceny-ofertowe-mieszkan-dewelopera-mk-development2-sp-z-oo-2026-10-29/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "brak ceny za m²": 57,
+   "brak numeru lokalu": 184
+  },
+  "headers": [
+   "Nazwa dewelopera",
+   "Forma prawna dewelopera",
+   "Nr KRS",
+   "Nr wpisu do CEiDG",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Nr faxu",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr lokalu adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Województwo adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Powiat adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Gmina adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Miejscowość adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Ulica adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr nieruchomości adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr lokalu adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Kod pocztowy adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Dodatkowe lokalizacje, w których prowadzona jest sprzedaż",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Powiat lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Gmina lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Ulica lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Nr nieruchomości lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Kod pocztowy lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Rodzaj nieruchomości: lokal mieszkalny, dom jednorodzinny",
+   "Nr lokalu lub domu jednorodzinnego nadany przez dewelopera",
+   "Cena m 2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł]",
+   "Data od której cena obowiązuje cena m 2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni [zł]",
+   "Data od której cena obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni",
+   "Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego [zł] uwzględniająca cenę lokalu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)",
+   "Data od której obowiązuje cena m2 powierzchni użytkowej lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3) [zł]",
+   "Data od której obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)",
+   "Rodzaj części nieruchomości będących przedmiotem umowy",
+   "Oznaczenie części nieruchomości nadane przez dewelopera",
+   "Cena części nieruchomości, będących przedmiotem umowy [zł]",
+   "Data od której obowiązuje cena części nieruchomości, będących przedmiotem umowy",
+   "Rodzaj pomieszczeń przynależnych, o których mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali"
+  ],
+  "sample": [
+   "PRZY PARKU ONE SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ",
+   "X",
+   "0001179575",
+   "0001179575",
+   "8971955786",
+   "54204590000000",
+   "609221111",
+   "sprzedaz@przyparku.com.pl",
+   "X",
+   "https://przyparku.com.pl/",
+   "Dolnośląskie",
+   "X",
+   "Wrocław",
+   "Wrocław",
+   "KIEŁBAŚNICZA",
+   "3",
+   "4",
+   "50-108",
+   "Dolnośląskie",
+   "X",
+   "Wrocław",
+   "Wrocław",
+   "KIEŁBAŚNICZA",
+   "3",
+   "4",
+   "50-108",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "Wrocław",
+   "X",
+   "X",
+   "X",
+   "Lokal mieszkalny",
+   "L01",
+   "X",
+   "X",
+   "722533,50",
+   "2026-05-03 23:03:07",
+   "X",
+   "X",
+   "722533,50",
+   "2026-05-03 23:03:07",
+   "Komórka lokatorska; Miejsce postojowe; Miejsce postojowe",
+   "KL_L01; MP_93; MP_94",
+   "32400,00; 59400,00; 59400,00",
+   "2026-03-30 09:21:50; 2026-03-27 13:58:03; 2026-03-27 13:58:03",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   "X",
+   ""
+  ],
+  "example": {
+   "datasetId": "31202",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871435,ceny-ofertowe-mieszkan-dewelopera-przy-parku-one-spoka-z-ograniczona-odpowiedzialnoscia-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "unitRef"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 82
+  },
+  "headers": [
+   "Nazwa dewelopera",
+   "Forma prawna dewelopera",
+   "Nr KRS",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Województwo adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Powiat adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Gmina adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Miejscowość adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Ulica adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr nieruchomości adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Nr lokalu adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Kod pocztowy adresu lokalu, w którym prowadzona jest sprzedaż",
+   "Dodatkowe lokalizacje, w których prowadzona jest sprzedaż",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Powiat lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Gmina lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Ulica lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Nr nieruchomości lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Kod pocztowy lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Rodzaj nieruchomości: lokal mieszkalny, dom jednorodzinny",
+   "Symbol",
+   "Cena lokalu mieszkalnego lub domu jednorodzinnego uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3) [zł]",
+   "Cena",
+   "Cena za m²",
+   "Ostatnia zmiana ceny",
+   "Dostępność",
+   "Rodzaj części nieruchomości będących przedmiotem umowy",
+   "Oznaczenie części nieruchomości",
+   "Cena części nieruchomości",
+   "Data od której obowiązuje cena części nieruchomości, będących przedmiotem umowy",
+   "Adres strony internetowej, pod którym dostępny jest prospekt informacyjny"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "30952",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871458,ceny-ofertowe-mieszkan-dewelopera-domeko-sp-z-o-o-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "city"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 10
+  },
+  "headers": [
+   "Numer",
+   "Rodzaj nieruchomości",
+   "Wyszczególnienie praw",
+   "Metraż",
+   "Data, od której cena obowiązuje",
+   "Cena m2 powierzchni użytkowej brutto",
+   "Wartość brutto",
+   "Adres strony inwestycji"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "26846",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871440,ceny-mieszkan-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [],
+  "rejected": {
+   "brak dewelopera lub miejscowości": 10
+  },
+  "headers": [
+   "type",
+   "number",
+   "price",
+   "area",
+   "Cena m2 powierzchni użytkowej",
+   "Adres inwestycji",
+   "Status"
+  ],
+  "sample": [
+   "House",
+   "79",
+   1015000,
+   146.32,
+   6936.85,
+   "ul. Wrzosowe Wzgórze  d. 79",
+   true
+  ],
+  "example": {
+   "datasetId": "23786",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871430,ceny-ofertowe-mieszkan-dewelopera-fs-nieruchomosci-spoka-akcyjna-2026-10-27/file"
+  }
+ },
+ {
+  "count": 1,
+  "datasets": 1,
+  "missing": [
+   "priceM2"
+  ],
+  "rejected": {
+   "brak wymaganych kolumn": 123
+  },
+  "headers": [
+   "Nazwa dewelopera",
+   "Forma prawna dewelopera",
+   "Nr KRS",
+   "Nr NIP",
+   "Nr REGON",
+   "Nr telefonu",
+   "Adres poczty elektronicznej",
+   "Nr faxu",
+   "Adres strony internetowej dewelopera",
+   "Województwo adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Powiat adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Gmina adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Miejscowość adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Ulica adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr nieruchomości adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Nr lokalu adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Kod pocztowy adresu siedziby/głównego miejsca wykonywania działalności gospodarczej dewelopera",
+   "Sposób kontaktu nabywcy z deweloperem",
+   "Nazwa inwestycji",
+   "Województwo lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Powiat lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Gmina lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Miejscowość lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Ulica lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Nr nieruchomości lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Kod pocztowy lokalizacji przedsięwzięcia deweloperskiego lub zadania inwestycyjnego",
+   "Rodzaj nieruchomości",
+   "Nr produktu nadany przez dewelopera",
+   "Piętro",
+   "Ilość pokoje",
+   "Powierzchni lokalu [m2]",
+   "Cena m2 powierzchni użytkowej lokalu mieszkalnego / domu jednorodzinnego / cena części nieruchomości będących przedmiotem umowy [zł]",
+   "Cena lokalu mieszkalnego / domu jednorodzinnego / części nieruchomości będących przedmiotem umowy [zł]",
+   "Data od której cena obowiązuje cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni",
+   "Wyszczególnienie rodzajów innych świadczeń pieniężnych, które nabywca zobowiązany jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność",
+   "Wartość innych świadczeń pieniężnych, które nabywca zobowiązany jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność [zł]",
+   "Adres strony internetowej, pod którym dostępny jest prospekt informacyjny",
+   "Adres strony internetowej, pod którym dostępny jest plan lokalu/domu"
+  ],
+  "sample": null,
+  "example": {
+   "datasetId": "23048",
+   "date": "2026-10-27",
+   "url": "https://api.dane.gov.pl/resources/2871457,ceny-ofertowe-mieszkan-dewelopera-lubelska-osada-sp-z-o-o-2026-10-27/file"
+  }
+ }
+]
