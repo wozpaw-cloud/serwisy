@@ -1,0 +1,154 @@
+---
+// Strona główna: najtańsza oferta w Polsce, w województwie i w powiecie.
+// Pierwszy widok (mieszkania, cała Polska) jest w HTML. Po wyborze rodzaju, województwa
+// albo powiatu skrypt składa widok z /obszary/<województwo>.json tymi samymi funkcjami.
+import { M, voivodeships } from '../lib/data';
+import { cheapNational } from '../lib/cheap';
+import { breakdown, featured, kindWord, missingNote, runners } from '../lib/cheap-view';
+import { dateLong } from '../lib/format';
+
+const data = cheapNational(voivodeships);
+const o = data.offers;
+---
+<section class="section cheap" id="najtansze" aria-labelledby="cheap-h" data-cheap-picker>
+  <div class="section-bar"><h2 id="cheap-h">Najtańsze oferty</h2><a href="/szukaj/">Wyszukiwarka województw, powiatów i gmin</a></div>
+  <p class="section-sub">Najniższe ceny całkowite w cennikach deweloperów z {dateLong(M.asOf)}. Pomijamy garaże, komórki i miejsca postojowe wpisane w cennikach jako lokale.</p>
+
+  <div class="cheap-controls" hidden>
+    <div class="seg" role="group" aria-label="Rodzaj oferty">
+      <button type="button" data-kind="m" aria-pressed="true">Mieszkania</button>
+      <button type="button" data-kind="d" aria-pressed="false">Domy</button>
+    </div>
+    <label class="fld"><span>Województwo</span>
+      <select data-voiv>
+        <option value="">Cała Polska</option>
+        {data.regions.map((r) => <option value={r.slug}>{r.name}</option>)}
+      </select>
+    </label>
+    <label class="fld"><span>Powiat</span>
+      <select data-powiat disabled><option value="">Wszystkie powiaty</option></select>
+    </label>
+  </div>
+
+  <div class="cheap-body">
+    <div class="cheap-main">
+      <h3 class="cheap-h"><span data-title>{kindWord('m')}</span> <span class="chip" data-place>Polska</span></h3>
+      <div data-featured set:html={featured(o[data.pl.m[0]], 'm')} />
+      <ol class="cheap-list" start="2" data-runners set:html={runners(data.pl.m.slice(1).map((i) => o[i]))} />
+      <a class="cheap-more" data-more href="/obnizki/" hidden>Ceny w tym obszarze</a>
+    </div>
+    <div class="cheap-side">
+      <h3 class="cheap-h" data-table-title>Najtańsze w województwach</h3>
+      <div class="table-wrap">
+        <table class="data cheap-table">
+          <thead><tr><th scope="col" data-col>Województwo</th><th scope="col" class="r">Cena</th><th scope="col" class="r">Metraż</th><th scope="col">Inwestycja</th></tr></thead>
+          <tbody data-rows set:html={breakdown(data.regions, o, 'm', true)} />
+        </table>
+      </div>
+      <button type="button" class="show-all" data-all hidden>Pokaż wszystkie</button>
+      <p class="cheap-note" data-note>{missingNote(data.regions, 'm', 'województwo', 'województwa', 'województw')}</p>
+    </div>
+  </div>
+  <p class="sr-only" aria-live="polite" data-status></p>
+  <script is:inline type="application/json" data-national set:html={JSON.stringify(data).replace(/</g, '\\u003c')} />
+</section>
+
+<script>
+  import { breakdown, featured, kindWord, missingNote, runners, type CheapArea, type Kind, type OfferRow } from '../lib/cheap-view';
+  import { num } from '../lib/format';
+
+  interface Region extends CheapArea { slug: string }
+  interface National { pl: CheapArea; regions: Region[]; offers: OfferRow[] }
+  interface AreaFile extends CheapArea { powiaty: CheapArea[]; gminy: (CheapArea & { p: number })[]; offers: OfferRow[] }
+
+  const files = new Map<string, Promise<AreaFile>>();
+  const load = (slug: string) => {
+    if (!files.has(slug)) files.set(slug, fetch(`/obszary/${slug}.json`).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); }));
+    return files.get(slug)!;
+  };
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-cheap-picker]')) {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const nat: National = JSON.parse($('[data-national]').textContent!);
+    const controls = $<HTMLElement>('.cheap-controls');
+    const voivSel = $<HTMLSelectElement>('[data-voiv]');
+    const powSel = $<HTMLSelectElement>('[data-powiat]');
+    const kindBtns = [...root.querySelectorAll<HTMLButtonElement>('[data-kind]')];
+    let kind: Kind = 'm';
+    let file: AreaFile | null = null;
+    let seq = 0;
+    controls.hidden = false;
+
+    function show(area: CheapArea, offers: OfferRow[], children: CheapArea[], level: 'woj' | 'pow' | 'gm') {
+      const ids = area[kind];
+      $('[data-title]').textContent = kindWord(kind);
+      $('[data-place]').textContent = area.label;
+      $('[data-featured]').innerHTML = featured(offers[ids[0]], kind);
+      $('[data-runners]').innerHTML = runners(ids.slice(1).map((i) => offers[i]));
+      const more = $<HTMLAnchorElement>('[data-more]');
+      more.hidden = !area.href || area.href === '/';
+      if (area.href) { more.href = area.href; more.textContent = `Ceny i wykresy: ${area.label}`; }
+      const words = { woj: ['województwach', 'Województwo', 'województwo', 'województwa', 'województw'], pow: ['powiatach', 'Powiat', 'powiat', 'powiaty', 'powiatów'], gm: ['gminach', 'Gmina', 'gmina', 'gminy', 'gmin'] }[level];
+      $('[data-table-title]').textContent = `Najtańsze w ${words[0]}${level === 'woj' ? '' : `: ${area.label}`}`;
+      $('[data-col]').textContent = words[1];
+      $('[data-rows]').innerHTML = breakdown(children, offers, kind, level !== 'gm', 12);
+      const extra = root.querySelectorAll('[data-rows] tr[hidden]').length;
+      const all = $<HTMLButtonElement>('[data-all]');
+      all.hidden = extra === 0;
+      all.textContent = `Pokaż wszystkie (${num(extra + 12)})`;
+      $('[data-note]').textContent = missingNote(children, kind, words[2], words[3], words[4]);
+      const best = offers[ids[0]];
+      $('[data-status]').textContent = best ? `${kindWord(kind)}, ${area.label}: ${num(best[0])} zł, ${best[5]}, ${best[4]}.` : `${area.label}: brak ofert.`;
+    }
+
+    async function render() {
+      const my = ++seq;
+      const slug = voivSel.value;
+      if (!slug) { file = null; show(nat.pl, nat.offers, nat.regions, 'woj'); return; }
+      root.setAttribute('aria-busy', 'true');
+      try {
+        const f = await load(slug);
+        if (my !== seq) return;
+        if (file !== f) {
+          file = f;
+          powSel.replaceChildren(new Option('Wszystkie powiaty', ''), ...f.powiaty.map((p, i) => new Option(p.label, String(i))));
+          powSel.disabled = false;
+        }
+        const pi = powSel.value === '' ? -1 : Number(powSel.value);
+        if (pi < 0) show(f, f.offers, f.powiaty, 'pow');
+        else show(f.powiaty[pi], f.offers, f.gminy.filter((g) => g.p === pi), 'gm');
+      } catch {
+        $('[data-status]').textContent = 'Nie udało się wczytać danych. Odśwież stronę.';
+      } finally {
+        if (my === seq) root.removeAttribute('aria-busy');
+      }
+    }
+
+    for (const b of kindBtns) b.addEventListener('click', () => {
+      kind = b.dataset.kind as Kind;
+      for (const x of kindBtns) x.setAttribute('aria-pressed', String(x === b));
+      render();
+    });
+    voivSel.addEventListener('change', () => {
+      powSel.replaceChildren(new Option('Wszystkie powiaty', ''));
+      powSel.disabled = true;
+      file = null;
+      render();
+    });
+    powSel.addEventListener('change', render);
+    $('[data-all]').addEventListener('click', (e) => {
+      for (const tr of root.querySelectorAll<HTMLElement>('[data-rows] tr[hidden]')) tr.hidden = false;
+      (e.currentTarget as HTMLElement).hidden = true;
+    });
+    // Nazwa w tabeli otwiera niższy poziom (bez JavaScriptu prowadzi do strony obszaru).
+    $('[data-rows]').addEventListener('click', (e) => {
+      const a = (e.target as Element).closest<HTMLAnchorElement>('a[data-drill]');
+      if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      e.preventDefault();
+      const i = Number(a.dataset.drill);
+      if (!voivSel.value) { voivSel.value = nat.regions[i].slug; voivSel.dispatchEvent(new Event('change')); }
+      else { powSel.value = String(i); render(); }
+      controls.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+</script>

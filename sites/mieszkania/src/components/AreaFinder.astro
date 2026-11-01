@@ -1,0 +1,209 @@
+---
+// Wyszukiwarka obszarów na wzór wyszukiwarki obwodów PKW: województwo → powiat → gmina
+// i nazwa miejscowości. Listy zawężają się nawzajem, wynik to karta wybranego obszaru
+// i tabela miejscowości z ofertą. Dane: /obszary/<województwo>.json, pobierane po wyborze.
+// Wybór trafia do adresu strony (?woj=…&pow=…&gm=…&m=…), więc wynik można wysłać dalej.
+import { voivodeships } from '../lib/data';
+const regions = [...voivodeships].sort((a, b) => a.name.localeCompare(b.name, 'pl')).map((v) => ({ slug: v.slug, name: v.name }));
+---
+<section class="af" id="obszary" aria-labelledby="af-h">
+  <div class="af-panel">
+    <h2 id="af-h">Wyszukiwarka województw, powiatów i gmin</h2>
+    <p class="af-help">Wybierz województwo, a potem powiat i gminę. Możesz też wpisać nazwę miejscowości: bez wybranego województwa szukamy w całej Polsce.</p>
+    <noscript><p class="af-help">Wyszukiwarka potrzebuje JavaScriptu. Poniżej jest lista wszystkich miejscowości od A do Z.</p></noscript>
+    <form class="af-form" hidden>
+      <label class="fld"><span>Województwo</span>
+        <select name="woj">
+          <option value="">— wszystkie —</option>
+          {regions.map((r) => <option value={r.slug}>{r.name}</option>)}
+        </select>
+      </label>
+      <label class="fld"><span>Powiat</span><select name="pow" disabled><option value="">— wybierz województwo —</option></select></label>
+      <label class="fld"><span>Gmina</span><select name="gm" disabled><option value="">— wybierz województwo —</option></select></label>
+      <label class="fld"><span>Miejscowość</span><input name="m" type="search" autocomplete="off" spellcheck="false" placeholder="np. Komorniki" /></label>
+      <div class="af-actions">
+        <button type="submit" class="btn">Szukaj</button>
+        <button type="reset" class="btn btn-ghost">Wyczyść</button>
+      </div>
+    </form>
+  </div>
+  <div class="af-out" aria-live="polite" hidden></div>
+</section>
+
+<script>
+  import { esc } from '../lib/cheap-view';
+  import { m2, num, plural } from '../lib/format';
+  import type { CheapArea, OfferRow } from '../lib/cheap-view';
+
+  interface Area extends CheapArea { p?: number; g?: number; urban?: boolean }
+  interface AreaFile extends Area { powiaty: Area[]; gminy: Area[]; miejscowosci: Area[]; offers: OfferRow[] }
+
+  const files = new Map<string, Promise<AreaFile>>();
+  const load = (slug: string) => {
+    if (!files.has(slug)) files.set(slug, fetch(`/obszary/${slug}.json`).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); }));
+    return files.get(slug)!;
+  };
+  const fold = (s: string) => s.toLocaleLowerCase('pl').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
+  const PAGE = 50;
+
+  for (const root of document.querySelectorAll<HTMLElement>('section.af')) {
+    const form = root.querySelector<HTMLFormElement>('.af-form')!;
+    const out = root.querySelector<HTMLElement>('.af-out')!;
+    const woj = form.elements.namedItem('woj') as HTMLSelectElement;
+    const pow = form.elements.namedItem('pow') as HTMLSelectElement;
+    const gm = form.elements.namedItem('gm') as HTMLSelectElement;
+    const txt = form.elements.namedItem('m') as HTMLInputElement;
+    const regions = [...woj.options].filter((o) => o.value).map((o) => ({ slug: o.value, name: o.text }));
+    let file: AreaFile | null = null;
+    let seq = 0;
+    let showAll = false;
+    form.hidden = false;
+
+    const cheapCell = (f: AreaFile, a: Area, kind: 'm' | 'd') => {
+      const o = f.offers[a[kind][0]];
+      return o ? `<a href="${esc(o[6])}">${num(o[0])} zł</a><span class="af-sub">${m2(o[1])}, ${esc(o[4])}</span>` : '<span class="muted">brak w ofercie</span>';
+    };
+
+    function card(f: AreaFile, a: Area, level: string, path: string[]) {
+      return `<article class="af-card">`
+        + `<p class="af-level">${level}</p><h3>${esc(a.label)}</h3>`
+        + (path.length ? `<p class="af-path">${path.map(esc).join(' › ')}</p>` : '')
+        + `<dl class="af-stats">`
+        + `<div><dt>Mediana ceny za m²</dt><dd>${a.m2 ? `${num(a.m2)} zł` : '—'}</dd></div>`
+        + `<div><dt>Lokale w ofercie</dt><dd>${num(a.units)}</dd></div>`
+        + `<div><dt>Najtańsze mieszkanie</dt><dd>${cheapCell(f, a, 'm')}</dd></div>`
+        + `<div><dt>Najtańszy dom</dt><dd>${cheapCell(f, a, 'd')}</dd></div>`
+        + `</dl>`
+        + (a.href ? `<a class="btn" href="${esc(a.href)}">Zobacz ceny i wykresy</a>` : '')
+        + `</article>`;
+    }
+
+    function table(rows: { f: AreaFile; c: Area }[], title: string) {
+      if (!rows.length) return `<p class="af-none">Nie znaleźliśmy miejscowości z ofertą deweloperów. Sprawdź pisownię albo wybierz inny obszar.</p>`;
+      const shown = showAll ? rows : rows.slice(0, PAGE);
+      const body = shown.map(({ f, c }) => {
+        const g = f.gminy[c.g ?? -1];
+        const p = g ? f.powiaty[g.p ?? -1] : undefined;
+        const where = [g && !g.urban ? `gmina ${g.name}` : '', p ? (p.urban ? 'miasto na prawach powiatu' : `powiat ${p.name}`) : ''].filter(Boolean).join(', ');
+        return `<tr><th scope="row">${c.href ? `<a href="${esc(c.href)}">${esc(c.name)}</a>` : esc(c.name)}${where ? `<span class="af-sub af-mob">${esc(where)}</span>` : ''}</th>`
+          + `<td>${g ? esc(g.name) : '—'}</td><td>${p ? esc(p.urban ? 'miasto na prawach powiatu' : p.name) : '—'}</td>`
+          + `<td class="r">${c.m2 ? num(c.m2) : '—'}</td><td class="r">${num(c.units)}</td><td>${cheapCell(f, c, 'm')}</td></tr>`;
+      }).join('');
+      return `<div class="af-count"><h3>${title}</h3><span>${num(rows.length)} ${plural(rows.length, 'miejscowość', 'miejscowości', 'miejscowości')} z ofertą</span></div>`
+        + `<div class="table-wrap"><table class="data af-table"><thead><tr><th scope="col">Miejscowość</th><th scope="col">Gmina</th><th scope="col">Powiat</th>`
+        + `<th scope="col" class="r">Mediana zł/m²</th><th scope="col" class="r">Lokale</th><th scope="col">Najtańsze mieszkanie</th></tr></thead><tbody>${body}</tbody></table></div>`
+        + (rows.length > shown.length ? `<button type="button" class="show-all" data-all>Pokaż wszystkie (${num(rows.length)})</button>` : '');
+    }
+
+    function fillPowiaty(f: AreaFile) {
+      pow.replaceChildren(new Option('— wszystkie —', ''), ...f.powiaty.map((p, i) => new Option(p.label, String(i))));
+      pow.disabled = false;
+    }
+    function fillGminy(f: AreaFile) {
+      const pi = pow.value === '' ? -1 : Number(pow.value);
+      const keep = gm.value;
+      const names = new Map<string, number>();
+      for (const g of f.gminy) names.set(g.label, (names.get(g.label) ?? 0) + 1);
+      const opts = f.gminy.map((g, i) => ({ g, i })).filter(({ g }) => pi < 0 || g.p === pi)
+        .map(({ g, i }) => new Option(names.get(g.label)! > 1 && f.powiaty[g.p ?? -1] ? `${g.label} (${f.powiaty[g.p!].label})` : g.label, String(i)));
+      gm.replaceChildren(new Option('— wszystkie —', ''), ...opts);
+      gm.disabled = false;
+      if (opts.some((o) => o.value === keep)) gm.value = keep;
+    }
+
+    function syncUrl() {
+      const q = new URLSearchParams();
+      if (woj.value) q.set('woj', woj.value);
+      if (file && pow.value) q.set('pow', file.powiaty[Number(pow.value)].label);
+      if (file && gm.value) q.set('gm', file.gminy[Number(gm.value)].label);
+      if (txt.value.trim()) q.set('m', txt.value.trim());
+      const s = q.toString();
+      history.replaceState(null, '', `${location.pathname}${s ? `?${s}` : ''}#obszary`);
+    }
+
+    async function run() {
+      const my = ++seq;
+      const t = fold(txt.value.trim());
+      syncUrl();
+      if (!woj.value && t.length < 2) { out.hidden = true; out.innerHTML = ''; return; }
+      root.setAttribute('aria-busy', 'true');
+      try {
+        if (!woj.value) {
+          // Cała Polska: tylko wyszukiwanie po nazwie miejscowości.
+          const all = await Promise.all(regions.map((r) => load(r.slug)));
+          if (my !== seq) return;
+          const rows = all.flatMap((f) => f.miejscowosci.filter((c) => fold(c.name).includes(t)).map((c) => ({ f, c })));
+          rows.sort((a, b) => Number(fold(b.c.name).startsWith(t)) - Number(fold(a.c.name).startsWith(t)) || b.c.units - a.c.units);
+          out.innerHTML = table(rows, `„${esc(txt.value.trim())}” w całej Polsce`);
+        } else {
+          const f = await load(woj.value);
+          if (my !== seq) return;
+          const pi = pow.value === '' ? -1 : Number(pow.value);
+          const gi = gm.value === '' ? -1 : Number(gm.value);
+          let area: Area = f, level = 'Województwo', path: string[] = [];
+          if (gi >= 0) {
+            area = f.gminy[gi]; level = area.urban ? 'Gmina miejska, miasto na prawach powiatu' : 'Gmina';
+            const p = f.powiaty[area.p ?? -1];
+            path = [f.label, ...(p && !area.urban ? [p.label] : [])];
+          } else if (pi >= 0) {
+            area = f.powiaty[pi]; level = area.urban ? 'Miasto na prawach powiatu' : 'Powiat'; path = [f.label];
+          }
+          const rows = f.miejscowosci.map((c) => ({ f, c })).filter(({ c }) => {
+            const g = f.gminy[c.g ?? -1];
+            if (gi >= 0 && c.g !== gi) return false;
+            if (gi < 0 && pi >= 0 && g?.p !== pi) return false;
+            return !t || fold(c.name).includes(t);
+          });
+          out.innerHTML = card(f, area, level, path) + table(rows, t ? `„${esc(txt.value.trim())}”: ${esc(area.label)}` : `Miejscowości: ${esc(area.label)}`);
+        }
+        out.hidden = false;
+      } catch {
+        out.hidden = false;
+        out.innerHTML = '<p class="af-none">Nie udało się wczytać danych. Odśwież stronę i spróbuj jeszcze raz.</p>';
+      } finally {
+        if (my === seq) root.removeAttribute('aria-busy');
+      }
+    }
+
+    async function onWoj() {
+      file = null; showAll = false;
+      pow.replaceChildren(new Option(woj.value ? 'wczytuję…' : '— wybierz województwo —', '')); pow.disabled = true;
+      gm.replaceChildren(new Option(woj.value ? 'wczytuję…' : '— wybierz województwo —', '')); gm.disabled = true;
+      if (woj.value) {
+        try { file = await load(woj.value); fillPowiaty(file); fillGminy(file); } catch { /* komunikat pokaże run() */ }
+      }
+      run();
+    }
+
+    woj.addEventListener('change', onWoj);
+    pow.addEventListener('change', () => { showAll = false; gm.value = ''; if (file) fillGminy(file); run(); });
+    gm.addEventListener('change', () => {
+      showAll = false;
+      // Gmina wybrana bez powiatu: ustaw jej powiat, żeby ścieżka była pełna.
+      if (file && gm.value && pow.value === '') { const p = file.gminy[Number(gm.value)].p ?? -1; if (p >= 0) { const g = gm.value; pow.value = String(p); fillGminy(file); gm.value = g; } }
+      run();
+    });
+    let timer = 0;
+    txt.addEventListener('input', () => { clearTimeout(timer); showAll = false; timer = window.setTimeout(run, 250); });
+    form.addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(timer); run(); });
+    form.addEventListener('reset', () => { setTimeout(() => { txt.value = ''; woj.value = ''; onWoj(); }, 0); });
+    out.addEventListener('click', (e) => { if ((e.target as Element).closest('[data-all]')) { showAll = true; run(); } });
+
+    // Wybór z adresu strony.
+    const q = new URLSearchParams(location.search);
+    const qw = q.get('woj');
+    if (q.get('m')) txt.value = q.get('m')!;
+    if (qw && regions.some((r) => r.slug === qw)) {
+      woj.value = qw;
+      load(qw).then((f) => {
+        file = f; fillPowiaty(f);
+        const pi = f.powiaty.findIndex((p) => p.label === q.get('pow'));
+        if (pi >= 0) pow.value = String(pi);
+        fillGminy(f);
+        const gi = f.gminy.findIndex((g) => g.label === q.get('gm'));
+        if (gi >= 0) gm.value = String(gi);
+        run();
+      }).catch(() => run());
+    } else if (txt.value) run();
+  }
+</script>

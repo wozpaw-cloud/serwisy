@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Search from '../../components/Search.astro';
+import AreaFinder from '../../components/AreaFinder.astro';
 import { M, citySnap, placeLink } from '../../lib/data';
 import { num } from '../../lib/format';
 
@@ -13,12 +14,14 @@ const places = M.cities
   .sort((a, b) => a.c.name.localeCompare(b.c.name, 'pl'));
 const byLetter = [...Map.groupBy(places, (x) => x.c.name[0].toLocaleUpperCase('pl'))];
 ---
-<Base title="Szukaj" description="Wyszukaj miejscowość, gminę, powiat, inwestycję albo dewelopera i sprawdź ceny mieszkań z cenników deweloperów." crumbs={[{ label: 'Szukaj' }]} search={false}>
+<Base title="Wyszukiwarka: województwa, powiaty, gminy" description="Wyszukiwarka województw, powiatów, gmin i miejscowości: mediana ceny za m², liczba lokali i najtańsze mieszkanie z cenników deweloperów." crumbs={[{ label: 'Szukaj' }]} search={false}>
   <section class="hero">
-    <h1>Szukaj</h1>
+    <h1>Wyszukiwarka</h1>
     <p class="lead">Wpisz nazwę miejscowości, gminy, powiatu, osiedla albo dewelopera. Podpowiedzi pojawią się podczas pisania.</p>
-    <Search id="q-page" size="hero" autofocus />
+    <Search id="q-page" size="hero" />
   </section>
+
+  <AreaFinder />
 
   <section class="section" aria-labelledby="az-h">
     <div class="section-head">

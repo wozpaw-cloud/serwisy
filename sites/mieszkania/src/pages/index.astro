@@ -8,6 +8,7 @@ import AiNote from '../components/AiNote.astro';
 import Search from '../components/Search.astro';
 import DealCard from '../components/DealCard.astro';
 import InvCard from '../components/InvCard.astro';
+import CheapOffers from '../components/CheapOffers.astro';
 import { SITE } from '../config';
 import { M, national, nationalSeries, citiesWithPage, citySnap, href, voivodeships, livePowiaty, liveGminas, powiatLink, gminaLink, deals, houseTiles, newInvestments, promotedInvestments, marketNews, invStats } from '../lib/data';
 import { dateLong, investmentsLoc, unitsGen, num, pct, pctAbs, share, trendWord, units, zl, zlM2, monthName } from '../lib/format';
@@ -51,6 +52,7 @@ const dir = (v: number | null) => (v === null || Math.abs(v) < 0.0005 ? 'flat' :
         <p class="quick">
           <span class="muted">Najwięcej ofert:</span>
           {citiesWithPage.slice(0, 6).map((c) => <a href={href.city(c)}>{c.name}</a>)}
+          <a class="quick-finder" href="/szukaj/#obszary">Wybierz województwo, powiat i gminę</a>
         </p>
       </div>
       <AiNote source="cenniki deweloperów z dane.gov.pl" date={M.asOf} />
@@ -84,6 +86,8 @@ const dir = (v: number | null) => (v === null || Math.abs(v) < 0.0005 ? 'flat' :
     <div><dt>Ceny tych samych lokali</dt><dd>{pct(s.change.index13w)}</dd><span class="delta">w 13 tygodni</span></div>
   </dl>
 
+  <CheapOffers />
+
   {grid.length > 0 && (
     <section class="section" aria-labelledby="deals-h">
       <div class="section-bar"><h2 id="deals-h">Wybite obniżki</h2><a href="/obnizki/">Zobacz wszystkie</a></div>
@@ -111,6 +115,7 @@ const dir = (v: number | null) => (v === null || Math.abs(v) < 0.0005 ? 'flat' :
       <a href="/powiaty/"><b>Powiaty</b><span>{num(livePowiaty.filter((p) => powiatLink(p)).length)}</span></a>
       <a href="/gminy/"><b>Gminy</b><span>{num(liveGminas.filter((g) => gminaLink(g)).length)}</span></a>
       <a href="/miasta/"><b>Miasta</b><span>{num(citiesWithPage.length)}</span></a>
+      <a href="/szukaj/#obszary"><b>Wyszukiwarka</b><span>woj. › powiat › gmina</span></a>
     </nav>
   </section>
 

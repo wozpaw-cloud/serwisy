@@ -12,6 +12,8 @@ import DealCard from './DealCard.astro';
 import InvCard from './InvCard.astro';
 import { M, invStats, href, unitLabel, invHasPage, brandHasPage, deals, promotedInvestments, newInvestments, type AreaRef } from '../lib/data';
 import { num, pct, share, zl, m2 } from '../lib/format';
+import { cheapest, rowOf } from '../lib/cheap';
+import { featured, runners } from '../lib/cheap-view';
 import type { Investment, Point, Unit } from '@serwisy/mieszkania-dane/query';
 
 interface Props {
@@ -48,7 +50,11 @@ const width = (s.p75M2 ?? 0) - (s.p25M2 ?? 0) > 6000 ? 1000 : 500;
 const areaDeals = deals(units, 4);
 const promos = promotedInvestments(investments).slice(0, 3);
 const freshHere = newInvestments(Math.max(0, 3 - promos.length), investments);
+// Najtańsze oferty w obszarze: jedna z każdej inwestycji.
+const cheapM = cheapest(skey, 'mieszkanie', 4, units).map(rowOf);
+const cheapD = cheapest(skey, 'dom', 4, units).map(rowOf);
 const nav = [
+  ...(cheapM.length || cheapD.length ? [{ id: 'najtansze', label: 'Najtańsze' }] : []),
   ...(chain.length > 1 ? [{ id: 'okolica', label: 'Na tle okolicy' }] : []),
   { id: 'wykresy', label: 'Wykresy' },
   ...(child ? [child] : []),
@@ -70,6 +76,29 @@ const nav = [
   <section class="section" id="okazje" aria-labelledby="okazje-h">
     <div class="section-bar"><h2 id="okazje-h">Obniżki: {name}</h2>{cuts.length > areaDeals.length && <a href="#obnizki">Wszystkie obniżki tutaj</a>}</div>
     <div class="deal-grid four">{areaDeals.map((d) => <DealCard d={d} showCity={showPlace} />)}</div>
+  </section>
+)}
+
+{(cheapM.length > 0 || cheapD.length > 0) && (
+  <section class="section cheap" id="najtansze" aria-labelledby="najtansze-h">
+    <div class="section-bar"><h2 id="najtansze-h">Najtańsze oferty: {name}</h2></div>
+    <p class="section-sub">Najniższe ceny całkowite w dzisiejszych cennikach, po jednej ofercie z inwestycji. Bez garaży, komórek i miejsc postojowych.</p>
+    <div class="cheap-pair">
+      {cheapM.length > 0 && (
+        <div class="cheap-main">
+          <h3 class="cheap-h">Najtańsze mieszkanie</h3>
+          <Fragment set:html={featured(cheapM[0], 'm')} />
+          {cheapM.length > 1 && <ol class="cheap-list" start="2" set:html={runners(cheapM.slice(1))} />}
+        </div>
+      )}
+      {cheapD.length > 0 && (
+        <div class="cheap-main">
+          <h3 class="cheap-h">Najtańszy dom</h3>
+          <Fragment set:html={featured(cheapD[0], 'd')} />
+          {cheapD.length > 1 && <ol class="cheap-list" start="2" set:html={runners(cheapD.slice(1))} />}
+        </div>
+      )}
+    </div>
   </section>
 )}
 
