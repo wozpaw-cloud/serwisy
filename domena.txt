@@ -1,0 +1,27 @@
+czas: 2026-11-01T09:49:23Z
+== Klucz ==
+klucz użytkownika: active
+klucz konta: 1000 Invalid API Token
+== Domeny (strefy) widoczne dla klucza ==
+cenaoddewelopera.pl  stan=active  serwery=vasilii.ns.cloudflare.com,wally.ns.cloudflare.com  to_konto=true
+== Worker ==
+worker cenaoddewelopera istnieje: tak
+subdomena workers.dev konta: cenyoddewelopera
+domeny podpięte pod workery: cenaoddewelopera.pl->cenaoddewelopera, www.cenaoddewelopera.pl->cenaoddewelopera
+== cenaoddewelopera.pl ==
+trasy workerów (odczyt): tak
+rekordy DNS w Cloudflare:
+  brak dostępu (10000 Authentication error)
+publiczny DNS: NS=vasilii.ns.cloudflare.com. wally.ns.cloudflare.com.  A=104.21.48.167 172.67.154.97  www=104.21.48.167 172.67.154.97 
+== cenaoddewelopera.pl w publicznym DNS ==
+NS=vasilii.ns.cloudflare.com. wally.ns.cloudflare.com.  A=104.21.48.167 172.67.154.97 
+DNSSEC (rekord DS u rejestratora, powinien być pusty): 
+wpis w rejestrze .pl (bez pamięci podręcznej): vasilii.ns.cloudflare.com. wally.ns.cloudflare.com. 
+odpowiedź serwera Cloudflare: vasilii.ns.cloudflare.com. wally.ns.cloudflare.com. 
+== Serwis na żywo ==
+https://cenaoddewelopera.pl/ -> 200 86197B 0.180346s | Cena od dewelopera: ceny mieszkań i domów z cenników deweloperów | jest: Najtańsze oferty,Wyszukiwarka województw, powiatów i gmin,data-cheap-picker
+https://www.cenaoddewelopera.pl/ -> 200 86197B 0.104733s | Cena od dewelopera: ceny mieszkań i domów z cenników deweloperów | jest: Najtańsze oferty,Wyszukiwarka województw, powiatów i gmin,data-cheap-picker
+https://cenaoddewelopera.pl/szukaj/ -> 200 133892B 0.214757s | Wyszukiwarka: województwa, powiaty, gminy | Cena od dewelopera | jest: Wyszukiwarka województw, powiatów i gmin
+https://cenaoddewelopera.pl/miasta/poznan/ -> 200 189253B 0.218044s | Ceny mieszkań od deweloperów: Poznań | Cena od dewelopera | jest: Najtańsze oferty
+https://cenaoddewelopera.pl/obszary/wielkopolskie.json -> 200 71383B 0.131092s  | {"powiaty":38,"gminy":83,"miejscowosci":160,"oferty":255}
+https://cenaoddewelopera.pl/szukaj.json -> 200 973139B 0.288240s 
