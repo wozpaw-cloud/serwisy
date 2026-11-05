@@ -27,13 +27,14 @@ jobs:
             echo "=== zbiór $z: atrybuty"
             curl -sS -m 60 "$A/datasets/$z" | jq -c '.data.attributes | {title, modified, update_frequency, archived: .archived_resources_files_url != null}' || echo "błąd"
           done
-          echo "=== najnowsze zasoby w całym portalu (fraza: ceny ofertowe)"
-          curl -sS -m 60 "$A/resources?q=ceny%20ofertowe&sort=-created&per_page=8" | jq -c '{count: .meta.count, top: [.data[] | {id, d: .attributes.data_date, c: .attributes.created, t: .attributes.title[0:90]}]}' || echo "błąd"
-          echo "=== najnowsze zbiory (fraza w tytule)"
-          curl -sS -m 60 "$A/datasets?title[phrase]=ceny%20ofertowe&sort=-created&per_page=8" | jq -c '{count: .meta.count, top: [.data[] | {id, c: .attributes.created, m: .attributes.modified, t: .attributes.title[0:90]}]}' || echo "błąd"
-          echo "=== zbiory ATAL"
-          curl -sS -m 60 "$A/datasets?q=ATAL&sort=-created&per_page=6" | jq -c '[.data[] | {id, c: .attributes.created, m: .attributes.modified, t: .attributes.title[0:90]}]' || echo "błąd"
-          echo "=== zbiór 9884 surowo"
-          curl -sS -m 60 "$A/datasets/9884" | head -c 1500; echo
-          echo "=== wiadomości portalu"
-          curl -sS -m 60 "$A/news?sort=-created&per_page=5" | jq -c '[.data[]? | {c: .attributes.created, t: .attributes.title}]' || echo "błąd"
+          echo "=== zasób 2867372 (ATAL 10-26): adresy"
+          curl -sS -m 60 "$A/resources/2867372" | jq -c '.data.attributes | {link, file_url, download_url, data_date, modified}' || echo "błąd"
+          echo "=== źródła XML zbiorów"
+          for z in $ZBIORY; do curl -sS -m 60 "$A/datasets/$z" | jq -c '.data.attributes.source' ; done
+          echo "=== plik XML ATAL (początek i daty)"
+          curl -sS -m 60 -L "https://file.atal.pl/ustawa/ATAL_Spolka_Akcyjna.xml" -o /tmp/atal.xml -w "HTTP %{http_code} %{size_download}B\n" || true
+          head -c 2500 /tmp/atal.xml; echo
+          echo "--- daty w XML (najnowsze):"
+          grep -o '20[0-9][0-9]-[01][0-9]-[0-3][0-9]' /tmp/atal.xml | sort | uniq -c | tail -8
+          echo "--- adresy plików w XML (ostatnie):"
+          grep -o 'https\?://[^<"]*\.\(xlsx\|csv\|xml\|json\)' /tmp/atal.xml | tail -5
