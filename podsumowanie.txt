@@ -1,0 +1,39 @@
+plików: 9344 (limit 20000)
+rozmiar: 454M
+== katalogi (liczba plików) ==
+5343 dist/inwestycje/
+3249 dist/deweloperzy/
+449 dist/miasta/
+124 dist/gminy/
+104 dist/powiaty/
+17 dist/wojewodztwa/
+16 dist/obszary/
+15 dist/raporty/
+7 dist/_astro/
+6 dist/dane/
+1 dist/szukaj/
+1 dist/prywatnosc/
+1 dist/obnizki/
+1 dist/o-serwisie/
+1 dist/metodologia/
+1 dist/indeks/
+1 dist/domy/
+1 dist/dla-deweloperow/
+== największe pliki ==
+1434348 dist/dane/gminy-tygodniowo.csv
+1277658 dist/dane/miasta-tygodniowo.csv
+905083 dist/szukaj.json
+876334 dist/dane/powiaty-tygodniowo.csv
+814503 dist/sitemap-0.xml
+645254 dist/indeks/index.html
+560737 dist/dane/inwestycje.csv
+514786 dist/deweloperzy/index.html
+428343 dist/miasta/warszawa-mazowieckie/index.html
+376737 dist/inwestycje/poznan-jakon-nowa-1-poznan/index.html
+370538 dist/miasta/index.html
+306643 dist/miasta/krakow-malopolskie/index.html
+304884 dist/inwestycje/polska-mennica-polska-polska/index.html
+294964 dist/gminy/index.html
+264530 dist/wojewodztwa/zachodniopomorskie/index.html
+sort: write failed: 'standard output': Broken pipe
+sort: write error
