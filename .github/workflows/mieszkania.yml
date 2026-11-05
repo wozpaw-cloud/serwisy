@@ -177,3 +177,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A && git commit -qm "Raport z przebiegu"
           git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" stan
+
+      # Przebieg bez importu albo z zatrzymaną publikacją ma być widoczny jako błąd
+      # (4.11.2026 import się nie odbył, a przebieg świecił na zielono).
+      - name: Wynik przebiegu
+        if: ${{ always() && !inputs.dry_run }}
+        run: |
+          if [ "${{ steps.harvest.outcome }}" != "success" ]; then
+            echo "::error::Serwis nie został zaktualizowany. Historia: ${{ steps.backfill.outcome }}, import: ${{ steps.harvest.outcome }}. Szczegóły w gałęzi stan."
+            exit 1
+          fi

@@ -26,6 +26,8 @@ const RESOURCES: Record<string, string[]> = {
   // Ten sam lokal w zbiorze rocznym 2025 (Y) i 2026 (X).
   X: days('2026-01-01', 300), Y: days('2025-09-01', 122),
   F: ['2026-10-01', '2029-08-26'], // literówka w dacie
+  // G: portal przestał zakładać zasoby 26.10, plik XML dewelopera ma cenniki do 5.11.
+  G: days('2026-10-01', 26),
 };
 const BROKEN = new Set(['C/2026-10-01']);
 const hits: string[] = [];
@@ -53,6 +55,13 @@ beforeAll(async () => {
         links: { next: page * perPage < all.length ? `${base}/next` : null },
         meta: { count: all.length },
       });
+    }
+    if (url.pathname === '/xml/G.xml') {
+      const item = (d: string) => `<resource status="published"><url>${base}/plik/G/${d}.csv</url><dataDate>${d}</dataDate></resource>`;
+      res.writeHead(200, { 'content-type': 'application/xml' });
+      return res.end(`<?xml version="1.0"?><datasets xmlns="urn:otwarte-dane:harvester:1.13">`
+        + `<dataset status="published"><title><polish>Ceny ofertowe mieszkań innej spółki</polish></title><resources>${item('2026-11-05')}</resources></dataset>`
+        + `<dataset status="published"><title><polish>Ceny ofertowe mieszkań G w 2026 r.</polish></title><resources>${days('2026-10-01', 36).map(item).join('')}</resources></dataset></datasets>`);
     }
     const f = url.pathname.match(/^\/plik\/(\w+)\/([\d-]+)\.csv$/);
     if (f && !BROKEN.has(`${f[1]}/${f[2]}`)) {
@@ -196,5 +205,35 @@ describe('daty z przyszłości', () => {
   it('pomija zasób z datą z przyszłości', async () => {
     const all = await mod.listAllResources('F');
     expect(all.map((r) => r.date)).toEqual(['2026-10-01']);
+  });
+});
+
+describe('plik XML dewelopera', () => {
+  it('gdy portal stoi, bierze nowsze cenniki z pliku XML, co najwyżej co 4 dni', async () => {
+    vi.setSystemTime(new Date('2026-11-05T12:00:00Z'));
+    const db = openDb(':memory:');
+    const g = { id: 'G', title: 'Ceny ofertowe mieszkań G w 2026 r.', source: `${base}/xml/G.xml` };
+    await mod.backfill(db, { datasets: [g] });
+    const res = await mod.harvest(db, { datasets: [g] });
+    expect(res.summaries.map((s) => s.date)).toEqual(['2026-10-30', '2026-11-03', '2026-11-05']);
+    expect(res.fromXml).toBe(3);
+    expect(res.errors).toHaveLength(0);
+    const unit = db.prepare("SELECT id FROM units WHERE ref = 'M1'").get() as { id: number };
+    const pres = db.prepare('SELECT from_date, to_date FROM presence WHERE unit_id = ?').all(unit.id) as { from_date: string; to_date: string }[];
+    expect(pres.at(-1)?.to_date).toBe('2026-11-05');
+    // Następnego dnia nic nowego: niczego nie pobiera drugi raz.
+    const again = await mod.harvest(db, { datasets: [g] });
+    expect(again.summaries).toHaveLength(0);
+    vi.useRealTimers();
+  });
+  it('gdy portal jest aktualny, pliku XML nie pobiera', async () => {
+    vi.setSystemTime(new Date('2026-10-27T12:00:00Z'));
+    const db = openDb(':memory:');
+    const before = hits.filter((h) => h.startsWith('/xml/')).length;
+    const g = { id: 'G', title: 'Ceny ofertowe mieszkań G w 2026 r.', source: `${base}/xml/G.xml` };
+    const res = await mod.harvest(db, { datasets: [g] });
+    expect(res.summaries.map((s) => s.date)).toEqual(['2026-10-26']);
+    expect(hits.filter((h) => h.startsWith('/xml/')).length).toBe(before);
+    vi.useRealTimers();
   });
 });

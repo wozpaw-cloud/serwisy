@@ -19,7 +19,7 @@ describe('wersje bazy', () => {
     db.close();
     // Wersja danych nieustawiona: cała baza od nowa.
     const run = () => execFileSync('npx', ['tsx', 'src/cli.ts', 'backfill', '--limit', '0', '--minutes', '0'],
-      { env: { ...process.env, MIESZKANIA_DB: path, DANE_API: 'http://127.0.0.1:9/api' }, stdio: 'pipe', encoding: 'utf8' });
+      { env: { ...process.env, MIESZKANIA_DB: path, DANE_API: 'http://127.0.0.1:9/api', DANE_API_TRIES: '1' }, stdio: 'pipe', encoding: 'utf8' });
     try { run(); } catch { /* kod 3 albo błąd sieci: interesuje nas stan bazy */ }
     const after = openDb(path);
     expect((after.prepare('SELECT count(*) AS n FROM snapshots').get() as { n: number }).n).toBe(0);

@@ -54,16 +54,30 @@ function report(summaries: IngestSummary[], errors: { datasetId: string; error: 
 }
 
 /** Lista zbiorów z pliku, jeśli świeża (historia i import w jednym przebiegu
- *  korzystają z tej samej listy; jej pobranie trwa kilkanaście minut). */
-async function datasetList(limit?: number): Promise<DatasetRef[]> {
+ *  korzystają z tej samej listy; jej pobranie trwa kilkanaście minut).
+ *  Gdy API nie odpowiada (4.11.2026 lista padła na przekroczeniu czasu i import się
+ *  nie odbył), bierzemy ostatnią listę zapisaną w bazie: zbiory zmieniają się powoli. */
+async function datasetList(db: ReturnType<typeof openDb>, limit?: number): Promise<DatasetRef[]> {
   const file = join(DATA_DIR, 'zbiory.json');
   const maxAgeH = Number(process.env.DATASET_LIST_MAX_AGE_H ?? 12);
   if (!limit && existsSync(file) && Date.now() - statSync(file).mtimeMs < maxAgeH * 3600000) {
     const list = JSON.parse(readFileSync(file, 'utf8')) as DatasetRef[];
     if (list.length) { console.error(`lista zbiorów z pliku: ${list.length}`); return list; }
   }
-  const list = (await listDeveloperDatasets({ stopAfter: limit })).slice(0, limit);
-  if (!limit) writeFileSync(file, JSON.stringify(list));
+  let list: DatasetRef[];
+  try {
+    list = (await listDeveloperDatasets({ stopAfter: limit })).slice(0, limit);
+  } catch (e) {
+    const saved = limit ? null : getMeta(db, 'lista_zbiorow');
+    if (!saved) throw e;
+    const { date, list: old } = JSON.parse(saved) as { date: string; list: DatasetRef[] };
+    console.error(`UWAGA: API nie podało listy zbiorów (${String((e as Error).message ?? e)}). Używam listy z ${date}: ${old.length} zbiorów.`);
+    list = old;
+  }
+  if (!limit) {
+    writeFileSync(file, JSON.stringify(list));
+    db.prepare("INSERT OR REPLACE INTO meta(key, value) VALUES ('lista_zbiorow', ?)").run(JSON.stringify({ date: new Date().toISOString().slice(0, 10), list }));
+  }
   return list;
 }
 
@@ -161,7 +175,7 @@ async function main(): Promise<number> {
     case 'harvest': {
       const db = openDb();
       const limit = opt('limit') ? Number(opt('limit')) : undefined;
-      const datasets = flag('dry-run') ? undefined : await datasetList(limit);
+      const datasets = flag('dry-run') ? undefined : await datasetList(db, limit);
       const res = await harvest(db, { dryRun: flag('dry-run'), limit, datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       if (flag('dry-run')) return 0;
       saveRejected();
@@ -173,7 +187,7 @@ async function main(): Promise<number> {
       const lim = opt('limit') ? Number(opt('limit')) : undefined;
       // Historia co 28 dni: obecność lokalu nie może się urywać między kolejnymi cennikami.
       process.env.PRESENCE_GAP_DAYS ??= '35';
-      const datasets = await datasetList(lim);
+      const datasets = await datasetList(db, lim);
       const res = await backfill(db, { datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       const all = [...res.errors, ...res.fileErrors];
       saveRejected();

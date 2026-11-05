@@ -12,6 +12,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
 import { devNameFromTitle, guessFormat, parseFile, readTable, sniffFormat, type ParseResult } from './parse.ts';
 import { mapColumns } from './columns.ts';
+import { gapPicks, xmlResources } from './xml-source.ts';
 
 export const API = process.env.DANE_API ?? 'https://api.dane.gov.pl/1.4';
 const UA = 'prostedane.pl importer (kontakt@prostedane.pl)';
@@ -20,11 +21,14 @@ const UA = 'prostedane.pl importer (kontakt@prostedane.pl)';
 const TITLE_RE = /ceny ofertowe/i;
 const TITLE_PHRASE = 'ceny ofertowe';
 const WINDOW = 10000;
+/** Lista zbiorów: więcej prób niż zwykle (4.11.2026 jedna strona listy przekroczyła czas). */
+const LIST_TRIES = Number(process.env.DANE_API_TRIES ?? 6);
 
 interface ApiItem { id: string | number; attributes?: Record<string, unknown>; links?: Record<string, unknown> }
 interface ApiList { data?: ApiItem[]; links?: { next?: string | null }; meta?: Record<string, unknown> }
 
-export interface DatasetRef { id: string; title: string }
+/** source: adres pliku XML dewelopera, z którego portal zakłada zasoby zbioru (gdy jest). */
+export interface DatasetRef { id: string; title: string; source?: string | null }
 /** urls: adresy pliku po kolei (kopia w dane.gov.pl, potem link dewelopera); stored: plik
  *  ma kopię w dane.gov.pl (link do serwera dewelopera pokazuje zawsze bieżący cennik). */
 export interface ResourceRef { id: string; date: string; url: string; urls: string[]; stored: boolean; format: string; raw: Record<string, unknown> }
@@ -43,7 +47,7 @@ async function getJson<T>(url: string, tries = 3): Promise<T> {
     } catch (e) {
       last = e;
       if (e instanceof RequestError || i === tries - 1) break;
-      await new Promise((r) => setTimeout(r, 1000 * 2 ** i));
+      await new Promise((r) => setTimeout(r, Math.min(30000, 1000 * 2 ** i)));
     }
   }
   throw last;
@@ -74,12 +78,14 @@ export async function listDeveloperDatasets(opts: { limitPages?: number; stopAft
   let total = 0;
   for (const sort of ['id', '-id']) {
     for (let page = 1; page <= limitPages; page++) {
-      const body = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=${sort}&per_page=100&page=${page}`);
+      const body = await getJson<ApiList>(`${API}/datasets?title[phrase]=${encodeURIComponent(TITLE_PHRASE)}&sort=${sort}&per_page=100&page=${page}`, LIST_TRIES);
       total = Number(body.meta?.count ?? total);
       const items = body.data ?? [];
       for (const it of items) {
         const title = String(it.attributes?.title ?? '');
-        if (TITLE_RE.test(title)) out.set(String(it.id), { id: String(it.id), title });
+        const src = it.attributes?.source as { type?: string; url?: string } | null | undefined;
+        const source = src && String(src.type ?? '').toLowerCase() === 'xml' && /^https?:\/\//.test(String(src.url ?? '')) ? String(src.url) : null;
+        if (TITLE_RE.test(title)) out.set(String(it.id), { id: String(it.id), title, ...(source ? { source } : {}) });
       }
       if (page % 20 === 0) console.error(`lista zbiorów (${sort}): strona ${page}, zbiorów ${out.size} z ${total}, ${Math.round((Date.now() - started) / 1000)} s`);
       if (opts.stopAfter && out.size >= opts.stopAfter) return [...out.values()].slice(0, opts.stopAfter);
@@ -87,7 +93,7 @@ export async function listDeveloperDatasets(opts: { limitPages?: number; stopAft
     }
     if (total <= WINDOW) break; // całość mieści się w jednym przebiegu
   }
-  console.error(`lista zbiorów: ${out.size} zbiorów z cenami (portal podaje ${total} dla frazy w tytule)`);
+  console.error(`lista zbiorów: ${out.size} zbiorów z cenami (portal podaje ${total} dla frazy w tytule), z plikiem XML dewelopera: ${[...out.values()].filter((d) => d.source).length}`);
   if (total > 2 * WINDOW) console.error(`UWAGA: zbiorów jest ponad ${2 * WINDOW}; część nie zmieściła się w dwóch przebiegach. Trzeba podzielić zapytanie.`);
   return [...out.values()];
 }
@@ -347,33 +353,61 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
   let checked = 0;
   let lastLog = Date.now();
 
+  // Pliki XML deweloperów (wspólne dla kilku zbiorów) pobieramy raz na przebieg.
+  const xmlCache = new Map<string, Promise<string>>();
+  const xmlText = (url: string) => {
+    if (!xmlCache.has(url)) xmlCache.set(url, download(url, 60 * 1024 * 1024).then((b) => b.toString('utf8')));
+    return xmlCache.get(url)!;
+  };
+  const yesterday = new Date(Date.parse(today) - 86400000).toISOString().slice(0, 10);
+  let fromXml = 0;
+
   await pool(ordered, opts.concurrency ?? 8, async (ds) => {
     if (!opts.limit && dormant(ds)) { skippedDormant++; return; }
     if (Date.now() >= deadline) { skippedForTime++; return; }
-    if (Date.now() - lastLog > 60000) { lastLog = Date.now(); console.error(`import: ${checked} z ${ordered.length} zbiorów, nowych cenników ${summaries.length}, błędów ${errors.length}`); }
+    if (Date.now() - lastLog > 60000) { lastLog = Date.now(); console.error(`import: ${checked} z ${ordered.length} zbiorów, nowych cenników ${summaries.length} (z XML deweloperów ${fromXml}), błędów ${errors.length}`); }
     try {
       const [res] = await listResources(ds.id, 1);
-      if (!res) return;
-      if (opts.dryRun) { console.log(JSON.stringify({ dataset: ds, resource: res.raw }, null, 1)); return; }
-      const prev = last.get(ds.id);
-      if (prev && prev >= res.date) return;
-      const t = tried.get(ds.id);
-      if (t && t >= res.date) return; // ten plik już był i został odrzucony
-      const buf = await downloadAny(res.urls);
-      await parseSlot(async () => {
-        const parsed = await parseFile(buf, res.format, { devFallback: devNameFromTitle(ds.title) });
-        noteRejected(parsed, ds.id, res.date, res.url);
-        summaries.push(ingestSnapshot(db, { datasetId: ds.id, title: ds.title, date: res.date, sourceUrl: res.url }, parsed));
-      });
+      if (opts.dryRun) { if (res) console.log(JSON.stringify({ dataset: ds, resource: res.raw }, null, 1)); return; }
+      const prev = last.get(ds.id) ?? null;
+      // Najnowszy dzień już obsłużony (wczytany albo odrzucony): ten plik nie wraca.
+      const known = [prev, tried.get(ds.id) ?? null].filter((x): x is string => !!x).sort().at(-1) ?? null;
+      type Pick = { date: string; url: string; urls: string[]; format: string; xml: boolean };
+      let cands: Pick[] = res && (!known || res.date > known) ? [{ date: res.date, url: res.url, urls: res.urls, format: res.format, xml: false }] : [];
+      // Portal w tyle za plikiem XML dewelopera (od 27.10.2026 nie zakłada z nich nowych zasobów):
+      // nowsze cenniki bierzemy prosto z adresów w tym pliku.
+      if (ds.source && (!res || res.date < yesterday)) {
+        try {
+          const extra = xmlResources(await xmlText(ds.source), ds.title, today)
+            .filter((x) => (!known || x.date > known) && !cands.some((c) => c.date === x.date))
+            .map((x) => ({ date: x.date, url: x.url, urls: [x.url], format: guessFormat(x.url, ''), xml: true }));
+          cands = [...cands, ...extra];
+        } catch (e) {
+          errors.push({ datasetId: ds.id, error: `plik XML dewelopera: ${String((e as Error).message ?? e)}` });
+        }
+      }
+      for (const p of gapPicks(cands, prev)) {
+        let buf: Buffer;
+        try { buf = await downloadAny(p.urls); } catch (e) {
+          errors.push({ datasetId: ds.id, error: `${p.date}: ${String((e as Error).message ?? e)}` });
+          continue;
+        }
+        await parseSlot(async () => {
+          const parsed = await parseFile(buf, p.format, { devFallback: devNameFromTitle(ds.title) });
+          noteRejected(parsed, ds.id, p.date, p.url);
+          summaries.push(ingestSnapshot(db, { datasetId: ds.id, title: ds.title, date: p.date, sourceUrl: p.url }, parsed));
+        });
+        if (p.xml) fromXml++;
+      }
     } catch (e) {
       errors.push({ datasetId: ds.id, error: String((e as Error).message ?? e) });
     } finally {
       checked++;
     }
   });
-  console.error(`import: sprawdzono ${checked} zbiorów, nowych cenników ${summaries.length}, błędów ${errors.length}, uśpionych pominiętych ${skippedDormant}`);
+  console.error(`import: sprawdzono ${checked} zbiorów, nowych cenników ${summaries.length} (z plików XML deweloperów ${fromXml}), błędów ${errors.length}, uśpionych pominiętych ${skippedDormant}`);
   if (skippedForTime) console.error(`import: limit czasu, pominięto ${skippedForTime} zbiorów (wejdą jutro)`);
-  return { datasets: datasets.length, summaries, errors, skippedForTime, skippedDormant };
+  return { datasets: datasets.length, summaries, errors, skippedForTime, skippedDormant, fromXml };
 }
 
 /** Cenniki do historii: jeden na okres (domyślnie 28 dni) i zawsze najnowszy, jeden na dzień. */
