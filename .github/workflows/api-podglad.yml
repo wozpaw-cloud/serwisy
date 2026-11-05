@@ -1,0 +1,29 @@
+# Podgląd zasobów wybranych zbiorów w API dane.gov.pl (diagnostyka importu).
+# Wynik w logu przebiegu: najnowsze zasoby według data_date i według id.
+name: Podgląd zasobów w API
+on:
+  workflow_dispatch:
+    inputs:
+      zbiory:
+        description: 'Numery zbiorów oddzielone spacją'
+        default: '9884 11900 23622 6217'
+jobs:
+  podglad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Zasoby
+        env:
+          ZBIORY: ${{ inputs.zbiory }}
+        run: |
+          A=https://api.dane.gov.pl/1.4
+          for z in $ZBIORY; do
+            echo "=== zbiór $z: sort=-data_date"
+            curl -sS -m 60 "$A/datasets/$z/resources?sort=-data_date&per_page=5" | jq -c '{count: .meta.count, top: [.data[] | {id, d: .attributes.data_date, c: .attributes.created, m: .attributes.modified, t: .attributes.title[-40:], f: .attributes.format}]}' || echo "błąd"
+            echo "=== zbiór $z: sort=-id"
+            curl -sS -m 60 "$A/datasets/$z/resources?sort=-id&per_page=3" | jq -c '[.data[] | {id, d: .attributes.data_date, c: .attributes.created}]' || echo "błąd"
+            echo "=== zbiór $z: bez sortowania"
+            curl -sS -m 60 "$A/datasets/$z/resources?per_page=3" | jq -c '[.data[] | {id, d: .attributes.data_date, c: .attributes.created}]' || echo "błąd"
+            echo "=== zbiór $z: atrybuty"
+            curl -sS -m 60 "$A/datasets/$z" | jq -c '.data.attributes | {title, modified, update_frequency, archived: .archived_resources_files_url != null}' || echo "błąd"
+          done
