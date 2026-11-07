@@ -1,0 +1,60 @@
+import: 5273 z 18614 zbiorów, nowych cenników 948 (z XML deweloperów 757), błędów 800
+import: 5873 z 18614 zbiorów, nowych cenników 1026 (z XML deweloperów 784), błędów 830
+import: 6111 z 18614 zbiorów, nowych cenników 1235 (z XML deweloperów 794), błędów 865
+import: 6328 z 18614 zbiorów, nowych cenników 1423 (z XML deweloperów 802), błędów 916
+import: 6533 z 18614 zbiorów, nowych cenników 1573 (z XML deweloperów 856), błędów 922
+import: 6734 z 18614 zbiorów, nowych cenników 1763 (z XML deweloperów 992), błędów 926
+import: 6984 z 18614 zbiorów, nowych cenników 2003 (z XML deweloperów 1177), błędów 930
+import: 7279 z 18614 zbiorów, nowych cenników 2293 (z XML deweloperów 1421), błędów 932
+import: 7451 z 18614 zbiorów, nowych cenników 2461 (z XML deweloperów 1589), błędów 933
+import: 7627 z 18614 zbiorów, nowych cenników 2635 (z XML deweloperów 1763), błędów 933
+import: 7795 z 18614 zbiorów, nowych cenników 2797 (z XML deweloperów 1925), błędów 935
+import: 8012 z 18614 zbiorów, nowych cenników 2999 (z XML deweloperów 2127), błędów 937
+import: 8195 z 18614 zbiorów, nowych cenników 3177 (z XML deweloperów 2304), błędów 938
+import: 8344 z 18614 zbiorów, nowych cenników 3320 (z XML deweloperów 2447), błędów 941
+import: 8591 z 18614 zbiorów, nowych cenników 3552 (z XML deweloperów 2678), błędów 951
+import: 8870 z 18614 zbiorów, nowych cenników 3808 (z XML deweloperów 2934), błędów 954
+import: 9120 z 18614 zbiorów, nowych cenników 4043 (z XML deweloperów 3169), błędów 958
+import: 9413 z 18614 zbiorów, nowych cenników 4324 (z XML deweloperów 3450), błędów 963
+import: 9610 z 18614 zbiorów, nowych cenników 4514 (z XML deweloperów 3639), błędów 965
+import: 9906 z 18614 zbiorów, nowych cenników 4801 (z XML deweloperów 3926), błędów 970
+import: sprawdzono 10049 zbiorów, nowych cenników 4940 (z plików XML deweloperów 4065), błędów 972, uśpionych pominiętych 8565
+{
+ "status": "ok",
+ "asOf": "2026-11-07",
+ "unitsInOffer": 133364,
+ "files": 4940,
+ "problems": 3742,
+ "przyczyny": {
+  "blad: plik nie jest cennikiem (obraz albo PDF)": 402,
+  "odrzucony: brak kolumn: city": 232,
+  "odrzucony: brak kolumn: city, unitRef, priceM2": 200,
+  "blad: stary format Excel (.xls) nie jest obsługiwany": 173,
+  "odrzucony: brak opisu": 158,
+  "odrzucony: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo ": 106,
+  "blad: plik XML dewelopera: fetch failed": 101,
+  "blad: plik XML dewelopera: HTTP 403 przy pobieraniu": 75,
+  "blad: fetch failed": 72,
+  "odrzucony: nowe kolumny: type | price": 66,
+  "blad: plik XML dewelopera: HTTP 404 przy pobieraniu": 56,
+  "blad: HTTP 404 przy pobieraniu": 52,
+  "odrzucony: brak kolumn: city, priceM2": 32,
+  "odrzucony: brak kolumn: unitRef": 26,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":2}": 25,
+  "blad: plik XML dewelopera: HTTP 400 przy pobieraniu": 25,
+  "odrzucony: brak kolumn: priceM2": 24,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":1}": 24,
+  "odrzucony: brak kolumn: city, unitRef": 22,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":3}": 21,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":15}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":12}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":7}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":16}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":5}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":4}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22}": 13,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":6}": 13,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":3}": 13,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":8}": 13
+ }
+}

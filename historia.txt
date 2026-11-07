@@ -1,0 +1,52 @@
+lista zbiorów (id): strona 20, zbiorów 1972 z 18698, 78 s
+lista zbiorów (id): strona 40, zbiorów 3941 z 18698, 176 s
+lista zbiorów (id): strona 60, zbiorów 5936 z 18698, 260 s
+lista zbiorów (id): strona 80, zbiorów 7934 z 18698, 332 s
+lista zbiorów (id): strona 100, zbiorów 9931 z 18698, 394 s
+lista zbiorów (-id): strona 20, zbiorów 11928 z 18698, 441 s
+lista zbiorów (-id): strona 40, zbiorów 13927 z 18698, 501 s
+lista zbiorów (-id): strona 60, zbiorów 15924 z 18698, 558 s
+lista zbiorów (-id): strona 80, zbiorów 17920 z 18698, 612 s
+lista zbiorów (-id): strona 100, zbiorów 18614 z 18698, 687 s
+lista zbiorów: 18614 zbiorów z cenami (portal podaje 18698 dla frazy w tytule), z plikiem XML dewelopera: 5800
+historia: lista gotowa, zbiorów 98, cenników do wczytania 138, błędów API 0
+{"historia":{"zbiory":18614,"doWczytania":98,"pozostalo":0,"bledyApi":0,"bledyPlikow":0,"limitCzasu":false}}
+{
+ "status": "ok",
+ "asOf": "2026-11-06",
+ "unitsInOffer": 132914,
+ "files": 138,
+ "problems": 64,
+ "przyczyny": {
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":14,\"nie lokal mieszkalny (parking, komórka": 12,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":24}": 5,
+  "odrzucony: brak kolumn: city": 5,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":3}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":16}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking,": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":20}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":3}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komó": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":113}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"cena całkowita poza zakresem\":14}": 2,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":141}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":143}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":14}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":161}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":15}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":19,\"brak c": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":7}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":8}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"cena całkowita poza zakresem\":30,\"powierzchnia poza zakrese": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":11}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":12}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":18,\"brak c": 1,
+  "odrzucony: nowe kolumny: Metraż m2": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":196}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":174}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":88}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":164}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":7}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":171}": 1
+ }
+}
