@@ -1,0 +1,11 @@
+UWAGA: API nie podało listy zbiorów (fetch failed). Używam listy z 2026-11-09: 18683 zbiorów.
+historia: lista gotowa, zbiorów 0, cenników do wczytania 0, błędów API 0
+{"historia":{"zbiory":18683,"doWczytania":0,"pozostalo":0,"bledyApi":0,"bledyPlikow":0,"limitCzasu":false}}
+{
+ "status": "ok",
+ "asOf": "2026-11-09",
+ "unitsInOffer": 142952,
+ "files": 0,
+ "problems": 0,
+ "przyczyny": {}
+}

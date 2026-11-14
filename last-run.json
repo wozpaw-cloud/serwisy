@@ -1,0 +1,80 @@
+{
+ "files": 0,
+ "ok": 0,
+ "warnings": 0,
+ "rejected": 0,
+ "skipped": 0,
+ "newUnits": 0,
+ "priceChanges": 0,
+ "problemCount": 1120,
+ "problemReasons": {
+  "blad: fetch failed": 1120
+ },
+ "problems": [
+  {
+   "datasetId": "4899",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4965",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4956",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4947",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4944",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4929",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4928",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4927",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4966",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  },
+  {
+   "datasetId": "4997",
+   "date": null,
+   "status": "blad",
+   "note": "fetch failed"
+  }
+ ],
+ "asOf": "2026-11-09",
+ "unitsInOffer": 142952,
+ "previousUnitsInOffer": 142952,
+ "staleDatasets": 986,
+ "status": "ok"
+}

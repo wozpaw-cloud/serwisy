@@ -1,0 +1,60 @@
+import: 345 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 345
+import: 361 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 361
+import: 377 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 377
+import: 393 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 393
+import: 409 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 409
+import: 425 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 425
+import: 441 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 441
+import: 457 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 457
+import: 473 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 473
+import: 489 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 489
+import: 505 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 505
+import: 521 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 521
+import: 537 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 537
+import: 553 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 553
+import: 569 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 569
+import: 585 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 585
+import: 601 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 601
+import: 617 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 617
+import: 633 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 633
+import: 649 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 649
+import: 665 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 665
+import: 681 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 681
+import: 697 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 697
+import: 713 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 713
+import: 729 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 729
+import: 745 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 745
+import: 761 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 761
+import: 777 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 777
+import: 793 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 793
+import: 809 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 809
+import: 825 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 825
+import: 841 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 841
+import: 857 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 857
+import: 873 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 873
+import: 889 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 889
+import: 905 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 905
+import: 921 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 921
+import: 937 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 937
+import: 953 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 953
+import: 969 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 969
+import: 985 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 985
+import: 1001 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1001
+import: 1017 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1017
+import: 1033 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1033
+import: 1049 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1049
+import: 1065 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1065
+import: 1081 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1081
+import: 1097 z 18683 zbiorów, nowych cenników 0 (z XML deweloperów 0), błędów 1097
+import: sprawdzono 1120 zbiorów, nowych cenników 0 (z plików XML deweloperów 0), błędów 1120, uśpionych pominiętych 8628
+import: limit czasu, pominięto 8935 zbiorów (wejdą jutro)
+{
+ "status": "ok",
+ "asOf": "2026-11-09",
+ "unitsInOffer": 142952,
+ "files": 0,
+ "problems": 1120,
+ "przyczyny": {
+  "blad: fetch failed": 1120
+ }
+}

@@ -1,0 +1,53 @@
+{
+ "generated": "2026-11-14T07:26:51.435Z",
+ "alarms": [
+  {
+   "level": "informacja",
+   "text": "1120 × blad: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4899: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4965: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4956: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4947: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4944: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4929: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4928: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4927: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4966: fetch failed"
+  },
+  {
+   "level": "blad",
+   "text": "4997: fetch failed"
+  },
+  {
+   "level": "informacja",
+   "text": "986 cenników nie aktualizowano od ponad 7 dni."
+  }
+ ]
+}
