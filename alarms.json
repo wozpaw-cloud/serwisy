@@ -1,0 +1,1049 @@
+{
+ "generated": "2026-11-21T06:25:34.095Z",
+ "alarms": [
+  {
+   "level": "krytyczny",
+   "text": "Liczba lokali w ofercie spadła o 99% (z 135767 do 1787). Publikacja wstrzymana."
+  },
+  {
+   "level": "informacja",
+   "text": "119 × odrzucony: brak kolumn: unitRef"
+  },
+  {
+   "level": "informacja",
+   "text": "47 × odrzucony: brak kolumn: city"
+  },
+  {
+   "level": "informacja",
+   "text": "17 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "informacja",
+   "text": "17 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "informacja",
+   "text": "17 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "informacja",
+   "text": "16 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komó"
+  },
+  {
+   "level": "informacja",
+   "text": "11 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "informacja",
+   "text": "11 × blad: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "informacja",
+   "text": "9 × odrzucony: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "informacja",
+   "text": "9 × odrzucony: brak opisu"
+  },
+  {
+   "level": "informacja",
+   "text": "8 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "informacja",
+   "text": "7 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "informacja",
+   "text": "6 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":3"
+  },
+  {
+   "level": "informacja",
+   "text": "5 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "level": "informacja",
+   "text": "5 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "level": "informacja",
+   "text": "5 × odrzucony: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo "
+  },
+  {
+   "level": "informacja",
+   "text": "5 × ostrzezenie: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking,"
+  },
+  {
+   "level": "informacja",
+   "text": "4 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":209}"
+  },
+  {
+   "level": "informacja",
+   "text": "4 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "level": "informacja",
+   "text": "3 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":15,\"nie lokal mieszkalny (parking, komórka"
+  },
+  {
+   "level": "informacja",
+   "text": "3 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":20}"
+  },
+  {
+   "level": "informacja",
+   "text": "3 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":210}"
+  },
+  {
+   "level": "informacja",
+   "text": "3 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":13,\"nie lokal mieszkalny (parking, komórka"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":47,\"nie lokal mieszkalny (parking, komórka"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":16,\"nie lokal mieszkalny (parking, komórka"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":22,\"nie lokal mieszkalny (parking, komórka"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":59,\"nie lokal mieszkalny (parking, komórka"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":102}"
+  },
+  {
+   "level": "informacja",
+   "text": "2 × ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":215}"
+  },
+  {
+   "level": "blad",
+   "text": "43605: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43600: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43600: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43605: brak kolumn: city"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42824: odrzucone wiersze: {\"brak ceny za m²\":39,\"brak numeru lokalu\":767}"
+  },
+  {
+   "level": "blad",
+   "text": "43600: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43605: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43600: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43605: brak kolumn: city"
+  },
+  {
+   "level": "blad",
+   "text": "43600: brak kolumn: city"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "blad",
+   "text": "43605: brak kolumn: city"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":13,\"nie lokal mieszkalny (parking, komórka, usługi)\":30}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":36,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":37,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":13,\"nie lokal mieszkalny (parking, komórka, usługi)\":30}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":15,\"nie lokal mieszkalny (parking, komórka, usługi)\":30}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":44,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":15,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":47,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":15,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":47,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "blad",
+   "text": "43344: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "blad",
+   "text": "43120: odrzucony"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":16,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":49,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "blad",
+   "text": "43344: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "blad",
+   "text": "43120: odrzucony"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43091: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":37}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":16,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":56,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "blad",
+   "text": "43344: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "blad",
+   "text": "43120: odrzucony"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":58,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43091: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":37}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":21,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "blad",
+   "text": "43011: nowe kolumny: wojewodztwo_deweloper | powiat_deweloper | gmina_deweloper | miejscowosc_deweloper | ulica_deweloper"
+  },
+  {
+   "level": "blad",
+   "text": "43344: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43381: odrzucone wiersze: {\"brak ceny za m²\":11}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43091: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":37}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":59,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "blad",
+   "text": "43120: odrzucony"
+  },
+  {
+   "level": "blad",
+   "text": "43539: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "blad",
+   "text": "43344: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43136: odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43130: odrzucone wiersze: {\"brak numeru lokalu\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43134: odrzucone wiersze: {\"brak numeru lokalu\":102}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43135: odrzucone wiersze: {\"brak numeru lokalu\":215}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43125: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43137: odrzucone wiersze: {\"brak numeru lokalu\":214}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43129: odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43128: odrzucone wiersze: {\"brak numeru lokalu\":78}"
+  },
+  {
+   "level": "blad",
+   "text": "43124: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym | Oznaczenie pomieszczenia przynależnego, o którym mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali | Wartość innego świadczenia pieniężnego, które nabywca zobowiązany jest spełnić na rzecz podmiotu obowiązanego w wykonaniu umowy przenoszącej własność"
+  },
+  {
+   "level": "blad",
+   "text": "43120: odrzucony"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43131: odrzucone wiersze: {\"brak numeru lokalu\":209}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43091: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":37}"
+  },
+  {
+   "level": "blad",
+   "text": "42830: odrzucony"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42822: odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42823: odrzucone wiersze: {\"brak numeru lokalu\":214}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43123: odrzucone wiersze: {\"brak numeru lokalu\":248}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42820: odrzucone wiersze: {\"brak numeru lokalu\":102}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42821: odrzucone wiersze: {\"brak numeru lokalu\":215}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42818: odrzucone wiersze: {\"brak numeru lokalu\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42817: odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42814: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "blad",
+   "text": "42813: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym | Oznaczenie pomieszczenia przynależnego, o którym mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali | Wartość innego świadczenia pieniężnego, które nabywca zobowiązany jest spełnić na rzecz podmiotu obowiązanego w wykonaniu umowy przenoszącej własność"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42991: odrzucone wiersze: {\"brak ceny za m²\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42990: odrzucone wiersze: {\"brak ceny za m²\":59,\"nie lokal mieszkalny (parking, komórka, usługi)\":92}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42816: odrzucone wiersze: {\"brak numeru lokalu\":78}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42819: odrzucone wiersze: {\"brak numeru lokalu\":209}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42812: odrzucone wiersze: {\"brak numeru lokalu\":248}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42836: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42849: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42856: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking, komórka, usługi)\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42850: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42841: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42825: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42873: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42885: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42880: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42892: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42902: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking, komórka, usługi)\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42886: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42956: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking, komórka, usługi)\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42937: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42928: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42936: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42949: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42951: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "blad",
+   "text": "42946: brak kolumn: priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42821: odrzucone wiersze: {\"brak numeru lokalu\":211}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42818: odrzucone wiersze: {\"brak numeru lokalu\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42817: odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42814: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42816: odrzucone wiersze: {\"brak numeru lokalu\":77}"
+  },
+  {
+   "level": "blad",
+   "text": "42813: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym | Oznaczenie pomieszczenia przynależnego, o którym mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali | Wartość innego świadczenia pieniężnego, które nabywca zobowiązany jest spełnić na rzecz podmiotu obowiązanego w wykonaniu umowy przenoszącej własność"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42819: odrzucone wiersze: {\"brak numeru lokalu\":209}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42822: odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42823: odrzucone wiersze: {\"brak numeru lokalu\":210}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42820: odrzucone wiersze: {\"brak numeru lokalu\":268}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42812: odrzucone wiersze: {\"brak numeru lokalu\":246}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43006: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking, komórka, usługi)\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42994: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42992: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42981: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42993: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42977: odrzucone wiersze: {\"brak numeru lokalu\":5}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42972: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43038: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43039: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43035: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43041: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43034: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43061: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43064: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43062: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43068: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43066: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43117: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43142: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking, komórka, usługi)\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43118: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43105: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43094: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43089: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43190: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43179: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43170: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43169: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "blad",
+   "text": "43177: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43165: odrzucone wiersze: {\"brak numeru lokalu\":114}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43022: odrzucone wiersze: {\"brak numeru lokalu\":57}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43197: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43216: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43215: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "blad",
+   "text": "43211: brak kolumn: unitRef"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43200: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "blad",
+   "text": "43189: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "blad",
+   "text": "43202: brak kolumn: unitRef"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43318: odrzucone wiersze: {\"brak ceny za m²\":20}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43321: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komórka, usługi)\":100}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43319: odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43301: odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "level": "blad",
+   "text": "43298: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "42978: odrzucony"
+  },
+  {
+   "level": "blad",
+   "text": "43303: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "43353: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "43339: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "43342: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "43376: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "43392: brak kolumn: unitRef"
+  },
+  {
+   "level": "blad",
+   "text": "43400: brak kolumn: unitRef"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43371: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":16}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43492: odrzucone wiersze: {\"brak ceny za m²\":4}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43482: odrzucone wiersze: {\"brak numeru lokalu\":162}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43441: odrzucone wiersze: {\"brak numeru lokalu\":118}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43367: odrzucone wiersze: {\"brak numeru lokalu\":223}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43136: odrzucone wiersze: {\"brak numeru lokalu\":32}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43134: odrzucone wiersze: {\"brak numeru lokalu\":98}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43132: odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43130: odrzucone wiersze: {\"brak numeru lokalu\":19}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43125: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43129: odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43137: odrzucone wiersze: {\"brak numeru lokalu\":204}"
+  },
+  {
+   "level": "blad",
+   "text": "43124: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym | Oznaczenie pomieszczenia przynależnego, o którym mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali | Wartość innego świadczenia pieniężnego, które nabywca zobowiązany jest spełnić na rzecz podmiotu obowiązanego w wykonaniu umowy przenoszącej własność"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43111: odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43135: odrzucone wiersze: {\"brak numeru lokalu\":210}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43133: odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43128: odrzucone wiersze: {\"brak numeru lokalu\":70}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43110: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43131: odrzucone wiersze: {\"brak numeru lokalu\":209}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43109: odrzucone wiersze: {\"brak numeru lokalu\":7}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43123: odrzucone wiersze: {\"brak numeru lokalu\":238}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43114: odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43091: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":37}"
+  },
+  {
+   "level": "blad",
+   "text": "42830: odrzucony"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42848: odrzucone wiersze: {\"brak numeru lokalu\":88}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42789: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":56}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43441: odrzucone wiersze: {\"brak numeru lokalu\":118}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43114: odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42789: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":56}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43367: odrzucone wiersze: {\"brak numeru lokalu\":223}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43482: odrzucone wiersze: {\"brak numeru lokalu\":162}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "42848: odrzucone wiersze: {\"brak numeru lokalu\":88}"
+  },
+  {
+   "level": "blad",
+   "text": "43598: nowe kolumny: Województwo przedsięwzięcia deweloperskiego | Powiat przedsięwzięcia deweloperskiego | Gmina przedsięwzięcia deweloperskiego | Cena lokalu lub domu z dodatками | Wyszczególnienie praw do lokalu"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43597: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43606: odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43492: odrzucone wiersze: {\"brak ceny za m²\":4}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43458: odrzucone wiersze: {\"cena całkowita poza zakresem\":4,\"nie lokal mieszkalny (parking, komórka, usługi)\":103}"
+  },
+  {
+   "level": "blad",
+   "text": "43143: brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43136: odrzucone wiersze: {\"brak numeru lokalu\":32}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43130: odrzucone wiersze: {\"brak numeru lokalu\":19}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43125: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43134: odrzucone wiersze: {\"brak numeru lokalu\":98}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43129: odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43128: odrzucone wiersze: {\"brak numeru lokalu\":70}"
+  },
+  {
+   "level": "blad",
+   "text": "43124: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym | Oznaczenie pomieszczenia przynależnego, o którym mowa w art. 2 ust. 4 ustawy z dnia 24 czerwca 1994 r. o własności lokali | Wartość innego świadczenia pieniężnego, które nabywca zobowiązany jest spełnić na rzecz podmiotu obowiązanego w wykonaniu umowy przenoszącej własność"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43137: odrzucone wiersze: {\"brak numeru lokalu\":204}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43111: odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43110: odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43133: odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43135: odrzucone wiersze: {\"brak numeru lokalu\":210}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43131: odrzucone wiersze: {\"brak numeru lokalu\":206}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43095: odrzucone wiersze: {\"brak numeru lokalu\":5}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43132: odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43109: odrzucone wiersze: {\"brak numeru lokalu\":7}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43091: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":37}"
+  },
+  {
+   "level": "ostrzezenie",
+   "text": "43123: odrzucone wiersze: {\"brak numeru lokalu\":238}"
+  },
+  {
+   "level": "blad",
+   "text": "42947: nowe kolumny: Dystrybutorzy | Adres_email | Adres_strony_www | Rodzaj_czesci_przynaleznosci | Cena_czesci_przynaleznosci"
+  },
+  {
+   "level": "blad",
+   "text": "42899: nowe kolumny: Dystrybutorzy | Adres_email | Adres_strony_www | Rodzaj_czesci_przynaleznosci | Cena_czesci_przynaleznosci"
+  },
+  {
+   "level": "blad",
+   "text": "42830: odrzucony"
+  },
+  {
+   "level": "blad",
+   "text": "42811: 2026-11-03: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "42868: 2026-11-04: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "42922: 2026-11-05: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "42973: 2026-11-06: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "43108: 2026-11-09: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "43176: 2026-11-10: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "43306: 2026-11-12: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "43435: 2026-11-16: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "43486: 2026-11-17: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "blad",
+   "text": "43531: 2026-11-18: stary format Excel (.xls) nie jest obsługiwany"
+  },
+  {
+   "level": "informacja",
+   "text": "5170 cenników nie aktualizowano od ponad 7 dni."
+  }
+ ]
+}

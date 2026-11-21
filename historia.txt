@@ -1,0 +1,53 @@
+lista zbiorów (id): strona 20, zbiorów 1972 z 19132, 70 s
+lista zbiorów (id): strona 40, zbiorów 3941 z 19132, 151 s
+lista zbiorów (id): strona 60, zbiorów 5936 z 19132, 260 s
+lista zbiorów (id): strona 80, zbiorów 7934 z 19132, 336 s
+lista zbiorów (id): strona 100, zbiorów 9931 z 19132, 394 s
+lista zbiorów (-id): strona 20, zbiorów 11928 z 19132, 430 s
+lista zbiorów (-id): strona 40, zbiorów 13927 z 19132, 480 s
+lista zbiorów (-id): strona 60, zbiorów 15924 z 19132, 533 s
+lista zbiorów (-id): strona 80, zbiorów 17921 z 19132, 585 s
+lista zbiorów (-id): strona 100, zbiorów 19048 z 19132, 660 s
+lista zbiorów: 19048 zbiorów z cenami (portal podaje 19132 dla frazy w tytule), z plikiem XML dewelopera: 5943
+historia: lista gotowa, zbiorów 381, cenników do wczytania 696, błędów API 0
+historia: dzień 2026-10-21, plików 225 z 696, przyjętych 178, błędów plików 0
+{"historia":{"zbiory":19048,"doWczytania":381,"pozostalo":0,"bledyApi":0,"bledyPlikow":11,"limitCzasu":false}}
+{
+ "status": "zablokowany",
+ "asOf": "2026-11-20",
+ "unitsInOffer": 1787,
+ "files": 685,
+ "problems": 404,
+ "przyczyny": {
+  "odrzucony: brak kolumn: unitRef": 119,
+  "odrzucony: brak kolumn: city": 47,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":20}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":3}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":16}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komó": 16,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":11}": 11,
+  "blad: stary format Excel (.xls) nie jest obsługiwany": 11,
+  "odrzucony: brak kolumn: city, unitRef, priceM2": 9,
+  "odrzucony: brak opisu": 9,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":114}": 8,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":8}": 7,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":63,\"brak dewelopera lub miejscowości\":3": 6,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":34}": 5,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":6}": 5,
+  "odrzucony: nowe kolumny: Firma | Adres strony internetowej | Cena lokalu mieszkalnego albo ": 5,
+  "ostrzezenie: odrzucone wiersze: {\"cena za m² poza zakresem\":1,\"nie lokal mieszkalny (parking,": 5,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":209}": 4,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":84}": 4,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":15,\"nie lokal mieszkalny (parking, komórka": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":20}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":210}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":3}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":13,\"nie lokal mieszkalny (parking, komórka": 2,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":47,\"nie lokal mieszkalny (parking, komórka": 2,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":16,\"nie lokal mieszkalny (parking, komórka": 2,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":22,\"nie lokal mieszkalny (parking, komórka": 2,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":59,\"nie lokal mieszkalny (parking, komórka": 2,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":102}": 2,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":215}": 2
+ }
+}

@@ -1,0 +1,5 @@
+czas: 2026-11-21T06:25:45Z
+historia: failure (failure = jeszcze niepełna albo błąd, szczegóły w historia.txt)
+import: skipped
+rozmiar bazy: 141M
+plików serwisu: 0 (limit Cloudflare w darmowym planie: 20000)
