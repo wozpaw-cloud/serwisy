@@ -5,6 +5,10 @@ name: Próbna budowa serwisu
 
 on:
   workflow_dispatch:
+    inputs:
+      klucz:
+        description: 'Plik bazy w R2 (np. kopie/mieszkania-2026-11-27.sqlite.gz)'
+        default: 'mieszkania.sqlite.gz'
 
 permissions:
   contents: write
@@ -29,9 +33,11 @@ jobs:
 
       - name: Pobierz bazę z R2
         working-directory: sites/mieszkania
+        env:
+          KLUCZ: ${{ inputs.klucz }}
         run: |
           mkdir -p ../../data
-          npx wrangler r2 object get serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote
+          npx wrangler r2 object get "serwisy-dane/${KLUCZ:-mieszkania.sqlite.gz}" --file ../../data/mieszkania.sqlite.gz --remote
           gunzip -f ../../data/mieszkania.sqlite.gz
 
       # Kopia bazy (dane publiczne z dane.gov.pl) do podglądu wyglądu serwisu na prawdziwych danych.
