@@ -234,7 +234,7 @@ async function main(): Promise<number> {
           console.log(JSON.stringify({ url, http: res.status, bajty: buf.length, format: p.format, wiersze: p.rowsRead, lokale: p.records.length,
             brakKolumn: p.missingColumns, odrzucone: p.rejected, nieznane: p.unknownHeaders.slice(0, 5),
             przyklady: p.records.slice(0, 2).map((r) => ({ dev: r.devName, miasto: r.city, ulica: r.street, nr: r.unitRef, typ: r.unitType, m2: r.priceM2, cena: r.priceTotal, pow: r.area })),
-            surowe: p.format === 'csv' ? buf.toString('utf8').split(/\r?\n/).slice(0, 4).map((l) => l.slice(0, 2500)) : undefined }));
+            surowe: p.format === 'csv' ? buf.toString('utf8').split(/\r?\n/).slice(0, 200) : undefined }));
         } catch (e) { console.log(JSON.stringify({ url, blad: String((e as Error).message ?? e) })); }
       }
       return 0;
