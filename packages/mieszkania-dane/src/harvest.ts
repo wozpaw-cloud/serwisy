@@ -12,7 +12,7 @@ import type { DatabaseSync } from 'node:sqlite';
 import { ingestSnapshot, type IngestSummary } from './ingest.ts';
 import { devNameFromTitle, guessFormat, parseFile, readTable, sniffFormat, type ParseResult } from './parse.ts';
 import { mapColumns } from './columns.ts';
-import { gapPicks, xmlResources } from './xml-source.ts';
+import { xmlResources } from './xml-source.ts';
 
 export const API = process.env.DANE_API ?? 'https://api.dane.gov.pl/1.4';
 const UA = 'prostedane.pl importer (kontakt@prostedane.pl)';
@@ -386,7 +386,11 @@ export async function harvest(db: DatabaseSync, opts: { concurrency?: number; dr
           errors.push({ datasetId: ds.id, error: `plik XML dewelopera: ${String((e as Error).message ?? e)}` });
         }
       }
-      for (const p of gapPicks(cands, prev)) {
+      // Tylko najnowszy cennik: ciągłość obecności lokali między cennikami zapewnia import
+      // (lokal z poprzedniego cennika zbioru jest w ofercie bez przerwy), a po kilkunastu
+      // dniach awarii pośrednie cenniki tysięcy zbiorów nie zmieściłyby się w jednym przebiegu.
+      const newest = cands.sort((a, b) => a.date.localeCompare(b.date)).at(-1);
+      for (const p of newest ? [newest] : []) {
         let buf: Buffer;
         try { buf = await downloadAny(p.urls); } catch (e) {
           errors.push({ datasetId: ds.id, error: `${p.date}: ${String((e as Error).message ?? e)}` });

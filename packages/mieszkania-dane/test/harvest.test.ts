@@ -209,21 +209,27 @@ describe('daty z przyszłości', () => {
 });
 
 describe('plik XML dewelopera', () => {
-  it('gdy portal stoi, bierze nowsze cenniki z pliku XML, co najwyżej co 4 dni', async () => {
+  it('gdy portal stoi, bierze najnowszy cennik z pliku XML, a lokale są w ofercie bez przerwy', async () => {
+    const gap = process.env.PRESENCE_GAP_DAYS;
+    process.env.PRESENCE_GAP_DAYS = '4';
     vi.setSystemTime(new Date('2026-11-05T12:00:00Z'));
     const db = openDb(':memory:');
     const g = { id: 'G', title: 'Ceny ofertowe mieszkań G w 2026 r.', source: `${base}/xml/G.xml` };
     await mod.backfill(db, { datasets: [g] });
     const res = await mod.harvest(db, { datasets: [g] });
-    expect(res.summaries.map((s) => s.date)).toEqual(['2026-10-30', '2026-11-03', '2026-11-05']);
-    expect(res.fromXml).toBe(3);
+    expect(res.summaries.map((s) => s.date)).toEqual(['2026-11-05']);
+    expect(res.fromXml).toBe(1);
     expect(res.errors).toHaveLength(0);
     const unit = db.prepare("SELECT id FROM units WHERE ref = 'M1'").get() as { id: number };
     const pres = db.prepare('SELECT from_date, to_date FROM presence WHERE unit_id = ?').all(unit.id) as { from_date: string; to_date: string }[];
+    // 10 dni między cennikami (26.10 → 5.11) przy progu 4 dni: obecność bez przerwy,
+    // bo lokal był w poprzednim cenniku zbioru.
     expect(pres.at(-1)?.to_date).toBe('2026-11-05');
+    expect((pres.at(-1)?.from_date ?? '9') < '2026-10-26').toBe(true);
     // Następnego dnia nic nowego: niczego nie pobiera drugi raz.
     const again = await mod.harvest(db, { datasets: [g] });
     expect(again.summaries).toHaveLength(0);
+    process.env.PRESENCE_GAP_DAYS = gap;
     vi.useRealTimers();
   });
   it('gdy portal jest aktualny, pliku XML nie pobiera', async () => {

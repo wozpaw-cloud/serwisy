@@ -82,15 +82,24 @@ async function datasetList(db: ReturnType<typeof openDb>, limit?: number): Promi
 }
 
 /** Bramka jakości i zapis stanu dla panelu. Zwraca kod wyjścia. */
-function finish(db: ReturnType<typeof openDb>, summary: ReturnType<typeof report>): number {
+/** gate: false po uzupełnieniu historii. Bramka sprawdza stan po codziennym imporcie:
+ *  historia nowych zbiorów potrafi przesunąć "dzisiejszą" datę modelu i bez świeżych
+ *  cenników reszty zbiorów oferta wygląda na pustą (19-27.11.2026 blokowało to import). */
+function topError(errors: { error: string }[]): string {
+  const n = new Map<string, number>();
+  for (const e of errors) { const k = e.error.replace(/https?:\/\/\S+/g, '…').slice(0, 80); n.set(k, (n.get(k) ?? 0) + 1); }
+  return [...n].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '?';
+}
+
+function finish(db: ReturnType<typeof openDb>, summary: ReturnType<typeof report>, { gate = true } = {}): number {
   const model = new Model(db);
   const snap = model.snapshot('pl', model.units);
   const prev = db.prepare("SELECT summary FROM runs WHERE status = 'ok' ORDER BY id DESC LIMIT 1").get() as { summary: string } | undefined;
   const prevUnits = prev ? (JSON.parse(prev.summary).unitsInOffer as number) : null;
   const drop = prevUnits ? 1 - snap.units / prevUnits : 0;
   const empty = snap.units === 0;
-  const blocked = drop > MAX_DROP || empty;
-  const status = blocked ? 'zablokowany' : 'ok';
+  const blocked = gate && (drop > MAX_DROP || empty);
+  const status = !gate ? 'historia' : blocked ? 'zablokowany' : 'ok';
   const run = { ...summary, asOf: model.asOf, unitsInOffer: snap.units, previousUnitsInOffer: prevUnits, staleDatasets: model.staleDatasets.size, status };
   const now = new Date().toISOString();
   db.prepare('INSERT INTO runs(started, finished, status, summary) VALUES (?,?,?,?)').run(now, now, status, JSON.stringify(run));
@@ -179,7 +188,15 @@ async function main(): Promise<number> {
       const res = await harvest(db, { dryRun: flag('dry-run'), limit, datasets, minutes: opt('minutes') ? Number(opt('minutes')) : undefined });
       if (flag('dry-run')) return 0;
       saveRejected();
-      return finish(db, report(res.summaries, res.errors));
+      const code = finish(db, report(res.summaries, res.errors));
+      // Awaria API (10-18.11.2026 każde zapytanie kończyło się "fetch failed", a przebieg
+      // świecił na zielono): zapisujemy bazę, ale przebieg kończy się błędem.
+      const checked = res.datasets - res.skippedDormant - res.skippedForTime;
+      if (code === 0 && checked >= 100 && res.errors.length > 0.5 * checked) {
+        console.error(`BŁĄD: ${res.errors.length} z ${checked} sprawdzonych zbiorów zakończyło się błędem (najczęściej: ${topError(res.errors)}). API dane.gov.pl prawdopodobnie nie działa.`);
+        return 4;
+      }
+      return code;
     }
     case 'backfill': {
       // Kod 0: historia kompletna. Kod 3: skończył się limit czasu, ciąg dalszy przy następnym uruchomieniu.
@@ -205,7 +222,7 @@ async function main(): Promise<number> {
         ] }, null, 1));
         return 3;
       }
-      return finish(db, report(res.summaries, all));
+      return finish(db, report(res.summaries, all), { gate: false });
     }
     case 'probe': {
       await probeApi();

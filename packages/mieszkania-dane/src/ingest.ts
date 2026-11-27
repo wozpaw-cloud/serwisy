@@ -5,10 +5,13 @@ import { tx } from './db.ts';
 import { fold, websiteHost } from './normalize.ts';
 import type { ParseResult, PriceRecord } from './parse.ts';
 
-/** Przerwa w publikacji cennika krótsza niż tyle dni nie przerywa obecności lokalu w ofercie. */
 /** Ile dni przerwy między cennikami nie przerywa obecności lokalu. Czytane przy każdym
  *  wczytaniu (nie przy starcie), żeby komendy mogły je ustawić. */
 export const presenceGapDays = () => Number(process.env.PRESENCE_GAP_DAYS ?? 4);
+/** Lokal, który był w poprzednim wczytanym cenniku tego samego zbioru, jest w ofercie
+ *  bez przerwy, nawet gdy między cennikami minęło więcej dni (awaria API, brak zmian
+ *  cen): nic nie wskazuje, że zniknął. Dłuższa przerwa niż tyle dni ją jednak przerywa. */
+const MAX_BRIDGE_DAYS = 45;
 
 export interface IngestSummary {
   datasetId: string;
@@ -94,6 +97,8 @@ export function ingestSnapshot(
   let newUnits = 0;
   let priceChanges = 0;
   const gapLimit = addDays(date, -presenceGapDays());
+  // Poprzedni wczytany cennik tego zbioru (ds.last_snapshot, przed zapisem bieżącego).
+  const prevList = ds.last_snapshot && ds.last_snapshot >= addDays(date, -MAX_BRIDGE_DAYS) ? ds.last_snapshot : null;
 
   tx(db, () => {
     for (const r of parsed.records) {
@@ -138,7 +143,7 @@ export function ingestSnapshot(
       // niż to, co już wiemy o lokalu, nie wpisujemy: historia musi iść do przodu.
       const p = q.presLast.get(unitId) as { from_date: string; to_date: string } | undefined;
       if (p && date <= p.to_date) continue;
-      if (p && p.to_date >= gapLimit) q.presExt.run(date, unitId, p.from_date);
+      if (p && (p.to_date >= gapLimit || p.to_date === prevList)) q.presExt.run(date, unitId, p.from_date);
       else q.presIns.run(unitId, date, date);
 
       const last = q.priceLast.get(unitId) as { from_date: string; price_m2: number; price_total: number | null } | undefined;

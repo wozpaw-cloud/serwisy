@@ -1,6 +1,6 @@
 // Plik XML dewelopera (format harwestera dane.gov.pl): wybór zbioru, dat i adresów.
 import { describe, expect, it } from 'vitest';
-import { gapPicks, xmlResources } from '../src/xml-source.ts';
+import { xmlResources } from '../src/xml-source.ts';
 
 const res = (date: string, url: string, status = 'published') => `
       <resource status="${status}"><extIdent>x_${date}</extIdent><url>${url}</url>
@@ -29,23 +29,5 @@ describe('xmlResources', () => {
   it('uszkodzony plik nie wywraca importu', () => {
     expect(xmlResources('<datasets><dataset>', 'A')).toEqual([]);
     expect(xmlResources('to nie jest xml', 'A')).toEqual([]);
-  });
-});
-
-describe('gapPicks', () => {
-  const daily = (from: string, n: number) => Array.from({ length: n }, (_, i) => ({ date: new Date(Date.parse(from) + i * 86400000).toISOString().slice(0, 10) }));
-  it('przerwa od 26.10: cenniki co najwyżej co 4 dni, zawsze z najnowszym', () => {
-    expect(gapPicks(daily('2026-10-27', 10), '2026-10-26').map((x) => x.date)).toEqual(['2026-10-30', '2026-11-03', '2026-11-05']);
-  });
-  it('jeden dzień przerwy: tylko najnowszy', () => {
-    expect(gapPicks(daily('2026-11-05', 1), '2026-11-04').map((x) => x.date)).toEqual(['2026-11-05']);
-  });
-  it('zbiór bez historii albo z bardzo starą: tylko najnowszy', () => {
-    expect(gapPicks(daily('2026-10-27', 10), null).map((x) => x.date)).toEqual(['2026-11-05']);
-    expect(gapPicks(daily('2026-10-27', 10), '2026-08-01').map((x) => x.date)).toEqual(['2026-11-05']);
-  });
-  it('nieregularne daty: przerwy nie dłuższe niż to konieczne', () => {
-    const xs = ['2026-10-28', '2026-11-04', '2026-11-05'].map((date) => ({ date }));
-    expect(gapPicks(xs, '2026-10-26').map((x) => x.date)).toEqual(['2026-10-28', '2026-11-04', '2026-11-05']);
   });
 });

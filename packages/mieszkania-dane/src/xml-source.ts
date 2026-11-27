@@ -48,31 +48,3 @@ export function xmlResources(xml: string, datasetTitle: string, today = new Date
   }
   return [...byUrl].map(([url, date]) => ({ date, url })).sort((a, b) => a.date.localeCompare(b.date));
 }
-
-/**
- * Które nowsze cenniki wczytać, żeby obecność lokali się nie urwała: kolejne
- * wybrane cenniki dzielą najwyżej maxGap dni (próg ciągłości obecności w imporcie),
- * zawsze z najnowszym. Starsze niż window dni przed najnowszym pomijamy.
- */
-export function gapPicks<T extends { date: string }>(newer: T[], since: string | null, maxGap = 4, window = 30): T[] {
-  const xs = [...newer].sort((a, b) => a.date.localeCompare(b.date));
-  if (!xs.length) return [];
-  const newest = xs.at(-1)!.date;
-  const from = addDays(newest, -window);
-  // Zbiór bez wczytanego cennika albo z bardzo starym: tylko najnowszy (historię uzupełnia backfill).
-  if (!since || since < from) return [xs.at(-1)!];
-  const pool = xs.filter((x) => x.date > since);
-  const out: T[] = [];
-  let kept = since;
-  for (let i = 0; i < pool.length; i++) {
-    const next = pool[i + 1];
-    if (!next || next.date > addDays(kept, maxGap)) { out.push(pool[i]); kept = pool[i].date; }
-  }
-  return out;
-}
-
-function addDays(iso: string, n: number): string {
-  const d = new Date(iso + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-}

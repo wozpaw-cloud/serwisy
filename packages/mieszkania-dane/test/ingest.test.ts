@@ -68,3 +68,26 @@ describe('nowy zbiór na nowy rok', () => {
     expect(u1.dataset).toBe('D2026');
   });
 });
+
+describe('przerwa między cennikami zbioru', () => {
+  // Awaria API albo brak zmian cen: kolejny cennik zbioru przychodzi po wielu dniach.
+  process.env.PRESENCE_GAP_DAYS = '4';
+  const pres = (db: ReturnType<typeof openDb>, ref: string) =>
+    (db.prepare('SELECT p.from_date AS f, p.to_date AS t FROM presence p JOIN units u ON u.id = p.unit_id WHERE u.ref = ? ORDER BY p.from_date').all(ref) as { f: string; t: string }[]).map((x) => [x.f, x.t]);
+  const db = openDb(':memory:');
+  ingestSnapshot(db, { datasetId: 'P', date: '2026-11-01' }, file([row('1', 10000), row('2', 10000)]));
+  ingestSnapshot(db, { datasetId: 'P', date: '2026-11-20' }, file([row('1', 10000)]));
+  ingestSnapshot(db, { datasetId: 'P', date: '2026-11-27' }, file([row('1', 10000), row('2', 10000)]));
+  it('lokal z poprzedniego cennika zbioru jest w ofercie bez przerwy, mimo 19 dni między cennikami', () => {
+    expect(pres(db, '1')).toEqual([['2026-11-01', '2026-11-27']]);
+  });
+  it('lokal, którego nie było w poprzednim cenniku, wraca z nową obecnością', () => {
+    expect(pres(db, '2')).toEqual([['2026-11-01', '2026-11-01'], ['2026-11-27', '2026-11-27']]);
+  });
+  it('przerwa dłuższa niż 45 dni przerywa obecność', () => {
+    const old = openDb(':memory:');
+    ingestSnapshot(old, { datasetId: 'P', date: '2026-09-01' }, file([row('1', 10000)]));
+    ingestSnapshot(old, { datasetId: 'P', date: '2026-11-01' }, file([row('1', 10000)]));
+    expect(pres(old, '1')).toEqual([['2026-09-01', '2026-09-01'], ['2026-11-01', '2026-11-01']]);
+  });
+});

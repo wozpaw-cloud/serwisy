@@ -10,6 +10,7 @@ name: Ceny mieszkań - import i publikacja
 on:
   schedule:
     - cron: '20 5 * * *'   # codziennie 5:20 UTC, po porannej publikacji cenników
+    - cron: '20 13 * * *'  # drugi raz po południu: gdy rano API nie działało, dane i tak są z tego dnia
   workflow_dispatch:
     inputs:
       dry_run:
@@ -113,13 +114,14 @@ jobs:
         id: backfill
         if: ${{ !inputs.dry_run }}
         continue-on-error: true   # kod 3 = historia jeszcze niepełna, ciąg dalszy jutro
-        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 210 2>&1 | tee data/backfill.txt
+        run: npx tsx packages/mieszkania-dane/src/cli.ts backfill --minutes 100 2>&1 | tee data/backfill.txt
 
       - name: Import bieżących cenników
         id: harvest
         if: ${{ !inputs.dry_run && steps.backfill.outcome == 'success' }}
-        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --minutes 80 2>&1 | tee data/harvest.txt
-        # kod 2 = bramka jakości zatrzymała publikację; serwis się nie zbuduje
+        run: npx tsx packages/mieszkania-dane/src/cli.ts harvest --minutes 200 2>&1 | tee data/harvest.txt
+        # kod 2 = bramka jakości zatrzymała publikację; kod 4 = większość zapytań do API
+        # zakończyła się błędem (baza zapisana, serwis się nie zbuduje, przebieg na czerwono)
 
       - name: Zapisz bazę i alarmy w R2
         if: ${{ always() && !inputs.dry_run }}
@@ -131,7 +133,7 @@ jobs:
           gzip -kf ../../data/mieszkania.sqlite
           DAY=$(date -u +%F)
           npx wrangler r2 object put "serwisy-dane/kopie/mieszkania-$DAY.sqlite.gz" --file ../../data/mieszkania.sqlite.gz --remote
-          if [ "$STATUS" = "ok" ] || [ "$STATUS" = "historia-niepelna" ]; then
+          if [ "$STATUS" = "ok" ] || [ "$STATUS" = "historia" ] || [ "$STATUS" = "historia-niepelna" ]; then
             npx wrangler r2 object put serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote
           fi
           npx wrangler r2 object put serwisy-dane/mieszkania/alarms.json --file ../../data/alarms.json --remote || true
