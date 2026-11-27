@@ -88,4 +88,16 @@ describe('nowy wzór cennika', () => {
     const s = ingestSnapshot(db, { datasetId: 'Z', date: '2026-11-27' }, newFile([newRow('M1', 12000, 50, 'Klonowa')]));
     expect(s.newUnits).toBe(1);
   });
+  it('nowy identyfikator lokalu: dopasowanie po powierzchni i cenie za m², nowy numer zostaje', () => {
+    const db = openDb(':memory:');
+    ingestSnapshot(db, { datasetId: 'Z', date: '2026-11-09' }, oldFile([oldRow('6/2', 10000, 50), oldRow('6/3', 9000, 62.5), oldRow('6/4', 9000, 62.5)]));
+    // 6/2 → 8249 (ta sama cena); 6/3 i 6/4 mają tę samą powierzchnię i cenę: po kolei.
+    // 8252 (inna cena) to nowy lokal.
+    const s = ingestSnapshot(db, { datasetId: 'Z', date: '2026-11-27' }, newFile([newRow('8249', 10000, 50), newRow('8250', 9000, 62.5), newRow('8251', 9000, 62.5), newRow('8252', 9900, 62.5)]));
+    expect(s.newUnits).toBe(1);
+    expect((db.prepare('SELECT ref FROM units ORDER BY id').all() as { ref: string }[]).map((x) => x.ref)).toEqual(['8249', '8250', '8251', '8252']);
+    const u = db.prepare("SELECT u.ref, (SELECT min(from_date) FROM presence p WHERE p.unit_id = u.id) AS f FROM units u WHERE u.ref = '8249'").get() as { ref: string; f: string };
+    expect(u.f).toBe('2026-11-09');
+    expect((db.prepare("SELECT count(*) AS n FROM units WHERE ref = '6/2'").get() as { n: number }).n).toBe(0);
+  });
 });

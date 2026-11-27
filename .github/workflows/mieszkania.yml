@@ -17,6 +17,9 @@ on:
         description: 'Tylko podgląd: wypisz surowe pola z API dla 3 zbiorów (bez importu i publikacji)'
         type: boolean
         default: false
+      baza:
+        description: 'Zacznij od kopii bazy z R2 (np. kopie/mieszkania-2026-11-18.sqlite.gz); puste = bieżąca baza'
+        default: ''
 
 concurrency: { group: mieszkania, cancel-in-progress: false }
 
@@ -47,10 +50,18 @@ jobs:
 
       - name: Pobierz bazę z R2
         working-directory: sites/mieszkania
+        env:
+          BAZA: ${{ inputs.baza }}
         run: |
           mkdir -p ../../data
           npx wrangler r2 bucket create serwisy-dane 2>/dev/null || true
-          if npx wrangler r2 object get serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote; then
+          # Wskazana kopia musi istnieć: bez niej przebieg się zatrzymuje (nie zaczyna od zera).
+          if [ -n "$BAZA" ]; then
+            npx wrangler r2 object get "serwisy-dane/$BAZA" --file ../../data/mieszkania.sqlite.gz --remote
+            [ -s ../../data/mieszkania.sqlite.gz ] || { echo "Brak kopii $BAZA"; exit 1; }
+            gunzip -f ../../data/mieszkania.sqlite.gz
+            echo "Start od kopii bazy: $BAZA"
+          elif npx wrangler r2 object get serwisy-dane/mieszkania.sqlite.gz --file ../../data/mieszkania.sqlite.gz --remote; then
             gunzip -f ../../data/mieszkania.sqlite.gz
           else
             echo "Brak bazy w R2: zaczynamy od zera (wczytanie historii)."
