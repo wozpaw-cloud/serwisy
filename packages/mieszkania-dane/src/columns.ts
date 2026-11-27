@@ -32,7 +32,8 @@ const NOT_UNIT_PRICE = /wykonczen|udzial|grunt|postoj|parking|garaz|komork|pomie
 // Kolejność ma znaczenie: pierwsza pasująca reguła wygrywa, a każdy nagłówek
 // przypisujemy do co najwyżej jednego pola.
 const RULES: [Field, Rule][] = [
-  ['devName', (h) => h.startsWith('nazwa dewelopera') || h === 'deweloper'],
+  // "Firma": nowy wzór cennika (od XI 2026, "podmiot obowiązany" zamiast "deweloper").
+  ['devName', (h) => h.startsWith('nazwa dewelopera') || h === 'deweloper' || h === 'firma'],
   ['devKrs', (h) => /\bkrs\b/.test(h) && !h.includes('ceidg')],
   ['devNip', (h) => /\bnip\b/.test(h)],
   ['devWebsite', has('strony internetowej dewelopera')],
@@ -58,8 +59,11 @@ const RULES: [Field, Rule][] = [
   ['unitType', (h) => has('rodzaj nieruchomosci')(h) ||
     ['typ', 'rodzaj', 'produkt', 'kategoria produktu', 'rodzaj lokalu', 'typ lokalu', 'typ nieruchomosci', 'rodzaj produktu', 'rodzaj przyleglosci'].includes(h)],
   ['unitRef', (h) =>
-    (/^(nr|numer) (lokalu lub domu|lokalu|domu|mieszkania|nieruchomosci nadany|produktu)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu|mieszkania)/.test(h)) &&
-    !/adres|siedzib|sprzedaz|korespond|lokalizacj/.test(h)],
+    (/^(nr|numer) (lokalu lub domu|lokalu|domu|mieszkania|nieruchomosci nadany|produktu)/.test(h) || /^oznaczenie (lokalu|nieruchomosci|domu|mieszkania)/.test(h) ||
+      // Nowy wzór: "Identyfikator lokalu mieszkalnego albo domu jednorodzinnego". Ta sama nazwa
+      // wraca dalej przy pomieszczeniach przynależnych i prawach: liczy się pierwsza kolumna.
+      /^identyfikator (lokalu|domu)/.test(h)) &&
+    !/adres|siedzib|sprzedaz|korespond|lokalizacj|przynalezn|prawa niezbedn|swiadczeni/.test(h)],
 
   ['priceM2Date', (h) => (startsData(h) && h.includes('cena') && M2.test(h) && !ILOCZYN.test(h)) ||
     /^cena (za )?m ?2 obowiazuje od/.test(h) || h === 'data zmiany ceny' || h === 'data od ktorej obowiazuje cena'],
@@ -67,7 +71,10 @@ const RULES: [Field, Rule][] = [
   ['priceFullDate', (h) => startsData(h) && h.includes('uwzgledn') && h.includes('lokal')],
   ['priceM2', (h) => !startsData(h) && h.includes('cena') && M2.test(h) &&
     !/iloczy|uwzgledn|calkowit|razem/.test(h) && !NOT_UNIT_PRICE.test(h)],
-  ['priceTotal', (h) => !startsData(h) && !h.includes('uwzgledn') && !NOT_UNIT_PRICE.test(h) &&
+  // Nowy wzór: "Cena lokalu mieszkalnego albo domu jednorodzinnego lub ich części będących
+  // przedmiotem umowy" ("części" pasuje do NOT_UNIT_PRICE, stąd osobny warunek).
+  ['priceTotal', (h) => (!startsData(h) && /^cena lokalu mieszkalnego albo domu jednorodzinnego/.test(h)) ||
+    !startsData(h) && !h.includes('uwzgledn') && !NOT_UNIT_PRICE.test(h) &&
     (ILOCZYN.test(h) || h === 'cena' || /^cena (pln|zl|brutto pln|brutto zl)$/.test(h) || /^cena od pow/.test(h) ||
      /^cena za (dom|lokal|mieszkanie)$/.test(h) || h === 'total price' || /^cena (calosciowa|katalogowa)/.test(h) ||
      (/^(calkowita )?cena (lokalu|domu|nieruchomosci|calkowita|brutto|produktu|ofertowa)/.test(h) && !M2.test(h)))],
@@ -87,6 +94,8 @@ const IGNORED: Rule[] = [
   (h) => /siedzib|glownego miejsca|sprzedaz|kontaktu|\bid\b|pietro|kondygnacj|stawka vat|waluta|strony internetowej inwestycji/.test(h),
   (h) => /forma prawna|ceidg|regon|telefon|poczty elektronicznej|faks|fax/.test(h),
   (h) => /czesci nieruchomosci|pomieszczen przynaleznych|praw niezbednych|innych swiadczen|inne swiadczenia/.test(h),
+  // Nowy wzór: pomieszczenia przynależne, prawa, inne świadczenia, współrzędne inwestycji.
+  (h) => /przynalezn|praw niezbedn|swiadczenia pienieznego|geograficzn/.test(h),
   (h) => startsData(h),
 ];
 

@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS runs (
 
 CREATE INDEX IF NOT EXISTS idx_units_inv ON units(investment_id);
 CREATE INDEX IF NOT EXISTS idx_inv_city ON investments(city);
+CREATE INDEX IF NOT EXISTS idx_units_dataset ON units(dataset_id);
 `;
 
 export function openDb(path = dbPath(), { readonly = false } = {}): DatabaseSync {

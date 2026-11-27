@@ -83,12 +83,47 @@ export function ingestSnapshot(
     unitFind: db.prepare('SELECT id FROM units WHERE key = ?'),
     unitIns: db.prepare('INSERT INTO units(key, investment_id, dataset_id, ref, type, area, rooms) VALUES (?,?,?,?,?,?,?)'),
     unitUpd: db.prepare('UPDATE units SET area = coalesce(?, area), rooms = coalesce(?, rooms), type = ?, dataset_id = ? WHERE id = ?'),
+    unitKeyUpd: db.prepare('UPDATE units SET key = ? WHERE id = ?'),
+    unitsOfDataset: db.prepare(`SELECT u.id, u.ref, i.city, i.street, i.building_no AS b, (SELECT max(to_date) FROM presence p WHERE p.unit_id = u.id) AS t
+      FROM units u JOIN investments i ON i.id = u.investment_id WHERE u.dataset_id = ?`),
     presLast: db.prepare('SELECT from_date, to_date FROM presence WHERE unit_id = ? ORDER BY from_date DESC LIMIT 1'),
     presExt: db.prepare('UPDATE presence SET to_date = ? WHERE unit_id = ? AND from_date = ?'),
     presIns: db.prepare('INSERT INTO presence(unit_id, from_date, to_date) VALUES (?,?,?)'),
     priceLast: db.prepare('SELECT from_date, price_m2, price_total FROM prices WHERE unit_id = ? ORDER BY from_date DESC LIMIT 1'),
     priceIns: db.prepare('INSERT OR REPLACE INTO prices(unit_id, from_date, price_m2, price_total) VALUES (?,?,?,?)'),
     dsUpd: db.prepare('UPDATE datasets SET last_snapshot = ? WHERE id = ?'),
+  };
+
+  // Lokal, którego klucz się zmienił: ten sam zbiór, miejscowość, ulica i numer lokalu, obecny
+  // w poprzednim cenniku zbioru. Nowy wzór cennika (od XI 2026: "Firma" zamiast nazwy
+  // dewelopera, bez nazwy inwestycji) zmienia klucz, a lokal nie może stracić historii cen.
+  // Lokale dopasowane w pliku po kluczu są zajęte od początku, więc nowy lokal nie przejmie
+  // historii lokalu, który nadal jest w cenniku.
+  type Old = { id: number; street: string; b: string };
+  let byRef: Map<string, Old[]> | null = null;
+  const claimed = new Set<number>();
+  for (const r of parsed.records) {
+    const dev = q.devFind.get(r.devName, r.devNip) as { id: number } | undefined;
+    const u = dev ? (q.unitFind.get(`${investmentKey(dev.id, r)}|${fold(r.unitRef)}`) as { id: number } | undefined) : undefined;
+    if (u) claimed.add(u.id);
+  }
+  const refKey = (city: string, ref: string) => `${fold(city)}|${fold(ref)}`;
+  const matchOld = (r: PriceRecord): number | null => {
+    if (!ds.last_snapshot) return null;
+    if (!byRef) {
+      byRef = new Map();
+      for (const u of q.unitsOfDataset.all(datasetId) as { id: number; ref: string; city: string; street: string | null; b: string | null; t: string | null }[]) {
+        if (u.t !== ds.last_snapshot) continue;
+        const k = refKey(u.city, u.ref);
+        const list = byRef.get(k) ?? [];
+        list.push({ id: u.id, street: fold(u.street ?? ''), b: fold(u.b ?? '') });
+        byRef.set(k, list);
+      }
+    }
+    const street = fold(r.street ?? '');
+    let c = (byRef.get(refKey(r.city, r.unitRef)) ?? []).filter((u) => !claimed.has(u.id) && (!u.street || !street || u.street === street));
+    if (c.length > 1) c = c.filter((u) => u.b === fold(r.buildingNo ?? ''));
+    return c.length === 1 ? c[0].id : null;
   };
 
   const devCache = new Map<string, number>();
@@ -129,13 +164,20 @@ export function ingestSnapshot(
       const uk = `${ik}|${fold(r.unitRef)}`;
       const urow = q.unitFind.get(uk) as { id: number } | undefined;
       let unitId: number;
+      const old = urow ? null : matchOld(r);
       if (urow) {
         unitId = urow.id;
+        q.unitUpd.run(r.area, r.rooms, r.unitType, datasetId, unitId);
+      } else if (old !== null) {
+        // Ten sam lokal pod nowym kluczem: zachowuje historię cen i obecności.
+        unitId = old;
+        q.unitKeyUpd.run(uk, unitId);
         q.unitUpd.run(r.area, r.rooms, r.unitType, datasetId, unitId);
       } else {
         unitId = Number(q.unitIns.run(uk, invId, datasetId, r.unitRef, r.unitType, r.area, r.rooms).lastInsertRowid);
         newUnits++;
       }
+      claimed.add(unitId);
       if (seen.has(unitId)) continue; // ten sam lokal dwa razy w jednym pliku: liczy się pierwszy wiersz
       seen.add(unitId);
 

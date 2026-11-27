@@ -7,11 +7,26 @@ on:
       zbiory:
         description: 'Numery zbiorów oddzielone spacją'
         default: '9884 11900 23622 6217'
+      pliki:
+        description: 'Adresy plików cenników do sprawdzenia parserem (oddzielone spacją)'
+        default: ''
 jobs:
   podglad:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v4
+        if: ${{ inputs.pliki != '' }}
+      - uses: actions/setup-node@v4
+        if: ${{ inputs.pliki != '' }}
+        with: { node-version: 22, cache: npm }
+      - name: Parser na wskazanych plikach
+        if: ${{ inputs.pliki != '' }}
+        env:
+          PLIKI: ${{ inputs.pliki }}
+        run: |
+          npm ci --silent
+          npx tsx packages/mieszkania-dane/src/cli.ts sprawdz-plik $PLIKI 2>&1 | grep -v "ExperimentalWarning\|trace-warnings"
       - name: Zasoby
         env:
           ZBIORY: ${{ inputs.zbiory }}

@@ -224,6 +224,20 @@ async function main(): Promise<number> {
       }
       return finish(db, report(res.summaries, all), { gate: false });
     }
+    case 'sprawdz-plik': {
+      // Diagnostyka: pobiera pliki cenników spod podanych adresów i pokazuje, co z nich czyta import.
+      for (const url of args) {
+        try {
+          const res = await fetch(url, { signal: AbortSignal.timeout(60000) });
+          const buf = Buffer.from(await res.arrayBuffer());
+          const p = await parseFile(buf, guessFormat(url, res.headers.get('content-type') ?? ''));
+          console.log(JSON.stringify({ url, http: res.status, bajty: buf.length, format: p.format, wiersze: p.rowsRead, lokale: p.records.length,
+            brakKolumn: p.missingColumns, odrzucone: p.rejected, nieznane: p.unknownHeaders.slice(0, 5),
+            przyklady: p.records.slice(0, 2).map((r) => ({ dev: r.devName, miasto: r.city, ulica: r.street, nr: r.unitRef, typ: r.unitType, m2: r.priceM2, cena: r.priceTotal, pow: r.area })) }));
+        } catch (e) { console.log(JSON.stringify({ url, blad: String((e as Error).message ?? e) })); }
+      }
+      return 0;
+    }
     case 'probe': {
       await probeApi();
       return 0;
