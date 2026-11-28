@@ -1,0 +1,35 @@
+lista zbiorów (id): strona 20, zbiorów 1972 z 19258, 100 s
+lista zbiorów (id): strona 40, zbiorów 3941 z 19258, 201 s
+lista zbiorów (id): strona 60, zbiorów 5936 z 19258, 269 s
+lista zbiorów (id): strona 80, zbiorów 7934 z 19258, 332 s
+lista zbiorów (id): strona 100, zbiorów 9931 z 19258, 414 s
+lista zbiorów (-id): strona 20, zbiorów 11928 z 19258, 451 s
+lista zbiorów (-id): strona 40, zbiorów 13927 z 19258, 490 s
+lista zbiorów (-id): strona 60, zbiorów 15924 z 19258, 543 s
+lista zbiorów (-id): strona 80, zbiorów 17922 z 19258, 592 s
+lista zbiorów (-id): strona 100, zbiorów 19174 z 19258, 673 s
+lista zbiorów: 19174 zbiorów z cenami (portal podaje 19258 dla frazy w tytule), z plikiem XML dewelopera: 5990
+historia: lista gotowa, zbiorów 31, cenników do wczytania 72, błędów API 0
+{"historia":{"zbiory":19174,"doWczytania":31,"pozostalo":0,"bledyApi":0,"bledyPlikow":0,"limitCzasu":false}}
+{
+ "status": "historia",
+ "asOf": "2026-11-27",
+ "unitsInOffer": 164752,
+ "files": 72,
+ "problems": 28,
+ "przyczyny": {
+  "ostrzezenie: odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":59,\"brak c": 12,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":92}": 3,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":9}": 2,
+  "odrzucony: nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Iden": 2,
+  "odrzucony: brak kolumn: city, unitRef, priceM2": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":70}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":112}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":3}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22,\"nie lokal mieszkalny (parking, komó": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak ceny za m²\":20}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":71}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":138}": 1,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":59,\"brak ceny za m²\":2}": 1
+ }
+}

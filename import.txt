@@ -1,0 +1,60 @@
+import: 5499 z 19174 zbiorów, nowych cenników 578 (z XML deweloperów 409), błędów 833
+import: 5947 z 19174 zbiorów, nowych cenników 776 (z XML deweloperów 595), błędów 844
+import: 6296 z 19174 zbiorów, nowych cenników 1045 (z XML deweloperów 647), błędów 896
+import: 6609 z 19174 zbiorów, nowych cenników 1252 (z XML deweloperów 725), błędów 948
+import: 6905 z 19174 zbiorów, nowych cenników 1540 (z XML deweloperów 873), błędów 952
+import: 7217 z 19174 zbiorów, nowych cenników 1841 (z XML deweloperów 1068), błędów 955
+import: 7418 z 19174 zbiorów, nowych cenników 2032 (z XML deweloperów 1258), błędów 957
+import: 7609 z 19174 zbiorów, nowych cenników 2212 (z XML deweloperów 1437), błędów 958
+import: 7804 z 19174 zbiorów, nowych cenników 2399 (z XML deweloperów 1624), błędów 958
+import: 8026 z 19174 zbiorów, nowych cenników 2611 (z XML deweloperów 1836), błędów 960
+import: 8198 z 19174 zbiorów, nowych cenników 2773 (z XML deweloperów 1997), błędów 961
+import: 8441 z 19174 zbiorów, nowych cenników 3007 (z XML deweloperów 2231), błędów 963
+import: 8704 z 19174 zbiorów, nowych cenników 3246 (z XML deweloperów 2469), błędów 966
+import: 9024 z 19174 zbiorów, nowych cenników 3513 (z XML deweloperów 2736), błędów 966
+import: 9289 z 19174 zbiorów, nowych cenników 3758 (z XML deweloperów 2979), błędów 970
+Worksheet name Dane inwestycji ul. Tyniecka 167G-S, Kraków 30-376 exceeds 31 chars. This will be truncated
+Worksheet name Dane inwestycji ul. Tyniecka 167G-S, Kraków 30-376 exceeds 31 chars. This will be truncated
+import: 9536 z 19174 zbiorów, nowych cenników 3987 (z XML deweloperów 3206), błędów 973
+import: 9802 z 19174 zbiorów, nowych cenników 4225 (z XML deweloperów 3442), błędów 976
+import: 10081 z 19174 zbiorów, nowych cenników 4478 (z XML deweloperów 3695), błędów 980
+import: sprawdzono 10383 zbiorów, nowych cenników 4757 (z plików XML deweloperów 3974), błędów 984, uśpionych pominiętych 8791
+{
+ "status": "ok",
+ "asOf": "2026-11-28",
+ "unitsInOffer": 165525,
+ "files": 4757,
+ "problems": 3270,
+ "przyczyny": {
+  "blad: plik nie jest cennikiem (obraz albo PDF)": 403,
+  "blad: stary format Excel (.xls) nie jest obsługiwany": 188,
+  "odrzucony: nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Iden": 126,
+  "odrzucony: brak kolumn: city": 110,
+  "blad: plik XML dewelopera: fetch failed": 105,
+  "odrzucony: brak kolumn: city, unitRef, priceM2": 98,
+  "blad: fetch failed": 73,
+  "odrzucony: nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla pr": 67,
+  "blad: plik XML dewelopera: HTTP 403 przy pobieraniu": 67,
+  "blad: plik XML dewelopera: HTTP 404 przy pobieraniu": 59,
+  "blad: HTTP 404 przy pobieraniu": 48,
+  "odrzucony: brak opisu": 42,
+  "odrzucony: brak kolumn: unitRef": 38,
+  "blad: plik XML dewelopera: HTTP 400 przy pobieraniu": 24,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":1}": 20,
+  "odrzucony: brak kolumn: city, priceM2": 19,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":2}": 18,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":7}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":16}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":3}": 17,
+  "odrzucony: brak kolumn: priceM2": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":15}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":4}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":9}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":8}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":6}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":5}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":14}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":12}": 13
+ }
+}

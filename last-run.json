@@ -1,0 +1,1849 @@
+{
+ "files": 4757,
+ "ok": 2471,
+ "warnings": 1717,
+ "rejected": 569,
+ "skipped": 0,
+ "newUnits": 480,
+ "priceChanges": 292,
+ "problemCount": 3270,
+ "problemReasons": {
+  "blad: plik nie jest cennikiem (obraz albo PDF)": 403,
+  "blad: stary format Excel (.xls) nie jest obsługiwany": 188,
+  "odrzucony: nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Iden": 126,
+  "odrzucony: brak kolumn: city": 110,
+  "blad: plik XML dewelopera: fetch failed": 105,
+  "odrzucony: brak kolumn: city, unitRef, priceM2": 98,
+  "blad: fetch failed": 73,
+  "odrzucony: nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla pr": 67,
+  "blad: plik XML dewelopera: HTTP 403 przy pobieraniu": 67,
+  "blad: plik XML dewelopera: HTTP 404 przy pobieraniu": 59,
+  "blad: HTTP 404 przy pobieraniu": 48,
+  "odrzucony: brak opisu": 42,
+  "odrzucony: brak kolumn: unitRef": 38,
+  "blad: plik XML dewelopera: HTTP 400 przy pobieraniu": 24,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":1}": 20,
+  "odrzucony: brak kolumn: city, priceM2": 19,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":2}": 18,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":7}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":16}": 17,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":3}": 17,
+  "odrzucony: brak kolumn: priceM2": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":15}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":22}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":4}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":9}": 15,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":8}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":6}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":5}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":14}": 14,
+  "ostrzezenie: odrzucone wiersze: {\"brak numeru lokalu\":12}": 13
+ },
+ "problems": [
+  {
+   "datasetId": "5042",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5039",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5096",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5300",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "5357",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "5399",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "5510",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "5664",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "5645",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5708",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "5714",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5813",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5759",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "5820",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5846",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "5853",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "5916",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "5923",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5921",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "6045",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "6072",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef, priceM2"
+  },
+  {
+   "datasetId": "5974",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "6281",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "6272",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "6285",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "6233",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "6525",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "6532",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "6598",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "6437",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "6753",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "7013",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city"
+  },
+  {
+   "datasetId": "7785",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "7897",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "7920",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "8155",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Cena miejsca parkingowego brutto | Zmiana ceny (data) | Zmiana ceny brutto | Strona internetowa dewelopera"
+  },
+  {
+   "datasetId": "8272",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "8200",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "8357",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "8377",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "8378",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "8380",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "8338",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego"
+  },
+  {
+   "datasetId": "8772",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Naniższa cena z ostatnich 30 dni | Pow. działki | stan prawny | STANDARD"
+  },
+  {
+   "datasetId": "8864",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr wpisu do CEi DG | Ceny ofertowe za dzień"
+  },
+  {
+   "datasetId": "9624",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "9848",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "9970",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "10441",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "10796",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "11223",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: nazwa"
+  },
+  {
+   "datasetId": "11879",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Pięrto | Adres strony internetowej, pod którym dostępny jest plan lokalu/domu"
+  },
+  {
+   "datasetId": "12864",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "13050",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "13771",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Dodatkowe lokalizacje | Metraż [m2] | Cena pełna [PLN] | Rodzaj części | Oznaczenie części"
+  },
+  {
+   "datasetId": "13752",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Dodatkowe lokalizacje | Metraż [m2] | Cena pełna [PLN] | Rodzaj części | Oznaczenie części"
+  },
+  {
+   "datasetId": "13927",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "13950",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "14067",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "14086",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "14625",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "14809",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "15015",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "15016",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "15021",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "14976",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "15100",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "15106",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "15102",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef, priceM2"
+  },
+  {
+   "datasetId": "15107",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "15181",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "15362",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "15163",
+   "date": "2026-11-24",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "16110",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: L.p. | Cena brutto lokalu uwzględniająca cenę lokalu stanowiącą iloczyn powierzchni oraz metrażu i innych składowych ceny, o których mowa w art. 19a ust. 1 pkt 1), 2) lub 3)"
+  },
+  {
+   "datasetId": "16752",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "16789",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, priceM2"
+  },
+  {
+   "datasetId": "18226",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: inwestycja | link"
+  },
+  {
+   "datasetId": "18236",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "19958",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "20016",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "20077",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Cena lokalu mieszkalnego lub domu jednorodzinnego będących przedmiotem umowy stanowiąca iloczyn ceny m2 oraz powierzchni [zł] | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "20121",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr REGGON | Udział w gruncie cena [zł] | Wykończenie cena/m2 [zł] | Wykończenie cena [zł]"
+  },
+  {
+   "datasetId": "20572",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "21849",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "21866",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Lp. | Pełna własność/Udziały ze wskazaniem | Cena netto  | Całkowita cena netto  | Całkowita cena brutto"
+  },
+  {
+   "datasetId": "22134",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "22266",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "22236",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "22315",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "22316",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "42984",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "42881",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr nieruchomości | Nazwa"
+  },
+  {
+   "datasetId": "42830",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "43124",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "41889",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "41756",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla prawa niezbędnego | Identyfikator lokalu mieszkalnego albo domu jednorodzinnego dla innego świadczenia"
+  },
+  {
+   "datasetId": "41466",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef, priceM2"
+  },
+  {
+   "datasetId": "41071",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "41061",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": null
+  },
+  {
+   "datasetId": "40747",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "37619",
+   "date": "2026-11-26",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "37324",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "35968",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "35201",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "35252",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "35250",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "35251",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: priceM2"
+  },
+  {
+   "datasetId": "35051",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "34779",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "brak kolumn: unitRef"
+  },
+  {
+   "datasetId": "33995",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Województwo adresu lokalu | Powiat adresu lokalu | Gmina adresu lokalu | Miejscowość adresu lokalu | Ulica adresu lokalu"
+  },
+  {
+   "datasetId": "32195",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "31740",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "brak kolumn: city, unitRef"
+  },
+  {
+   "datasetId": "30384",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: kod_lokalu | kraj | url_inwestycji | zrodlo_danych"
+  },
+  {
+   "datasetId": "29886",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "29655",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Województwo adresu lokalu | Powiat adresu lokalu | Gmina adresu lokalu | Miejscowość adresu lokalu | Ulica adresu lokalu"
+  },
+  {
+   "datasetId": "29642",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Województwo adresu lokalu | Powiat adresu lokalu | Gmina adresu lokalu | Miejscowość adresu lokalu | Ulica adresu lokalu"
+  },
+  {
+   "datasetId": "29630",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Województwo adresu lokalu | Powiat adresu lokalu | Gmina adresu lokalu | Miejscowość adresu lokalu | Ulica adresu lokalu"
+  },
+  {
+   "datasetId": "28333",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr Wpisu Do CEi DG | Adres Email | Adres WWW | Kontakt Nabywcy | Wojewodztwo Inwestycji"
+  },
+  {
+   "datasetId": "27262",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: inwestycja | link"
+  },
+  {
+   "datasetId": "26857",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: nazwa"
+  },
+  {
+   "datasetId": "26867",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "25790",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej  | Metraż mieszkania [m2] | Balkon w mieszkaniu [szt.] | Zewnętrzne miejsce postojowe | Garaż [m2] /cena [zł] cena zawiera 8% VAT."
+  },
+  {
+   "datasetId": "23162",
+   "date": "2026-11-26",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Cena za metr kwadratowy [zł]"
+  },
+  {
+   "datasetId": "23167",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr tel. do dewelopera | Email do dewelopera | Strona www dewelopera | inwestycja | nr_dzialki"
+  },
+  {
+   "datasetId": "23026",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Adres strony internetowej | Cena lokalu mieszkalnego albo domu jednorodzinnego, obejmująca łączną cenę całej nieruchomości albo jej części będącej przedmiotem umowy oraz cenę i świadczenia pieniężne, o których mowa w art. 19a ust. 1 pkt 2 i 3 ustawy z dnia 20 maja 2021 r. o ochronie praw nabywcy lokalu mieszkalnego lub domu jednorodzinnego oraz Deweloperskim Funduszu Gwarancyjnym"
+  },
+  {
+   "datasetId": "22925",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Miejscowość wykonywania działalności gospodarczej dewelopera | Ulica wykonywania działalności gospodarczej dewelopera | Kod pocztowy wykonywania działalności gospodarczej dewelopera | Nr nieruchomości wykonywania działalności gospodarczej dewelopera | Ulica inwestycji"
+  },
+  {
+   "datasetId": "7021",
+   "date": "2026-11-18",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":180}"
+  },
+  {
+   "datasetId": "20696",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "datasetId": "15012",
+   "date": "2026-10-06",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":29}"
+  },
+  {
+   "datasetId": "25274",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":356}"
+  },
+  {
+   "datasetId": "14786",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena za m² poza zakresem\":16,\"brak numeru lokalu\":6}"
+  },
+  {
+   "datasetId": "13726",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena za m² poza zakresem\":16,\"brak numeru lokalu\":6}"
+  },
+  {
+   "datasetId": "11394",
+   "date": "2026-11-25",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Rodzaje innych świad. pienię., które nabywca zobo. jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność | Wartość innych świad. pienię., które nabywca zobo. jest spełnić na rzecz dewelopera w wykonaniu umowy przenoszącej własność zł"
+  },
+  {
+   "datasetId": "26559",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: developer Nazwa | developer Email | developer WWW | type | number"
+  },
+  {
+   "datasetId": "16759",
+   "date": "2026-11-28",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr nieruchomości | Nazwa"
+  },
+  {
+   "datasetId": "10548",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr REGGON | Udział w gruncie cena [zł] | Wykończenie cena/m2 [zł] | Wykończenie cena [zł]"
+  },
+  {
+   "datasetId": "5734",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: email | adres_www"
+  },
+  {
+   "datasetId": "6553",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":68}"
+  },
+  {
+   "datasetId": "10553",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr REGGON | Udział w gruncie cena [zł] | Wykończenie cena/m2 [zł] | Wykończenie cena [zł]"
+  },
+  {
+   "datasetId": "10559",
+   "date": "2026-11-27",
+   "status": "odrzucony",
+   "note": "nowe kolumny: Nr REGGON | Udział w gruncie cena [zł] | Wykończenie cena/m2 [zł] | Wykończenie cena [zł]"
+  },
+  {
+   "datasetId": "22621",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":86}"
+  },
+  {
+   "datasetId": "22654",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":26}"
+  },
+  {
+   "datasetId": "22617",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":2,\"brak numeru lokalu\":27}"
+  },
+  {
+   "datasetId": "22616",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "datasetId": "22614",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":28}"
+  },
+  {
+   "datasetId": "22598",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":12,\"brak numeru lokalu\":42}"
+  },
+  {
+   "datasetId": "22599",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":22,\"brak numeru lokalu\":21}"
+  },
+  {
+   "datasetId": "22597",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":48}"
+  },
+  {
+   "datasetId": "22590",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":38}"
+  },
+  {
+   "datasetId": "22584",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":3}"
+  },
+  {
+   "datasetId": "22452",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":12}"
+  },
+  {
+   "datasetId": "22447",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":26}"
+  },
+  {
+   "datasetId": "22445",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":138,\"brak numeru lokalu\":299}"
+  },
+  {
+   "datasetId": "22444",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":7}"
+  },
+  {
+   "datasetId": "22442",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":51}"
+  },
+  {
+   "datasetId": "18792",
+   "date": "2026-11-29",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":38}"
+  },
+  {
+   "datasetId": "40405",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena całkowita poza zakresem\":4}"
+  },
+  {
+   "datasetId": "37245",
+   "date": "2026-11-29",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":105}"
+  },
+  {
+   "datasetId": "43022",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":57}"
+  },
+  {
+   "datasetId": "24794",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":7}"
+  },
+  {
+   "datasetId": "32806",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":14}"
+  },
+  {
+   "datasetId": "39984",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena za m² poza zakresem\":16,\"brak numeru lokalu\":6}"
+  },
+  {
+   "datasetId": "31262",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":84}"
+  },
+  {
+   "datasetId": "5368",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":55}"
+  },
+  {
+   "datasetId": "6064",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":7}"
+  },
+  {
+   "datasetId": "8721",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":12}"
+  },
+  {
+   "datasetId": "42683",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":19}"
+  },
+  {
+   "datasetId": "43482",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":121,\"brak numeru lokalu\":41}"
+  },
+  {
+   "datasetId": "32784",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":56}"
+  },
+  {
+   "datasetId": "32450",
+   "date": "2026-11-24",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":39}"
+  },
+  {
+   "datasetId": "24135",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":12}"
+  },
+  {
+   "datasetId": "5133",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":51}"
+  },
+  {
+   "datasetId": "5494",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":13,\"cena całkowita poza zakresem\":9,\"powierzchnia poza zakresem\":2}"
+  },
+  {
+   "datasetId": "5650",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":45,\"brak dewelopera lub miejscowości\":1}"
+  },
+  {
+   "datasetId": "5722",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":15}"
+  },
+  {
+   "datasetId": "5740",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "datasetId": "6111",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":12}"
+  },
+  {
+   "datasetId": "6218",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":7}"
+  },
+  {
+   "datasetId": "6268",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak dewelopera lub miejscowości\":5}"
+  },
+  {
+   "datasetId": "6290",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":166}"
+  },
+  {
+   "datasetId": "6338",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":1,\"nie lokal mieszkalny (parking, komórka, usługi)\":3}"
+  },
+  {
+   "datasetId": "6346",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "datasetId": "6432",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":12}"
+  },
+  {
+   "datasetId": "6573",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":3,\"brak numeru lokalu\":7}"
+  },
+  {
+   "datasetId": "6623",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":18}"
+  },
+  {
+   "datasetId": "6973",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":1,\"brak dewelopera lub miejscowości\":84}"
+  },
+  {
+   "datasetId": "7029",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":7}"
+  },
+  {
+   "datasetId": "7563",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":14}"
+  },
+  {
+   "datasetId": "7682",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":62}"
+  },
+  {
+   "datasetId": "5502",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":123}"
+  },
+  {
+   "datasetId": "7965",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":91}"
+  },
+  {
+   "datasetId": "7583",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":11}"
+  },
+  {
+   "datasetId": "8824",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":6,\"brak numeru lokalu\":149}"
+  },
+  {
+   "datasetId": "9717",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":75}"
+  },
+  {
+   "datasetId": "9517",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":23}"
+  },
+  {
+   "datasetId": "10174",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":71}"
+  },
+  {
+   "datasetId": "10762",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":6,\"brak numeru lokalu\":26}"
+  },
+  {
+   "datasetId": "10908",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":8}"
+  },
+  {
+   "datasetId": "11152",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "datasetId": "10483",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":131}"
+  },
+  {
+   "datasetId": "11736",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":17}"
+  },
+  {
+   "datasetId": "12253",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":5}"
+  },
+  {
+   "datasetId": "12447",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":56,\"brak ceny za m²\":1}"
+  },
+  {
+   "datasetId": "6315",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":173}"
+  },
+  {
+   "datasetId": "14664",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":12}"
+  },
+  {
+   "datasetId": "15034",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":263}"
+  },
+  {
+   "datasetId": "17415",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":18}"
+  },
+  {
+   "datasetId": "17416",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "datasetId": "11391",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":40}"
+  },
+  {
+   "datasetId": "17418",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":29}"
+  },
+  {
+   "datasetId": "19279",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":46}"
+  },
+  {
+   "datasetId": "18532",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":33}"
+  },
+  {
+   "datasetId": "19430",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena za m² poza zakresem\":2,\"cena całkowita poza zakresem\":1}"
+  },
+  {
+   "datasetId": "19281",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":287}"
+  },
+  {
+   "datasetId": "21412",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":53}"
+  },
+  {
+   "datasetId": "19881",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":18}"
+  },
+  {
+   "datasetId": "21199",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":194}"
+  },
+  {
+   "datasetId": "22037",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":171}"
+  },
+  {
+   "datasetId": "22066",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":17}"
+  },
+  {
+   "datasetId": "22387",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":31}"
+  },
+  {
+   "datasetId": "22340",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":9}"
+  },
+  {
+   "datasetId": "22390",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":45}"
+  },
+  {
+   "datasetId": "43525",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":101}"
+  },
+  {
+   "datasetId": "43622",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":61}"
+  },
+  {
+   "datasetId": "43446",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":10,\"cena za m² poza zakresem\":1}"
+  },
+  {
+   "datasetId": "43381",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":17}"
+  },
+  {
+   "datasetId": "43472",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":170}"
+  },
+  {
+   "datasetId": "43492",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":4}"
+  },
+  {
+   "datasetId": "43132",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "datasetId": "43136",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":32}"
+  },
+  {
+   "datasetId": "43130",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":19}"
+  },
+  {
+   "datasetId": "43134",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":97}"
+  },
+  {
+   "datasetId": "43133",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":84}"
+  },
+  {
+   "datasetId": "43128",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":70}"
+  },
+  {
+   "datasetId": "43114",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":34}"
+  },
+  {
+   "datasetId": "43111",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "datasetId": "43110",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "datasetId": "43109",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":7}"
+  },
+  {
+   "datasetId": "43441",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":118}"
+  },
+  {
+   "datasetId": "43121",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":208}"
+  },
+  {
+   "datasetId": "42991",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":25,\"nie lokal mieszkalny (parking, komórka, usługi)\":60}"
+  },
+  {
+   "datasetId": "42789",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":56}"
+  },
+  {
+   "datasetId": "42848",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":88}"
+  },
+  {
+   "datasetId": "42601",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":88}"
+  },
+  {
+   "datasetId": "42990",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":60,\"nie lokal mieszkalny (parking, komórka, usługi)\":89}"
+  },
+  {
+   "datasetId": "42569",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "datasetId": "40064",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":22}"
+  },
+  {
+   "datasetId": "40289",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":21}"
+  },
+  {
+   "datasetId": "39987",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":61}"
+  },
+  {
+   "datasetId": "43125",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":8}"
+  },
+  {
+   "datasetId": "35874",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":88,\"brak numeru lokalu\":352}"
+  },
+  {
+   "datasetId": "35014",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":46}"
+  },
+  {
+   "datasetId": "34327",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":17}"
+  },
+  {
+   "datasetId": "33383",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":4,\"brak dewelopera lub miejscowości\":1}"
+  },
+  {
+   "datasetId": "31291",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":4}"
+  },
+  {
+   "datasetId": "30878",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":87}"
+  },
+  {
+   "datasetId": "30610",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":14}"
+  },
+  {
+   "datasetId": "30538",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":51}"
+  },
+  {
+   "datasetId": "30876",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":22}"
+  },
+  {
+   "datasetId": "29161",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":9}"
+  },
+  {
+   "datasetId": "28758",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "datasetId": "25521",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":11}"
+  },
+  {
+   "datasetId": "22908",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":22}"
+  },
+  {
+   "datasetId": "22665",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":55}"
+  },
+  {
+   "datasetId": "22637",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":3}"
+  },
+  {
+   "datasetId": "5146",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":49}"
+  },
+  {
+   "datasetId": "22430",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":14}"
+  },
+  {
+   "datasetId": "23622",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":144}"
+  },
+  {
+   "datasetId": "5988",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":208}"
+  },
+  {
+   "datasetId": "7383",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":31}"
+  },
+  {
+   "datasetId": "9927",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":30}"
+  },
+  {
+   "datasetId": "24123",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":24}"
+  },
+  {
+   "datasetId": "10829",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":37}"
+  },
+  {
+   "datasetId": "16658",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":22}"
+  },
+  {
+   "datasetId": "16896",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak dewelopera lub miejscowości\":30}"
+  },
+  {
+   "datasetId": "18286",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":78}"
+  },
+  {
+   "datasetId": "19202",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":201}"
+  },
+  {
+   "datasetId": "19420",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":62}"
+  },
+  {
+   "datasetId": "21171",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":14}"
+  },
+  {
+   "datasetId": "43847",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":9}"
+  },
+  {
+   "datasetId": "43613",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":365}"
+  },
+  {
+   "datasetId": "43129",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":6}"
+  },
+  {
+   "datasetId": "43107",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak ceny za m²\":4}"
+  },
+  {
+   "datasetId": "43135",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":210}"
+  },
+  {
+   "datasetId": "43131",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":206}"
+  },
+  {
+   "datasetId": "42988",
+   "date": "2026-11-28",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":119}"
+  },
+  {
+   "datasetId": "42780",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":355}"
+  },
+  {
+   "datasetId": "27693",
+   "date": "2026-11-25",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":334}"
+  },
+  {
+   "datasetId": "32181",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":79}"
+  },
+  {
+   "datasetId": "24128",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":16}"
+  },
+  {
+   "datasetId": "5046",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":59}"
+  },
+  {
+   "datasetId": "24124",
+   "date": "2026-11-26",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":28}"
+  },
+  {
+   "datasetId": "5275",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":41,\"cena całkowita poza zakresem\":12}"
+  },
+  {
+   "datasetId": "5873",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"brak numeru lokalu\":4}"
+  },
+  {
+   "datasetId": "5874",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena całkowita poza zakresem\":12,\"nie lokal mieszkalny (parking, komórka, usługi)\":28}"
+  },
+  {
+   "datasetId": "5901",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"nie lokal mieszkalny (parking, komórka, usługi)\":20,\"cena całkowita poza zakresem\":26}"
+  },
+  {
+   "datasetId": "5903",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena całkowita poza zakresem\":41,\"nie lokal mieszkalny (parking, komórka, usługi)\":56}"
+  },
+  {
+   "datasetId": "5902",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena całkowita poza zakresem\":26,\"nie lokal mieszkalny (parking, komórka, usługi)\":54}"
+  },
+  {
+   "datasetId": "5907",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena całkowita poza zakresem\":16,\"nie lokal mieszkalny (parking, komórka, usługi)\":26}"
+  },
+  {
+   "datasetId": "5905",
+   "date": "2026-11-27",
+   "status": "ostrzezenie",
+   "note": "odrzucone wiersze: {\"cena całkowita poza zakresem\":60,\"nie lokal mieszkalny (parking, komórka, usługi)\":29}"
+  }
+ ],
+ "asOf": "2026-11-28",
+ "unitsInOffer": 165525,
+ "previousUnitsInOffer": 135767,
+ "staleDatasets": 1052,
+ "status": "ok"
+}
